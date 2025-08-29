@@ -1,7 +1,16 @@
-# Trabajo Entrega Punto 7
+# Sistema de Gestión Hospitalaria - Punto 7
 
 ## Descripción
-Este proyecto implementa [descripción breve de lo que hace tu proyecto].
+Sistema de gestión hospitalaria desarrollado en Python que implementa un sistema de registro de pacientes, médicos y enfermeras. El proyecto demuestra conceptos avanzados de Programación Orientada a Objetos (POO) incluyendo herencia, polimorfismo y encapsulación.
+
+## Características Principales
+
+- **Registro de Personas**: Sistema unificado para pacientes, médicos y enfermeras
+- **Herencia de Clases**: Estructura jerárquica con clase base `Persona`
+- **Encapsulación**: Atributos privados con métodos públicos para acceso
+- **Polimorfismo**: Métodos `mostrardatos()` personalizados para cada tipo
+- **Métodos de Clase**: Funciones de registro integradas en cada clase
+- **Interfaz de Consola**: Menú interactivo para gestión del sistema
 
 ## Instalación
 
@@ -44,63 +53,98 @@ source venv/bin/activate
 
 ### 2. Instalar dependencias
 ```bash
-# Instalar desde requirements.txt
-py -m pip install -r requirements.txt
-
-# O instalar manualmente si no hay requirements.txt
-py -m pip install [nombre-del-paquete]
+# Este proyecto no requiere dependencias externas
+# Solo Python estándar (built-in modules)
 ```
 
 ## Ejecutar el Proyecto
 
 ```bash
-# Ejecutar el archivo principal
+# Ejecutar el sistema hospitalario
 py main.py
 
 # O ejecutar archivos específicos
-py src/archivo.py
+py persona.py
+py paciente.py
+py medico.py
+py enfermera.py
 ```
 
 ## Estructura del Proyecto
 
 ```
 trabajo-entrega-punto-7/
-├── src/                    # Código fuente
-│   ├── main.py
-│   └── [otros archivos]
-├── tests/                  # Pruebas unitarias
-├── docs/                   # Documentación
-├── requirements.txt        # Dependencias
-├── .gitignore             # Archivos a ignorar
-└── README.md              # Este archivo
+├── main.py                 # Archivo principal con menú y lógica
+├── persona.py              # Clase base Persona
+├── paciente.py             # Clase Paciente (hereda de Persona)
+├── medico.py               # Clase Medico (hereda de Persona)
+├── enfermera.py            # Clase Enfermera (hereda de Persona)
+├── .gitignore              # Archivos a ignorar
+└── README.md               # Este archivo
 ```
 
-## Ejecutar Pruebas
+## Arquitectura del Sistema
 
-```bash
-# Ejecutar todas las pruebas
-py -m pytest
-
-# Ejecutar pruebas específicas
-py -m pytest tests/test_archivo.py
-
-# Ejecutar con cobertura
-py -m pytest --cov=src
-```
-
-## Uso
-
-### Ejemplo básico
+### Clase Base: Persona
 ```python
-# Importar y usar tu código
-from src.main import MiClase
-
-# Crear instancia
-objeto = MiClase()
-
-# Usar métodos
-resultado = objeto.mi_metodo()
+class Persona:
+    # Atributos comunes: nombre, fecha_nac, telefono, direccion
+    # Método: mostrardatos()
 ```
+
+### Clases Derivadas
+
+#### Paciente
+- **Hereda de**: Persona
+- **Atributos adicionales**: tipo = "Paciente"
+- **Funcionalidad**: Registro de datos personales
+
+#### Medico
+- **Hereda de**: Persona
+- **Atributos adicionales**: especialidad, tipo = "Médico"
+- **Funcionalidad**: Registro de datos personales y especialidad
+
+#### Enfermera
+- **Hereda de**: Persona
+- **Atributos adicionales**: turno, tipo = "Enfermera"
+- **Funcionalidad**: Registro de datos personales y turno
+
+## Uso del Sistema
+
+### Menú Principal
+1. **Registrar Paciente** - Crear nuevo paciente
+2. **Registrar Médico** - Crear nuevo médico
+3. **Registrar Enfermera** - Crear nueva enfermera
+4. **Mostrar Todos los Registros** - Ver todos los registros
+0. **Salir** - Terminar programa
+
+### Ejemplo de Uso
+```python
+# El sistema solicita datos interactivamente
+# Ejemplo de registro de paciente:
+# Nombre: Juan Pérez
+# Fecha de nacimiento: 15/03/1990
+# Teléfono: 555-0123
+# Dirección: Calle Principal 123
+```
+
+## Conceptos POO Implementados
+
+### 1. Herencia
+- Todas las clases heredan de `Persona`
+- Uso de `super().__init__()` para inicialización del padre
+
+### 2. Encapsulación
+- Atributos privados con `_` (ej: `_nombre`, `_telefono`)
+- Métodos públicos para acceso a datos
+
+### 3. Polimorfismo
+- Método `mostrardatos()` personalizado en cada clase
+- Comportamiento diferente según el tipo de persona
+
+### 4. Métodos de Clase
+- `@classmethod` para funciones de registro
+- Cada clase maneja su propio proceso de registro
 
 ## Desarrollo
 
@@ -117,7 +161,7 @@ git commit -m "feat: agregar nueva funcionalidad"
 git push origin feature/nueva-funcionalidad
 
 # 4. Crear Pull Request en GitHub
-# 5. Esperar revisión del compañero
+# 5. Esperar revisión del compañero (QA)
 # 6. Merge después de aprobación
 ```
 
@@ -125,7 +169,7 @@ git push origin feature/nueva-funcionalidad
 - **PEP 8** para estilo de código Python
 - **Mensajes de commit** descriptivos
 - **Documentación** en funciones y clases
-- **Pruebas** para nueva funcionalidad
+- **Type hints** para mejor legibilidad
 
 ## Solución de Problemas
 
@@ -148,6 +192,21 @@ pwd
 # Deberías ver (venv) al inicio de tu línea de comando
 ```
 
+### Error de imports
+```bash
+# Asegúrate de que todos los archivos estén en el mismo directorio
+# Los imports son relativos al directorio actual
+```
+
+## Próximas Funcionalidades
+
+- [ ] Sistema de citas médicas
+- [ ] Registro de diagnósticos
+- [ ] Sistema de facturación
+- [ ] Historial clínico de pacientes
+- [ ] Gestión de consultorios médicos
+- [ ] Sistema de turnos para enfermeras
+
 ## Contribuir
 
 1. **Fork** el proyecto
@@ -159,7 +218,7 @@ pwd
 
 ## Licencia
 
-Este proyecto está bajo la Licencia [MIT/CC0/etc.] - ver el archivo [LICENSE.md](LICENSE.md) para detalles.
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para detalles.
 
 ## Autores
 
@@ -168,7 +227,7 @@ Este proyecto está bajo la Licencia [MIT/CC0/etc.] - ver el archivo [LICENSE.md
 
 ## Agradecimientos
 
-- Profesor [Nombre] por la guía
+- Profesor [Nombre] por la guía en POO
 - Compañeros de clase por la colaboración
 - Comunidad de Python por recursos y documentación
 
@@ -180,4 +239,4 @@ Este proyecto está bajo la Licencia [MIT/CC0/etc.] - ver el archivo [LICENSE.md
 
 ---
 
-**Nota**: Este README debe actualizarse conforme el proyecto evolucione. Mantén la documentación actualizada para facilitar la colaboración.
+**Nota**: Este README debe actualizarse conforme el proyecto evolucione. Mantén la documentación actualizada para facilitar la colaboración y revisión del compañero QA.

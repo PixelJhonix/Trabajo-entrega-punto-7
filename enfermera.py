@@ -1,7 +1,7 @@
 from persona import Persona
 from schemas import EnfermeraIn
 
-class Enfermera(Persona): 
+class Enfermera(Persona):  
     
     def __init__(self, nombre: str, fecha_nac: str, telefono: str, direccion: str, turno: str):
         super().__init__(nombre, fecha_nac, telefono, direccion)
@@ -9,7 +9,7 @@ class Enfermera(Persona):
         self._tipo = "Enfermera"
     
     @classmethod
-    def registrar(cls): 
+    def registrar(cls):       
         print("\n--- REGISTRAR NUEVA ENFERMERA ---")
         
         nombre = input("Nombre: ")
@@ -26,7 +26,7 @@ class Enfermera(Persona):
             turno=turno,
         ).model_dump()
         
-        return cls(datos["nombre"], datos["fecha_nac"], datos["telefono"], datos["direccion"], datos["turno"])
+        return cls(datos["nombre"], datos["fecha_nac"], datos["telefono"], datos["direccion"], datos["turno"])  
     
     def mostrardatos(self) -> None:
         """Muestra datos de la enfermera"""

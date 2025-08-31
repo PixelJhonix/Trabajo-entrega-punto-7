@@ -8,7 +8,7 @@ class Paciente(Persona):
     def __init__(self, nombre: str, fecha_nac: str, telefono: str, direccion: str):
         super().__init__(nombre, fecha_nac, telefono, direccion)
         self._tipo = "Paciente"
-        self._citas = [] 
+        self._citas = []  # Lista de citas del paciente
     
     @classmethod
     def registrar(cls):

@@ -6,7 +6,6 @@ from paciente import Paciente
 from medico import Medico
 from enfermera import Enfermera
 
-
 print("---------------BIENVENIDOS A HOSPITAL LOS ENANOS---------------")
 
 def mostrar_todos(pacientes, medicos, enfermeras):
@@ -30,7 +29,7 @@ def mostrar_todos(pacientes, medicos, enfermeras):
         for enfermera in enfermeras:
             enfermera.mostrardatos()
             print("-" * 30)
-            
+
 def registrar_persona(pacientes, medicos, enfermeras):
     """Función para registrar nuevas personas"""
     print("\n--- REGISTRAR NUEVA PERSONA ---")

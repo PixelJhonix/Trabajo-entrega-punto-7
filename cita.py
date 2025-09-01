@@ -1,51 +1,50 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
-from typing import List
-
-class CitaIn(BaseModel):
-    """Modelo de entrada para validar datos de cita"""
-    fecha: str = Field(pattern=r"^\d{2}/\d{2}/\d{4}$")  # dd/mm/yyyy
-    hora: str = Field(pattern=r"^\d{2}:\d{2}$")  # HH:MM
-    motivo: str = Field(min_length=5, max_length=200)
-
-    @field_validator("fecha")
-    @classmethod
-    def validar_fecha(cls, v: str) -> str:
-        """Valida que la fecha sea futura y válida"""
-        try:
-            fecha_obj = datetime.strptime(v, "%d/%m/%Y")
-            if fecha_obj < datetime.now():
-                raise ValueError("La fecha debe ser futura")
-            return v
-        except ValueError as e:
-            raise ValueError(f"Formato de fecha inválido o fecha pasada: {e}")
-
-    @field_validator("hora")
-    @classmethod
-    def validar_hora(cls, v: str) -> str:
-        """Valida que la hora esté en horario laboral"""
-        try:
-            hora, minuto = map(int, v.split(":"))
-            if not (8 <= hora <= 18) or not (0 <= minuto <= 59):
-                raise ValueError("Hora debe estar entre 8:00 y 18:00")
-            return v
-        except ValueError as e:
-            raise ValueError(f"Hora inválida: {e}")
+from typing import List, Optional
+from schemas import CitaIn
 
 class Cita:
-    """Clase para gestionar citas médicas"""
+    """
+    Clase para gestionar citas médicas en el sistema hospitalario.
     
-    def __init__(self, paciente, medico, fecha: str, hora: str, motivo: str):
+    Esta clase encapsula toda la información relacionada con
+    una cita médica entre un paciente y un médico.
+    
+    Attributes:
+        paciente: Paciente que solicita la cita
+        medico: Médico que atenderá la cita
+        fecha: Fecha de la cita en formato dd/mm/yyyy
+        hora: Hora de la cita en formato HH:MM
+        motivo: Motivo de la consulta
+        estado: Estado actual de la cita (Agendada, Cancelada, Completada)
+        fecha_creacion: Fecha y hora de creación del registro
+    """
+    
+    def __init__(self, paciente, medico, fecha: str, hora: str, motivo: str) -> None:
+        """
+        Inicializa una nueva instancia de Cita.
+        
+        Args:
+            paciente: Paciente que solicita la cita
+            medico: Médico que atenderá la cita
+            fecha: Fecha de la cita en formato dd/mm/yyyy
+            hora: Hora de la cita en formato HH:MM
+            motivo: Motivo de la consulta
+        """
         self.paciente = paciente
         self.medico = medico
-        self.fecha = fecha
-        self.hora = hora
-        self.motivo = motivo
-        self.estado = "Agendada"
-        self.fecha_creacion = datetime.now()
+        self.fecha: str = fecha
+        self.hora: str = hora
+        self.motivo: str = motivo
+        self.estado: str = "Agendada"
+        self.fecha_creacion: datetime = datetime.now()
     
-    def mostrar_cita(self):
-        """Muestra los detalles de la cita"""
+    def mostrar_cita(self) -> None:
+        """
+        Muestra los detalles de la cita.
+        
+        Este método imprime en consola toda la información
+        relacionada con la cita de forma legible.
+        """
         print(f"--- CITA MÉDICA ---")
         print(f"Paciente: {self.paciente._nombre}")
         print(f"Médico: {self.medico._nombre}")
@@ -55,9 +54,37 @@ class Cita:
         print(f"Estado: {self.estado}")
         print(f"Fecha de creación: {self.fecha_creacion.strftime('%d/%m/%Y %H:%M')}")
 
+    def cancelar(self) -> None:
+        """
+        Cancela la cita médica.
+        
+        Este método cambia el estado de la cita a "Cancelada".
+        """
+        self.estado = "Cancelada"
+        print(f"Cita cancelada para {self.fecha} a las {self.hora}")
+
+    def completar(self) -> None:
+        """
+        Marca la cita como completada.
+        
+        Este método cambia el estado de la cita a "Completada".
+        """
+        self.estado = "Completada"
+        print(f"Cita completada para {self.fecha} a las {self.hora}")
+
     @staticmethod
     def verificar_disponibilidad(medico, fecha: str, hora: str) -> bool:
-        """Verifica si el médico está disponible en esa fecha y hora"""
+        """
+        Verifica si el médico está disponible en esa fecha y hora.
+        
+        Args:
+            medico: Médico a verificar disponibilidad
+            fecha: Fecha a verificar
+            hora: Hora a verificar
+            
+        Returns:
+            bool: True si el médico está disponible, False en caso contrario
+        """
         if not hasattr(medico, '_citas'):
             return True
         
@@ -68,7 +95,17 @@ class Cita:
 
     @staticmethod
     def verificar_disponibilidad_paciente(paciente, fecha: str, hora: str) -> bool:
-        """Verifica si el paciente no tiene otra cita en esa fecha y hora"""
+        """
+        Verifica si el paciente no tiene otra cita en esa fecha y hora.
+        
+        Args:
+            paciente: Paciente a verificar disponibilidad
+            fecha: Fecha a verificar
+            hora: Hora a verificar
+            
+        Returns:
+            bool: True si el paciente está disponible, False en caso contrario
+        """
         if not hasattr(paciente, '_citas'):
             return True
         
@@ -76,3 +113,21 @@ class Cita:
             if cita.fecha == fecha and cita.hora == hora and cita.estado != "Cancelada":
                 return False
         return True
+
+    def __str__(self) -> str:
+        """
+        Retorna una representación en string de la cita.
+        
+        Returns:
+            str: Representación de la cita
+        """
+        return f"Cita: {self.paciente._nombre} con Dr. {self.medico._nombre} el {self.fecha} a las {self.hora}"
+
+    def __repr__(self) -> str:
+        """
+        Retorna una representación técnica de la cita.
+        
+        Returns:
+            str: Representación técnica de la cita
+        """
+        return f"Cita(paciente='{self.paciente._nombre}', medico='{self.medico._nombre}', fecha='{self.fecha}', hora='{self.hora}')"

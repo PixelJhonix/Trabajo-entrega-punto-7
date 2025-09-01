@@ -359,17 +359,25 @@ def submenu_facturas(pacientes, medicos, enfermeras):
         print("\n" + "="*40)
         print("        FACTURAS")
         print("="*40)
+<<<<<<< Updated upstream
         print("1. Emitir Factura por Consulta")
         print("2. Emitir Factura por Servicio de Enfermería")
         print("3. Ver Facturas de Paciente")
         print("4. Ver Facturas por Fecha")
         print("5. Generar Reporte de Facturación")
+=======
+        print("1. Emitir Factura por Consulta Médica")
+        print("2. Emitir Factura por Servicio de Enfermería")
+        print("3. Ver Facturas de Paciente")
+        print("4. Ver Facturas por Profesional")
+>>>>>>> Stashed changes
         print("0. Volver al Menú Principal")
         print("="*40)
         
         opcion = input("Seleccione una opción: ")
         
         if opcion == "1":
+<<<<<<< Updated upstream
             # TODO: Implementar factura por consulta
             print("🔧 Función en desarrollo...")
         elif opcion == "2":
@@ -384,6 +392,15 @@ def submenu_facturas(pacientes, medicos, enfermeras):
         elif opcion == "5":
             # TODO: Implementar reporte de facturación
             print("🔧 Función en desarrollo...")
+=======
+            emitir_factura_medica(pacientes, medicos)
+        elif opcion == "2":
+            emitir_factura_enfermeria(pacientes, enfermeras)
+        elif opcion == "3":
+            ver_facturas_paciente(pacientes)
+        elif opcion == "4":
+            ver_facturas_profesional(medicos, enfermeras)
+>>>>>>> Stashed changes
         elif opcion == "0":
             break
         else:
@@ -401,13 +418,17 @@ def submenu_diagnostico(pacientes, medicos):
         print("2. Ver Historial de Diagnósticos")
         print("3. Buscar Diagnósticos por Paciente")
         print("4. Buscar Diagnósticos por Médico")
+<<<<<<< Updated upstream
         print("5. Actualizar Diagnóstico")
+=======
+>>>>>>> Stashed changes
         print("0. Volver al Menú Principal")
         print("="*40)
         
         opcion = input("Seleccione una opción: ")
         
         if opcion == "1":
+<<<<<<< Updated upstream
             # TODO: Implementar registro de diagnóstico
             print("🔧 Función en desarrollo...")
         elif opcion == "2":
@@ -422,6 +443,15 @@ def submenu_diagnostico(pacientes, medicos):
         elif opcion == "5":
             # TODO: Implementar actualizar diagnóstico
             print("🔧 Función en desarrollo...")
+=======
+            registrar_diagnostico_sistema(pacientes, medicos)
+        elif opcion == "2":
+            ver_historial_diagnosticos(pacientes, medicos)
+        elif opcion == "3":
+            buscar_diagnosticos_por_paciente(pacientes)
+        elif opcion == "4":
+            buscar_diagnosticos_por_medico(medicos)
+>>>>>>> Stashed changes
         elif opcion == "0":
             break
         else:
@@ -482,6 +512,340 @@ def agendar_cita_sistema(pacientes, medicos):
     except ValueError as e:
         print(f"❌ Error al agendar cita: {e}")
 
+<<<<<<< Updated upstream
+=======
+def registrar_diagnostico_sistema(pacientes, medicos):
+    """Función para registrar diagnósticos desde el sistema"""
+    if not pacientes:
+        print("❌ No hay pacientes registrados")
+        return
+    if not medicos:
+        print("❌ No hay médicos registrados")
+        return
+    
+    print("\n--- REGISTRAR DIAGNÓSTICO ---")
+    
+    # Mostrar pacientes disponibles
+    print("PACIENTES DISPONIBLES:")
+    for i, paciente in enumerate(pacientes, 1):
+        print(f"{i}. {paciente._nombre}")
+    
+    try:
+        idx_paciente = int(input("Seleccione paciente (número): ")) - 1
+        if idx_paciente < 0 or idx_paciente >= len(pacientes):
+            print("❌ Índice de paciente inválido")
+            return
+        paciente = pacientes[idx_paciente]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Mostrar médicos disponibles
+    print("\nMÉDICOS DISPONIBLES:")
+    for i, medico in enumerate(medicos, 1):
+        print(f"{i}. Dr. {medico._nombre} - {medico._especialidad}")
+    
+    try:
+        idx_medico = int(input("Seleccione médico (número): ")) - 1
+        if idx_medico < 0 or idx_medico >= len(medicos):
+            print("❌ Índice de médico inválido")
+            return
+        medico = medicos[idx_medico]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Solicitar datos del diagnóstico
+    sintomas = input("Síntomas del paciente: ")
+    diagnostico = input("Diagnóstico: ")
+    tratamiento = input("Tratamiento prescrito: ")
+    observaciones = input("Observaciones (opcional): ")
+    fecha_diagnostico = input("Fecha del diagnóstico (dd/mm/yyyy) o Enter para hoy: ") or None
+    
+    try:
+        diagnostico_obj = medico.registrar_diagnostico(
+            paciente, sintomas, diagnostico, tratamiento, observaciones, fecha_diagnostico
+        )
+        print("✅ Diagnóstico registrado exitosamente!")
+        diagnostico_obj.mostrar_diagnostico()
+    except ValueError as e:
+        print(f"❌ Error al registrar diagnóstico: {e}")
+
+def ver_historial_diagnosticos(pacientes, medicos):
+    """Función para ver historial de diagnósticos"""
+    print("\n--- HISTORIAL DE DIAGNÓSTICOS ---")
+    
+    total_diagnosticos = 0
+    for paciente in pacientes:
+        if hasattr(paciente, '_diagnosticos') and paciente._diagnosticos:
+            total_diagnosticos += len(paciente._diagnosticos)
+    
+    if total_diagnosticos == 0:
+        print("❌ No hay diagnósticos registrados en el sistema")
+        return
+    
+    print(f"Total de diagnósticos en el sistema: {total_diagnosticos}")
+    
+    for paciente in pacientes:
+        if hasattr(paciente, '_diagnosticos') and paciente._diagnosticos:
+            print(f"\n--- DIAGNÓSTICOS DE {paciente._nombre.upper()} ---")
+            for diagnostico in paciente._diagnosticos:
+                diagnostico.mostrar_diagnostico()
+                print("-" * 30)
+
+def buscar_diagnosticos_por_paciente(pacientes):
+    """Función para buscar diagnósticos por paciente"""
+    if not pacientes:
+        print("❌ No hay pacientes registrados")
+        return
+    
+    print("\n--- BUSCAR DIAGNÓSTICOS POR PACIENTE ---")
+    print("PACIENTES DISPONIBLES:")
+    for i, paciente in enumerate(pacientes, 1):
+        print(f"{i}. {paciente._nombre}")
+    
+    try:
+        idx = int(input("Seleccione paciente (número): ")) - 1
+        if idx < 0 or idx >= len(pacientes):
+            print("❌ Índice inválido")
+            return
+        paciente = pacientes[idx]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    if not hasattr(paciente, '_diagnosticos') or not paciente._diagnosticos:
+        print(f"❌ El paciente {paciente._nombre} no tiene diagnósticos registrados")
+        return
+    
+    print(f"\n--- DIAGNÓSTICOS DE {paciente._nombre.upper()} ---")
+    for diagnostico in paciente._diagnosticos:
+        diagnostico.mostrar_diagnostico()
+        print("-" * 30)
+
+def buscar_diagnosticos_por_medico(medicos):
+    """Función para buscar diagnósticos por médico"""
+    if not medicos:
+        print("❌ No hay médicos registrados")
+        return
+    
+    print("\n--- BUSCAR DIAGNÓSTICOS POR MÉDICO ---")
+    print("MÉDICOS DISPONIBLES:")
+    for i, medico in enumerate(medicos, 1):
+        print(f"{i}. Dr. {medico._nombre} - {medico._especialidad}")
+    
+    try:
+        idx = int(input("Seleccione médico (número): ")) - 1
+        if idx < 0 or idx >= len(medicos):
+            print("❌ Índice inválido")
+            return
+        medico = medicos[idx]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    medico.ver_diagnosticos()
+
+def emitir_factura_medica(pacientes, medicos):
+    """Función para emitir factura por consulta médica"""
+    if not pacientes:
+        print("❌ No hay pacientes registrados")
+        return
+    if not medicos:
+        print("❌ No hay médicos registrados")
+        return
+    
+    print("\n--- EMITIR FACTURA POR CONSULTA MÉDICA ---")
+    
+    # Mostrar pacientes disponibles
+    print("PACIENTES DISPONIBLES:")
+    for i, paciente in enumerate(pacientes, 1):
+        print(f"{i}. {paciente._nombre}")
+    
+    try:
+        idx_paciente = int(input("Seleccione paciente (número): ")) - 1
+        if idx_paciente < 0 or idx_paciente >= len(pacientes):
+            print("❌ Índice de paciente inválido")
+            return
+        paciente = pacientes[idx_paciente]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Mostrar médicos disponibles
+    print("\nMÉDICOS DISPONIBLES:")
+    for i, medico in enumerate(medicos, 1):
+        print(f"{i}. Dr. {medico._nombre} - {medico._especialidad}")
+    
+    try:
+        idx_medico = int(input("Seleccione médico (número): ")) - 1
+        if idx_medico < 0 or idx_medico >= len(medicos):
+            print("❌ Índice de médico inválido")
+            return
+        medico = medicos[idx_medico]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Solicitar datos de la factura
+    concepto = input("Concepto de la consulta: ")
+    monto_str = input("Monto de la consulta: ")
+    tipo_servicio = input("Tipo de servicio (Consulta/Procedimiento/Examen): ")
+    fecha_servicio = input("Fecha del servicio (dd/mm/yyyy): ")
+    descripcion = input("Descripción detallada (opcional): ")
+    
+    try:
+        monto = float(monto_str)
+        factura = medico.emitir_factura(
+            paciente, concepto, monto, tipo_servicio, fecha_servicio, descripcion
+        )
+        print("✅ Factura emitida exitosamente!")
+        factura.mostrar_factura()
+    except ValueError as e:
+        print(f"❌ Error al emitir factura: {e}")
+
+def emitir_factura_enfermeria(pacientes, enfermeras):
+    """Función para emitir factura por servicio de enfermería"""
+    if not pacientes:
+        print("❌ No hay pacientes registrados")
+        return
+    if not enfermeras:
+        print("❌ No hay enfermeras registradas")
+        return
+    
+    print("\n--- EMITIR FACTURA POR SERVICIO DE ENFERMERÍA ---")
+    
+    # Mostrar pacientes disponibles
+    print("PACIENTES DISPONIBLES:")
+    for i, paciente in enumerate(pacientes, 1):
+        print(f"{i}. {paciente._nombre}")
+    
+    try:
+        idx_paciente = int(input("Seleccione paciente (número): ")) - 1
+        if idx_paciente < 0 or idx_paciente >= len(pacientes):
+            print("❌ Índice de paciente inválido")
+            return
+        paciente = pacientes[idx_paciente]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Mostrar enfermeras disponibles
+    print("\nENFERMERAS DISPONIBLES:")
+    for i, enfermera in enumerate(enfermeras, 1):
+        print(f"{i}. {enfermera._nombre} - {enfermera._turno}")
+    
+    try:
+        idx_enfermera = int(input("Seleccione enfermera (número): ")) - 1
+        if idx_enfermera < 0 or idx_enfermera >= len(enfermeras):
+            print("❌ Índice de enfermera inválido")
+            return
+        enfermera = enfermeras[idx_enfermera]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    # Solicitar datos de la factura
+    concepto = input("Concepto del servicio: ")
+    monto_str = input("Monto del servicio: ")
+    tipo_servicio = input("Tipo de servicio (Terapia/Medicamento/Procedimiento): ")
+    fecha_servicio = input("Fecha del servicio (dd/mm/yyyy): ")
+    descripcion = input("Descripción detallada (opcional): ")
+    
+    try:
+        monto = float(monto_str)
+        factura = enfermera.emitir_factura(
+            paciente, concepto, monto, tipo_servicio, fecha_servicio, descripcion
+        )
+        print("✅ Factura emitida exitosamente!")
+        factura.mostrar_factura()
+    except ValueError as e:
+        print(f"❌ Error al emitir factura: {e}")
+
+def ver_facturas_paciente(pacientes):
+    """Función para ver facturas de un paciente"""
+    if not pacientes:
+        print("❌ No hay pacientes registrados")
+        return
+    
+    print("\n--- VER FACTURAS DE PACIENTE ---")
+    print("PACIENTES DISPONIBLES:")
+    for i, paciente in enumerate(pacientes, 1):
+        print(f"{i}. {paciente._nombre}")
+    
+    try:
+        idx = int(input("Seleccione paciente (número): ")) - 1
+        if idx < 0 or idx >= len(pacientes):
+            print("❌ Índice inválido")
+            return
+        paciente = pacientes[idx]
+    except ValueError:
+        print("❌ Debe ingresar un número")
+        return
+    
+    if not hasattr(paciente, '_facturas') or not paciente._facturas:
+        print(f"❌ El paciente {paciente._nombre} no tiene facturas registradas")
+        return
+    
+    print(f"\n--- FACTURAS DE {paciente._nombre.upper()} ---")
+    for factura in paciente._facturas:
+        factura.mostrar_factura()
+        print("-" * 30)
+
+def ver_facturas_profesional(medicos, enfermeras):
+    """Función para ver facturas por profesional"""
+    print("\n--- VER FACTURAS POR PROFESIONAL ---")
+    print("1. Ver facturas de médico")
+    print("2. Ver facturas de enfermera")
+    
+    opcion = input("Seleccione opción: ")
+    
+    if opcion == "1":
+        if not medicos:
+            print("❌ No hay médicos registrados")
+            return
+        
+        print("\nMÉDICOS DISPONIBLES:")
+        for i, medico in enumerate(medicos, 1):
+            print(f"{i}. Dr. {medico._nombre} - {medico._especialidad}")
+        
+        try:
+            idx = int(input("Seleccione médico (número): ")) - 1
+            if idx < 0 or idx >= len(medicos):
+                print("❌ Índice inválido")
+                return
+            medico = medicos[idx]
+        except ValueError:
+            print("❌ Debe ingresar un número")
+            return
+        
+        medico.ver_facturas()
+        
+    elif opcion == "2":
+        if not enfermeras:
+            print("❌ No hay enfermeras registradas")
+            return
+        
+        print("\nENFERMERAS DISPONIBLES:")
+        for i, enfermera in enumerate(enfermeras, 1):
+            print(f"{i}. {enfermera._nombre} - {enfermera._turno}")
+        
+        try:
+            idx = int(input("Seleccione enfermera (número): ")) - 1
+            if idx < 0 or idx >= len(enfermeras):
+                print("❌ Índice inválido")
+                return
+            enfermera = enfermeras[idx]
+        except ValueError:
+            print("❌ Debe ingresar un número")
+            return
+        
+        enfermera.ver_facturas()
+        
+    else:
+        print("❌ Opción no válida")
+
+>>>>>>> Stashed changes
 def main():
     """Función principal del sistema"""
     print("¡Bienvenido al Sistema de Registro Hospitalario!")

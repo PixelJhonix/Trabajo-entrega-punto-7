@@ -47,17 +47,17 @@ def registrar_persona(pacientes, medicos, enfermeras):
     if opcion == "1":
         paciente = Paciente.registrar()
         pacientes.append(paciente)
-        print("✅ Paciente registrado exitosamente!")
+        print("Paciente registrado exitosamente!")
     elif opcion == "2":
         medico = Medico.registrar()
         medicos.append(medico)
-        print("✅ Médico registrado exitosamente!")
+        print("Médico registrado exitosamente!")
     elif opcion == "3":
         enfermera = Enfermera.registrar()
         enfermeras.append(enfermera)
-        print("✅ Enfermera registrada exitosamente!")
+        print("Enfermera registrada exitosamente!")
     else:
-        print("❌ Opción no válida")
+        print("Opción no válida")
 
 def editar_persona(pacientes, medicos, enfermeras):
     """Función para editar personas existentes"""
@@ -75,7 +75,7 @@ def editar_persona(pacientes, medicos, enfermeras):
     elif opcion == "3":
         editar_enfermera(enfermeras)
     else:
-        print("❌ Opción no válida")
+        print("Opción no válida")
 
 def validar_indice(entrada: str, maximo: int) -> int:
     """Valida que la entrada sea un índice válido"""
@@ -91,7 +91,7 @@ def validar_indice(entrada: str, maximo: int) -> int:
 def editar_paciente(pacientes):
     """Función para editar un paciente específico"""
     if not pacientes:
-        print("❌ No hay pacientes registrados")
+        print("No hay pacientes registrados")
         return
     
     print("\nPACIENTES DISPONIBLES:")
@@ -108,13 +108,11 @@ def editar_paciente(pacientes):
     paciente = pacientes[idx]
     print(f"\nEditando paciente: {paciente._nombre}")
     
-    # Solicitar nuevos datos
     nuevo_nombre = input(f"Nuevo nombre ({paciente._nombre}): ") or paciente._nombre
     nueva_fecha = input(f"Nueva fecha ({paciente._fecha_nac}): ") or paciente._fecha_nac
     nuevo_telefono = input(f"Nuevo teléfono ({paciente._telefono}): ") or paciente._telefono
     nueva_direccion = input(f"Nueva dirección ({paciente._direccion}): ") or paciente._direccion
     
-    # Actualizar datos
     paciente._nombre = nuevo_nombre
     paciente._fecha_nac = nueva_fecha
     paciente._telefono = nuevo_telefono
@@ -125,7 +123,7 @@ def editar_paciente(pacientes):
 def editar_medico(medicos):
     """Función para editar un médico específico"""
     if not medicos:
-        print("❌ No hay médicos registrados")
+        print("No hay médicos registrados")
         return
     
     print("\nMÉDICOS DISPONIBLES:")
@@ -142,14 +140,12 @@ def editar_medico(medicos):
     medico = medicos[idx]
     print(f"\nEditando médico: Dr. {medico._nombre}")
     
-    # Solicitar nuevos datos
     nuevo_nombre = input(f"Nuevo nombre ({medico._nombre}): ") or medico._nombre
     nueva_fecha = input(f"Nueva fecha ({medico._fecha_nac}): ") or medico._fecha_nac
     nuevo_telefono = input(f"Nuevo teléfono ({medico._telefono}): ") or medico._telefono
     nueva_direccion = input(f"Nueva dirección ({medico._direccion}): ") or medico._direccion
     nueva_especialidad = input(f"Nueva especialidad ({medico._especialidad}): ") or medico._especialidad
     
-    # Actualizar datos
     medico._nombre = nuevo_nombre
     medico._fecha_nac = nueva_fecha
     medico._telefono = nuevo_telefono
@@ -161,7 +157,7 @@ def editar_medico(medicos):
 def editar_enfermera(enfermeras):
     """Función para editar una enfermera específica"""
     if not enfermeras:
-        print("❌ No hay enfermeras registradas")
+        print("No hay enfermeras registradas")
         return
     
     print("\nENFERMERAS DISPONIBLES:")
@@ -178,14 +174,12 @@ def editar_enfermera(enfermeras):
     enfermera = enfermeras[idx]
     print(f"\nEditando enfermera: {enfermera._nombre}")
     
-    # Solicitar nuevos datos
     nuevo_nombre = input(f"Nuevo nombre ({enfermera._nombre}): ") or enfermera._nombre
     nueva_fecha = input(f"Nueva fecha ({enfermera._fecha_nac}): ") or enfermera._fecha_nac
     nuevo_telefono = input(f"Nuevo teléfono ({enfermera._telefono}): ") or enfermera._telefono
     nueva_direccion = input(f"Nueva dirección ({enfermera._direccion}): ") or enfermera._direccion
     nuevo_turno = input(f"Nuevo turno ({enfermera._turno}): ") or enfermera._turno
     
-    # Actualizar datos
     enfermera._nombre = nuevo_nombre
     enfermera._fecha_nac = nueva_fecha
     enfermera._telefono = nuevo_telefono
@@ -210,12 +204,12 @@ def eliminar_persona(pacientes, medicos, enfermeras):
     elif opcion == "3":
         eliminar_enfermera(enfermeras)
     else:
-        print("❌ Opción no válida")
+        print("Opción no válida")
 
 def eliminar_paciente(pacientes):
     """Función para eliminar un paciente específico"""
     if not pacientes:
-        print("❌ No hay pacientes registrados")
+        print("No hay pacientes registrados")
         return
     
     print("\nPACIENTES DISPONIBLES:")
@@ -241,7 +235,7 @@ def eliminar_paciente(pacientes):
 def eliminar_medico(medicos):
     """Función para eliminar un médico específico"""
     if not medicos:
-        print("❌ No hay médicos registrados")
+        print("No hay médicos registrados")
         return
     
     print("\nMÉDICOS DISPONIBLES:")
@@ -267,7 +261,7 @@ def eliminar_medico(medicos):
 def eliminar_enfermera(enfermeras):
     """Función para eliminar una enfermera específica"""
     if not enfermeras:
-        print("❌ No hay enfermeras registradas")
+        print("No hay enfermeras registradas")
         return
     
     print("\nENFERMERAS DISPONIBLES:")
@@ -316,7 +310,7 @@ def submenu_registro(pacientes, medicos, enfermeras):
         elif opcion == "0":
             break
         else:
-            print("❌ Opción no válida. Intente de nuevo.")
+            print("Opción no válida. Intente de nuevo.")
         
         input("\nPresione Enter para continuar...")
 
@@ -339,21 +333,17 @@ def submenu_citas(pacientes, medicos):
         if opcion == "1":
             agendar_cita_sistema(pacientes, medicos)
         elif opcion == "2":
-            # TODO: Implementar ver citas de paciente
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "3":
-            # TODO: Implementar ver citas de médico
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "4":
-            # TODO: Implementar ver citas por fecha
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "5":
-            # TODO: Implementar cancelar cita
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "0":
             break
         else:
-            print("❌ Opción no válida. Intente de nuevo.")
+            print("Opción no válida. Intente de nuevo.")
         
         input("\nPresione Enter para continuar...")
 
@@ -374,24 +364,19 @@ def submenu_facturas(pacientes, medicos, enfermeras):
         opcion = input("Seleccione una opción: ")
         
         if opcion == "1":
-            # TODO: Implementar factura por consulta
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "2":
-            # TODO: Implementar factura por servicio de enfermería
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "3":
-            # TODO: Implementar ver facturas de paciente
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "4":
-            # TODO: Implementar ver facturas por fecha
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "5":
-            # TODO: Implementar reporte de facturación
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "0":
             break
         else:
-            print("❌ Opción no válida. Intente de nuevo.")
+            print("Opción no válida. Intente de nuevo.")
         
         input("\nPresione Enter para continuar...")
 
@@ -412,39 +397,33 @@ def submenu_diagnostico(pacientes, medicos):
         opcion = input("Seleccione una opción: ")
         
         if opcion == "1":
-            # TODO: Implementar registro de diagnóstico
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "2":
-            # TODO: Implementar ver historial de diagnósticos
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "3":
-            # TODO: Implementar buscar diagnósticos por paciente
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "4":
-            # TODO: Implementar buscar diagnósticos por médico
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "5":
-            # TODO: Implementar actualizar diagnóstico
-            print("🔧 Función en desarrollo...")
+            print("Función en desarrollo...")
         elif opcion == "0":
             break
         else:
-            print("❌ Opción no válida. Intente de nuevo.")
+            print("Opción no válida. Intente de nuevo.")
         
         input("\nPresione Enter para continuar...")
 
 def agendar_cita_sistema(pacientes, medicos):
     """Función para agendar citas desde el sistema"""
     if not pacientes:
-        print("❌ No hay pacientes registrados")
+        print("No hay pacientes registrados")
         return
     if not medicos:
-        print("❌ No hay médicos registrados")
+        print("No hay médicos registrados")
         return
     
     print("\n--- AGENDAR CITA DESDE SISTEMA ---")
     
-    # Mostrar pacientes disponibles
     print("PACIENTES DISPONIBLES:")
     for i, paciente in enumerate(pacientes, 1):
         print(f"{i}. {paciente._nombre}")
@@ -458,7 +437,6 @@ def agendar_cita_sistema(pacientes, medicos):
     
     paciente = pacientes[idx_paciente]
     
-    # Mostrar médicos disponibles
     print("\nMÉDICOS DISPONIBLES:")
     for i, medico in enumerate(medicos, 1):
         print(f"{i}. Dr. {medico._nombre} - {medico._especialidad}")
@@ -472,12 +450,10 @@ def agendar_cita_sistema(pacientes, medicos):
     
     medico = medicos[idx_medico]
     
-    # Solicitar datos de la cita
     fecha = input("Fecha (dd/mm/yyyy): ")
     hora = input("Hora (HH:MM): ")
     motivo = input("Motivo de la consulta: ")
     
-    # Validar datos antes de crear la cita
     from schemas import validar_campo_fecha_servicio, validar_campo_hora, validar_campo_motivo
     
     es_valido_fecha, mensaje_fecha = validar_campo_fecha_servicio(fecha)
@@ -495,18 +471,14 @@ def agendar_cita_sistema(pacientes, medicos):
         print(f"Error en motivo: {mensaje_motivo}")
         return
     
-    # Crear la cita usando el método del médico
     cita = medico.agendar_cita_paciente(paciente, fecha, hora, motivo)
     print("Cita agendada exitosamente")
     cita.mostrar_cita()
 
 def main():
-    """
-    Función principal del sistema.
-    """
+    """Función principal del sistema"""
     print("¡Bienvenido al Sistema de Registro Hospitalario!")
     
-    # Listas para almacenar los registros
     pacientes: List[Paciente] = []
     medicos: List[Medico] = []
     enfermeras: List['Enfermera'] = []

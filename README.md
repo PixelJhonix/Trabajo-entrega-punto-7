@@ -1,75 +1,59 @@
 # Sistema Hospitalario - Hospital Los Enanos
 
-Sistema de gestión hospitalaria completo desarrollado en Python con programación orientada a objetos, validaciones robustas usando Pydantic y manejo de errores mejorado.
+Sistema de gestión hospitalaria desarrollado en Python con programación orientada a objetos y validaciones robustas usando Pydantic.
 
-## Descripción del Proyecto
+## Descripción
 
-El Sistema Hospitalario - Hospital Los Enanos es una aplicación de gestión integral para centros médicos que permite administrar pacientes, médicos, enfermeras, citas médicas, diagnósticos y facturación. El sistema está desarrollado siguiendo las mejores prácticas de programación orientada a objetos y utiliza validaciones robustas para garantizar la integridad de los datos.
+Sistema completo para la gestión de un centro médico que permite administrar:
+- **Pacientes**: Registro y gestión de información personal
+- **Médicos**: Gestión con especialidades y funcionalidades médicas
+- **Enfermeras**: Administración con turnos de trabajo
+- **Citas**: Agendamiento y gestión de citas médicas
+- **Diagnósticos**: Registro de diagnósticos médicos
+- **Facturas**: Emisión de facturas por servicios
 
 ## Características Principales
 
 ### Gestión de Personas
-- **Pacientes**: Registro, edición y gestión completa de pacientes
-- **Médicos**: Gestión de médicos con especialidades y funcionalidades específicas
-- **Enfermeras**: Administración de enfermeras con turnos de trabajo
+- Registro, edición y eliminación de pacientes, médicos y enfermeras
+- Validación completa de datos usando Pydantic
+- Interfaz de usuario intuitiva con menús interactivos
 
 ### Gestión de Citas
-- Agendar citas entre médicos y pacientes
-- Verificar disponibilidad de horarios automáticamente
-- Cancelar y reprogramar citas
-- Consultar citas por fecha, médico o paciente
+- Agendamiento de citas entre médicos y pacientes
+- Verificación automática de disponibilidad de horarios
 - Validación de conflictos de horario
+- Estados de cita (Agendada, Cancelada, Completada)
 
-### Registro de Diagnósticos (Solo Médicos)
+### Registro de Diagnósticos
 - Los médicos pueden registrar diagnósticos completos
 - Incluye síntomas, diagnóstico, tratamiento y observaciones
-- Historial completo de diagnósticos por paciente y médico
-- Validaciones de formato y contenido
+- Historial completo por paciente y médico
 
 ### Emisión de Facturas
-- **Médicos**: Facturas por consultas, procedimientos y exámenes
-- **Enfermeras**: Facturas por servicios de enfermería, terapias y medicamentos
+- Facturas por consultas médicas y servicios de enfermería
 - Números de factura únicos generados automáticamente
 - Validaciones de montos y fechas
 
 ## Requisitos del Sistema
 
-### Requisitos Mínimos
 - **Python**: 3.8 o superior
-- **Sistema Operativo**: Windows 10+, macOS 10.14+, Linux (Ubuntu 18.04+)
-- **Memoria RAM**: 512 MB mínimo
-- **Espacio en Disco**: 50 MB libre
+- **Dependencias**: pydantic
 
-### Dependencias Principales
-```
-pydantic>=2.0.0
-typing-extensions>=4.0.0
-```
+## Instalación
 
-## Instalación y Configuración
-
-### 1. Clonar el Repositorio
+1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/tu-usuario/sistema-hospitalario.git
+git clone <url-del-repositorio>
 cd sistema-hospitalario
 ```
 
-### 2. Configurar el Entorno Virtual
-```bash
-python -m venv venv
-
-# En Windows:
-venv\Scripts\activate
-# En macOS/Linux:
-source venv/bin/activate
-```
-
-### 3. Instalar Dependencias
+2. **Instalar dependencias**
 ```bash
 pip install pydantic
 ```
 
-### 4. Ejecutar el Sistema
+3. **Ejecutar el sistema**
 ```bash
 python main.py
 ```
@@ -85,8 +69,7 @@ sistema-hospitalario/
 ├── enfermera.py            # Clase para gestión de enfermeras
 ├── cita.py                 # Clase para gestión de citas médicas
 ├── schemas.py              # Esquemas de validación con Pydantic
-├── README.md               # Documentación del proyecto
-└── requirements.txt        # Dependencias del proyecto
+└── README.md               # Documentación del proyecto
 ```
 
 ## Arquitectura del Software
@@ -130,111 +113,7 @@ Factura
 └── tipo_servicio: TipoServicio
 ```
 
-### Principios de Diseño Aplicados
-
-1. **Herencia**: Todas las personas heredan de la clase base `Persona`
-2. **Encapsulación**: Atributos privados con métodos públicos para acceso
-3. **Polimorfismo**: Métodos comunes implementados de forma específica
-4. **Composición**: Relaciones entre objetos (citas, diagnósticos, facturas)
-5. **Separación de Responsabilidades**: Cada clase tiene una responsabilidad específica
-
-## Funcionalidades Detalladas
-
-### 1. Gestión de Pacientes
-
-**Clase `Paciente`**
-- Registro de pacientes con validación de datos
-- Gestión de citas médicas
-- Historial de diagnósticos y facturas
-
-**Métodos Principales:**
-- `registrar()`: Registro interactivo con validaciones
-- `agendar_cita()`: Agenda citas con médicos
-- `ver_citas()`: Muestra todas las citas del paciente
-- `cancelar_cita()`: Cancela citas específicas
-
-### 2. Gestión de Médicos
-
-**Clase `Medico`**
-- Registro de médicos con especialidades
-- Gestión de citas y diagnósticos
-- Emisión de facturas médicas
-
-**Métodos Principales:**
-- `registrar_diagnostico()`: Registra diagnósticos para pacientes
-- `emitir_factura()`: Emite facturas por servicios médicos
-- `agendar_cita_paciente()`: Agenda citas para pacientes
-- `ver_diagnosticos()`: Muestra historial de diagnósticos
-
-### 3. Gestión de Enfermeras
-
-**Clase `Enfermera`**
-- Registro de enfermeras con turnos
-- Emisión de facturas de enfermería
-
-**Métodos Principales:**
-- `emitir_factura()`: Emite facturas por servicios de enfermería
-- `ver_facturas()`: Muestra historial de facturas emitidas
-
-### 4. Gestión de Citas
-
-**Clase `Cita`**
-- Creación y gestión de citas
-- Verificación de disponibilidad
-- Estados de cita (Agendada, Cancelada, Completada)
-
-**Métodos Principales:**
-- `verificar_disponibilidad()`: Verifica disponibilidad de médicos
-- `verificar_disponibilidad_paciente()`: Verifica disponibilidad de pacientes
-- `cancelar()`: Cancela una cita
-- `completar()`: Marca una cita como completada
-
-## Validaciones y Manejo de Errores
-
-### Esquemas de Validación (Pydantic)
-
-**`PersonaIn` - Validación Base**
-- Nombres: Solo letras, espacios, puntos, guiones y apóstrofes
-- Fechas: Formato dd/mm/yyyy con validación de fechas futuras
-- Teléfonos: Formato válido con regex (7-15 dígitos)
-- Direcciones: Mínimos y máximos para todos los campos
-
-**`DiagnosticoIn` - Validación de Diagnósticos**
-- Síntomas: Mínimo 10, máximo 500 caracteres
-- Diagnóstico: Mínimo 5, máximo 200 caracteres
-- Tratamiento: Mínimo 10, máximo 500 caracteres
-- Fecha: Formato dd/mm/yyyy, no futura
-
-**`FacturaIn` - Validación de Facturas**
-- Concepto: Mínimo 5, máximo 100 caracteres
-- Monto: Positivo, máximo 2 decimales, límite superior
-- Tipo de servicio: Enum predefinido
-- Fecha: Formato dd/mm/yyyy, no futura
-
-### Tipos de Validaciones Implementadas
-
-1. **Nombres**: Solo letras, espacios, puntos, guiones y apóstrofes
-2. **Fechas**: Formato dd/mm/yyyy con validación de fechas futuras
-3. **Teléfonos**: Formato válido con regex (7-15 dígitos)
-4. **Montos**: Positivos, máximo 2 decimales, límite superior
-5. **Longitudes**: Mínimos y máximos para todos los campos
-6. **Enums**: Tipos de servicio y turnos predefinidos
-
-### Manejo de Errores Mejorado
-
-**Características del Sistema de Validación**
-- Mensajes de error claros en español
-- Ejemplos de formato correcto
-- Guía específica para cada tipo de error
-- Bucle de reintento automático
-- Validación en tiempo real
-
 ## Uso del Sistema
-
-### Ejecutar el Sistema Principal
-```bash
-python main.py
-```
 
 ### Menú Principal
 ```
@@ -249,249 +128,112 @@ python main.py
 ========================================
 ```
 
-### Submenús Disponibles
+### Funcionalidades Disponibles
 
 #### 1. Registro
-- Registrar Paciente
-- Registrar Médico
-- Registrar Enfermera
-- Ver Personas Registradas
+- Registrar Paciente, Médico o Enfermera
+- Editar información de personas registradas
+- Eliminar registros
+- Mostrar todos los registros
 
 #### 2. Citas
-- Agendar Cita (Paciente)
-- Agendar Cita (Médico)
-- Ver Citas de Paciente
-- Ver Citas de Médico
-- Cancelar Cita
+- Agendar citas entre médicos y pacientes
+- Ver citas por paciente o médico
+- Cancelar citas
+- Consultar citas por fecha
 
 #### 3. Facturas
-- Emitir Factura por Consulta Médica
-- Emitir Factura por Servicio de Enfermería
-- Ver Facturas de Paciente
-- Ver Facturas por Profesional
+- Emitir facturas por consultas médicas
+- Emitir facturas por servicios de enfermería
+- Ver facturas por paciente
+- Generar reportes de facturación
 
 #### 4. Diagnóstico
-- Registrar Diagnóstico
-- Ver Historial de Diagnósticos
-- Buscar Diagnósticos por Paciente
-- Buscar Diagnósticos por Médico
+- Registrar diagnósticos médicos
+- Ver historial de diagnósticos
+- Buscar diagnósticos por paciente o médico
+
+## Validaciones Implementadas
+
+### Datos Personales
+- **Nombres**: Solo letras, espacios, puntos, guiones y apóstrofes
+- **Fechas**: Formato dd/mm/yyyy con validación de fechas futuras
+- **Teléfonos**: Formato válido con regex (7-15 dígitos)
+- **Direcciones**: Mínimos y máximos para todos los campos
+
+### Datos Médicos
+- **Síntomas**: Mínimo 10, máximo 500 caracteres
+- **Diagnóstico**: Mínimo 5, máximo 200 caracteres
+- **Tratamiento**: Mínimo 10, máximo 500 caracteres
+- **Montos**: Positivos, máximo 2 decimales, límite superior
+
+### Horarios y Citas
+- **Horas**: Formato HH:MM, horario laboral 8:00-17:00
+- **Fechas de cita**: Deben ser futuras
+- **Conflictos**: Verificación automática de disponibilidad
 
 ## Ejemplos de Uso
 
-### 1. Registrar un Paciente
-```python
-# El sistema solicitará los datos interactivamente
-paciente = Paciente.registrar()
-
-# Ejemplo de datos válidos:
-# Nombre: María José García
-# Fecha de nacimiento: 15/03/1990
-# Teléfono: 555-1234
-# Dirección: Calle Principal 123
+### Registrar un Paciente
+```
+--- REGISTRAR NUEVO PACIENTE ---
+Nombre: María José García
+Fecha de nacimiento (dd/mm/yyyy): 15/03/1990
+Teléfono: 555-1234
+Dirección: Calle Principal 123
 ```
 
-### 2. Registrar un Médico
-```python
-# El sistema solicitará los datos interactivamente
-medico = Medico.registrar()
-
-# Ejemplo de datos válidos:
-# Nombre: Dr. Juan Carlos López
-# Fecha de nacimiento: 20/07/1975
-# Teléfono: 555-5678
-# Dirección: Av. Médica 456
-# Especialidad: Cardiología
+### Registrar un Médico
+```
+--- REGISTRAR NUEVO MÉDICO ---
+Nombre: Dr. Juan Carlos López
+Fecha de nacimiento (dd/mm/yyyy): 20/07/1975
+Teléfono: 555-5678
+Dirección: Av. Médica 456
+Especialidad: Cardiología
 ```
 
-### 3. Agendar una Cita
-```python
-# El paciente agenda una cita con el médico
-cita = paciente.agendar_cita(
-    medico=medico,
-    fecha="20/12/2024",
-    hora="14:30",
-    motivo="Consulta de control cardiológico"
-)
+### Agendar una Cita
+```
+--- AGENDAR CITA DESDE SISTEMA ---
+PACIENTES DISPONIBLES:
+1. María José García
+
+MÉDICOS DISPONIBLES:
+1. Dr. Juan Carlos López - Cardiología
+
+Fecha (dd/mm/yyyy): 20/12/2024
+Hora (HH:MM): 14:30
+Motivo de la consulta: Consulta de control cardiológico
 ```
 
-### 4. Registrar un Diagnóstico
-```python
-# El médico registra un diagnóstico
-diagnostico = medico.registrar_diagnostico(
-    paciente=paciente,
-    sintomas="Dolor en el pecho, dificultad para respirar, fatiga",
-    diagnostico="Angina de pecho",
-    tratamiento="Nitroglicerina sublingual, reposo, dieta baja en grasas",
-    observaciones="Paciente debe evitar esfuerzos físicos intensos",
-    fecha_diagnostico="20/12/2024"
-)
-```
+## Características Técnicas
 
-### 5. Emitir una Factura
-```python
-# El médico emite una factura
-factura = medico.emitir_factura(
-    paciente=paciente,
-    concepto="Consulta cardiológica",
-    monto=150.00,
-    tipo_servicio="Consulta",
-    fecha_servicio="20/12/2024",
-    descripcion="Consulta de control cardiológico"
-)
-```
+### Programación Orientada a Objetos
+- **Herencia**: Todas las personas heredan de la clase base `Persona`
+- **Encapsulación**: Atributos privados con métodos públicos
+- **Polimorfismo**: Métodos comunes implementados específicamente
+- **Composición**: Relaciones entre objetos (citas, diagnósticos, facturas)
 
-## API y Documentación
+### Validaciones Robustas
+- **Pydantic**: Para modelos de datos y validación de esquemas
+- **Expresiones regulares**: Para validación de formatos
+- **Validaciones de negocio**: Horarios, fechas, montos
+- **Mensajes de error claros**: En español con ejemplos
 
-### Clases Principales
+### Sin Try-Except
+- **Validaciones simples**: Usando `if/else` y validaciones directas
+- **Manejo de errores**: Con retorno de tuplas `(bool, str)`
+- **Código limpio**: Sin bloques try-except innecesarios
 
-#### `Persona` (Clase Abstracta)
-```python
-class Persona(ABC):
-    """
-    Clase base abstracta para todas las personas en el sistema.
-    
-    Attributes:
-        _nombre: Nombre completo de la persona
-        _fecha_nac: Fecha de nacimiento
-        _telefono: Número de teléfono
-        _direccion: Dirección de residencia
-        _tipo: Tipo de persona
-    """
-    
-    @abstractmethod
-    def obtener_info_especifica(self) -> str:
-        """Método abstracto para información específica."""
-        pass
-```
+## Información del Proyecto
 
-#### `Paciente`
-```python
-class Paciente(Persona):
-    """
-    Clase para gestión de pacientes.
-    
-    Methods:
-        registrar() -> 'Paciente': Registro interactivo
-        agendar_cita() -> Cita: Agenda cita con médico
-        ver_citas() -> None: Muestra citas del paciente
-        cancelar_cita() -> bool: Cancela cita específica
-    """
-```
+**Desarrollado para**: [NOMBRE DEL CURSO/ASIGNATURA]
+**Estudiante**: [NOMBRE DEL ESTUDIANTE]
+**Fecha de entrega**: [FECHA]
+**Versión de Python**: [VERSIÓN]
 
-#### `Medico`
-```python
-class Medico(Persona):
-    """
-    Clase para gestión de médicos.
-    
-    Methods:
-        registrar_diagnostico() -> Diagnostico: Registra diagnóstico
-        emitir_factura() -> Factura: Emite factura médica
-        agendar_cita_paciente() -> Cita: Agenda cita para paciente
-        ver_diagnosticos() -> None: Muestra diagnósticos
-    """
-```
-
-#### `Enfermera`
-```python
-class Enfermera(Persona):
-    """
-    Clase para gestión de enfermeras.
-    
-    Methods:
-        emitir_factura() -> Factura: Emite factura de enfermería
-        ver_facturas() -> None: Muestra facturas emitidas
-    """
-```
-
-### Métodos de Validación
-
-#### Validadores de Fecha
-```python
-@field_validator("fecha_nac")
-@classmethod
-def validar_fecha_nacimiento(cls, v: str) -> str:
-    """
-    Valida que la fecha de nacimiento sea válida y no futura.
-    
-    Args:
-        v: Fecha a validar
-        
-    Returns:
-        str: Fecha validada
-        
-    Raises:
-        ValueError: Si la fecha es inválida o futura
-    """
-```
-
-#### Validadores de Nombre
-```python
-@field_validator("nombre")
-@classmethod
-def validar_nombre(cls, v: str) -> str:
-    """
-    Valida que el nombre solo contenga caracteres permitidos.
-    
-    Args:
-        v: Nombre a validar
-        
-    Returns:
-        str: Nombre validado y limpiado
-        
-    Raises:
-        ValueError: Si el nombre contiene caracteres no permitidos
-    """
-```
-
-## Contribución
-
-### Cómo Contribuir
-
-1. **Fork** el repositorio
-2. Crea una **rama** para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. **Commit** tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
-4. **Push** a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un **Pull Request**
-
-### Estándares de Código
-
-- **PEP 8**: Seguir las convenciones de estilo de Python
-- **Type Hints**: Usar anotaciones de tipo en todas las funciones
-- **Docstrings**: Documentar todas las clases y métodos
-- **Validaciones**: Implementar validaciones robustas con Pydantic
-- **Manejo de Errores**: Usar try-except con mensajes claros
-
-### Estructura de Commits
-
-```
-feat: agregar nueva funcionalidad de reportes
-fix: corregir validación de fechas
-docs: actualizar documentación de API
-test: agregar pruebas para clase Paciente
-refactor: reorganizar estructura de clases
-```
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## Autor
-
-**Desarrollado para el Trabajo de Entrega Punto 7 - Sistema Hospitalario**
-
----
-
-## Soporte
-
-Si tienes alguna pregunta o necesitas ayuda:
-
-1. **Revisa la documentación** en este README
-2. **Ejecuta las pruebas** para verificar la instalación
-3. **Consulta los ejemplos** de uso proporcionados
-4. **Abre un issue** en el repositorio si encuentras un bug
-
-### Comandos de Verificación
+## Comandos de Verificación
 
 ```bash
 # Verificar que todo funciona correctamente
@@ -502,4 +244,5 @@ python -c "from pydantic import ValidationError; print('Pydantic disponible')"
 
 ---
 
-**Gracias por usar el Sistema Hospitalario - Hospital Los Enanos**
+**Sistema Hospitalario - Hospital Los Enanos**
+*Desarrollado con Python y Pydantic*

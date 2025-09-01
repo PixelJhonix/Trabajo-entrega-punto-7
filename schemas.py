@@ -271,14 +271,35 @@ def validar_campo_fecha(fecha: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}/\d{2}/\d{4}$", fecha):
         return False, "La fecha debe tener el formato dd/mm/yyyy"
     
-    # Validar que sea una fecha válida
-    try:
-        fecha_obj = datetime.strptime(fecha, "%d/%m/%Y")
-        if fecha_obj > datetime.now():
-            return False, "La fecha de nacimiento no puede ser futura"
-        return True, ""
-    except ValueError:
+    # Validar que sea una fecha válida sin try-except
+    partes = fecha.split('/')
+    if len(partes) != 3:
+        return False, "La fecha debe tener el formato dd/mm/yyyy"
+    
+    dia, mes, anio = partes
+    
+    # Verificar que sean números
+    if not (dia.isdigit() and mes.isdigit() and anio.isdigit()):
+        return False, "La fecha debe contener solo números"
+    
+    dia_num = int(dia)
+    mes_num = int(mes)
+    anio_num = int(anio)
+    
+    # Validar rangos básicos
+    if not (1 <= dia_num <= 31 and 1 <= mes_num <= 12 and 1900 <= anio_num <= 2100):
         return False, "La fecha ingresada no es válida"
+    
+    # Validar que no sea futura
+    fecha_actual = datetime.now()
+    if anio_num > fecha_actual.year:
+        return False, "La fecha de nacimiento no puede ser futura"
+    elif anio_num == fecha_actual.year and mes_num > fecha_actual.month:
+        return False, "La fecha de nacimiento no puede ser futura"
+    elif anio_num == fecha_actual.year and mes_num == fecha_actual.month and dia_num > fecha_actual.day:
+        return False, "La fecha de nacimiento no puede ser futura"
+    
+    return True, ""
 
 def validar_campo_telefono(telefono: str) -> tuple[bool, str]:
     """Valida el campo teléfono usando validación simple"""
@@ -347,14 +368,35 @@ def validar_campo_fecha_servicio(fecha_servicio: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}/\d{2}/\d{4}$", fecha_servicio):
         return False, "La fecha debe tener el formato dd/mm/yyyy"
     
-    # Validar que sea una fecha válida
-    try:
-        fecha_obj = datetime.strptime(fecha_servicio, "%d/%m/%Y")
-        if fecha_obj > datetime.now():
-            return False, "La fecha del servicio no puede ser futura"
-        return True, ""
-    except ValueError:
+    # Validar que sea una fecha válida sin try-except
+    partes = fecha_servicio.split('/')
+    if len(partes) != 3:
+        return False, "La fecha debe tener el formato dd/mm/yyyy"
+    
+    dia, mes, anio = partes
+    
+    # Verificar que sean números
+    if not (dia.isdigit() and mes.isdigit() and anio.isdigit()):
+        return False, "La fecha debe contener solo números"
+    
+    dia_num = int(dia)
+    mes_num = int(mes)
+    anio_num = int(anio)
+    
+    # Validar rangos básicos
+    if not (1 <= dia_num <= 31 and 1 <= mes_num <= 12 and 1900 <= anio_num <= 2100):
         return False, "La fecha ingresada no es válida"
+    
+    # Validar que no sea futura
+    fecha_actual = datetime.now()
+    if anio_num > fecha_actual.year:
+        return False, "La fecha del servicio no puede ser futura"
+    elif anio_num == fecha_actual.year and mes_num > fecha_actual.month:
+        return False, "La fecha del servicio no puede ser futura"
+    elif anio_num == fecha_actual.year and mes_num == fecha_actual.month and dia_num > fecha_actual.day:
+        return False, "La fecha del servicio no puede ser futura"
+    
+    return True, ""
 
 def validar_campo_descripcion(descripcion: str) -> tuple[bool, str]:
     """Valida el campo descripción usando validación simple"""
@@ -378,13 +420,29 @@ def validar_campo_hora(hora: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}:\d{2}$", hora):
         return False, "La hora debe tener el formato HH:MM"
     
-    try:
-        hora_num, minuto_num = map(int, hora.split(':'))
-        if not (8 <= hora_num <= 17) or (hora_num == 17 and minuto_num > 0):
-            return False, "La hora debe estar entre 8:00 y 17:00"
-        return True, ""
-    except ValueError:
+    # Validar hora sin try-except
+    partes = hora.split(':')
+    if len(partes) != 2:
+        return False, "La hora debe tener el formato HH:MM"
+    
+    hora_str, minuto_str = partes
+    
+    # Verificar que sean números
+    if not (hora_str.isdigit() and minuto_str.isdigit()):
+        return False, "La hora debe contener solo números"
+    
+    hora_num = int(hora_str)
+    minuto_num = int(minuto_str)
+    
+    # Validar rangos
+    if not (0 <= hora_num <= 23 and 0 <= minuto_num <= 59):
         return False, "La hora ingresada no es válida"
+    
+    # Validar horario laboral
+    if not (8 <= hora_num <= 17) or (hora_num == 17 and minuto_num > 0):
+        return False, "La hora debe estar entre 8:00 y 17:00"
+    
+    return True, ""
 
 def validar_campo_sintomas(sintomas: str) -> tuple[bool, str]:
     """Valida el campo síntomas usando validación simple"""

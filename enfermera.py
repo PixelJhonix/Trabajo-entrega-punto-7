@@ -168,25 +168,23 @@ class Enfermera(Persona):
                 print(f"{i}. {turno.value}")
             
             turno_opcion: str = input("Seleccione turno (número): ").strip()
-            try:
-                turno_idx: int = int(turno_opcion) - 1
-                if 0 <= turno_idx < len(Turno):
-                    turno: str = list(Turno)[turno_idx].value
-                else:
-                    raise ValueError("Opción de turno inválida")
-            except ValueError:
+            
+            # Validar que sea un número
+            if not turno_opcion.isdigit():
                 print("   • Debe seleccionar un número válido de turno")
                 print("   Por favor, seleccione un turno válido.\n")
                 continue
             
-            # Validar turno usando Pydantic
-            try:
-                EnfermeraIn(nombre="test", fecha_nac="01/01/1990", telefono="1234567", direccion="test", turno=Turno(turno))
-                # Crear la enfermera con datos validados
-                return cls(nombre, fecha_nac, telefono, direccion, turno)
-            except ValueError:
-                print("   • Turno inválido")
+            turno_idx: int = int(turno_opcion) - 1
+            if not (0 <= turno_idx < len(Turno)):
+                print("   • Debe seleccionar un número válido de turno")
                 print("   Por favor, seleccione un turno válido.\n")
+                continue
+            
+            turno: str = list(Turno)[turno_idx].value
+            
+            # Crear la enfermera con datos validados
+            return cls(nombre, fecha_nac, telefono, direccion, turno)
     
     def emitir_factura(self, paciente, concepto: str, monto: float, tipo_servicio: str, 
                       fecha_servicio: str, descripcion: str = "") -> Factura:

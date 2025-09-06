@@ -1,242 +1,248 @@
-# Sistema de Gestión Hospitalaria - Punto 7
+# Sistema Hospitalario - Hospital Los Enanos
+
+Sistema de gestión hospitalaria desarrollado en Python con programación orientada a objetos y validaciones robustas usando Pydantic.
 
 ## Descripción
-Sistema de gestión hospitalaria desarrollado en Python que implementa un sistema de registro de pacientes, médicos y enfermeras. El proyecto demuestra conceptos avanzados de Programación Orientada a Objetos (POO) incluyendo herencia, polimorfismo y encapsulación.
+
+Sistema completo para la gestión de un centro médico que permite administrar:
+- **Pacientes**: Registro y gestión de información personal
+- **Médicos**: Gestión con especialidades y funcionalidades médicas
+- **Enfermeras**: Administración con turnos de trabajo
+- **Citas**: Agendamiento y gestión de citas médicas
+- **Diagnósticos**: Registro de diagnósticos médicos
+- **Facturas**: Emisión de facturas por servicios
 
 ## Características Principales
 
-- **Registro de Personas**: Sistema unificado para pacientes, médicos y enfermeras
-- **Herencia de Clases**: Estructura jerárquica con clase base `Persona`
-- **Encapsulación**: Atributos privados con métodos públicos para acceso
-- **Polimorfismo**: Métodos `mostrardatos()` personalizados para cada tipo
-- **Métodos de Clase**: Funciones de registro integradas en cada clase
-- **Interfaz de Consola**: Menú interactivo para gestión del sistema
+### Gestión de Personas
+- Registro, edición y eliminación de pacientes, médicos y enfermeras
+- Validación completa de datos usando Pydantic
+- Interfaz de usuario intuitiva con menús interactivos
+
+### Gestión de Citas
+- Agendamiento de citas entre médicos y pacientes
+- Verificación automática de disponibilidad de horarios
+- Validación de conflictos de horario
+- Estados de cita (Agendada, Cancelada, Completada)
+
+### Registro de Diagnósticos
+- Los médicos pueden registrar diagnósticos completos
+- Incluye síntomas, diagnóstico, tratamiento y observaciones
+- Historial completo por paciente y médico
+
+### Emisión de Facturas
+- Facturas por consultas médicas y servicios de enfermería
+- Números de factura únicos generados automáticamente
+- Validaciones de montos y fechas
+
+## Requisitos del Sistema
+
+- **Python**: 3.8 o superior
+- **Dependencias**: pydantic
 
 ## Instalación
 
-### Prerrequisitos
-- **Python 3.8+** instalado en tu sistema
-- **Git** para clonar el repositorio
-- **Editor de código** (VS Code, PyCharm, Cursor, etc.)
-
-### Extensiones Recomendadas para VS Code/Cursor
-- **Python** (Microsoft)
-- **Pylance** (Microsoft)
-- **Python Indent** (Kevin Rose)
-- **Python Docstring Generator** (Nils Werner)
-- **GitLens** (Eric Amodio)
-
-## Clonar el Repositorio
-
+1. **Clonar el repositorio**
 ```bash
-# Clonar desde GitHub
-git clone https://github.com/tu-usuario/trabajo-entrega-punto-7.git
-
-# Navegar al directorio del proyecto
-cd trabajo-entrega-punto-7
+git clone <url-del-repositorio>
+cd sistema-hospitalario
 ```
 
-## Configuración
-
-### 1. Crear entorno virtual (Recomendado)
+2. **Instalar dependencias**
 ```bash
-# Crear entorno virtual
-py -m venv venv
-
-# Activar entorno virtual
-# En Windows:
-venv\Scripts\activate
-
-# En macOS/Linux:
-source venv/bin/activate
+pip install pydantic
 ```
 
-### 2. Instalar dependencias
+3. **Ejecutar el sistema**
 ```bash
-# Este proyecto no requiere dependencias externas
-# Solo Python estándar (built-in modules)
-```
-
-## Ejecutar el Proyecto
-
-```bash
-# Ejecutar el sistema hospitalario
-py main.py
-
-# O ejecutar archivos específicos
-py persona.py
-py paciente.py
-py medico.py
-py enfermera.py
+python main.py
 ```
 
 ## Estructura del Proyecto
 
 ```
-trabajo-entrega-punto-7/
-├── main.py                 # Archivo principal con menú y lógica
-├── persona.py              # Clase base Persona
-├── paciente.py             # Clase Paciente (hereda de Persona)
-├── medico.py               # Clase Medico (hereda de Persona)
-├── enfermera.py            # Clase Enfermera (hereda de Persona)
-├── .gitignore              # Archivos a ignorar
-└── README.md               # Este archivo
+sistema-hospitalario/
+├── main.py                 # Sistema principal con menús interactivos
+├── persona.py              # Clase base abstracta para todas las personas
+├── paciente.py             # Clase para gestión de pacientes
+├── medico.py               # Clase para gestión de médicos
+├── enfermera.py            # Clase para gestión de enfermeras
+├── cita.py                 # Clase para gestión de citas médicas
+├── schemas.py              # Esquemas de validación con Pydantic
+└── README.md               # Documentación del proyecto
 ```
 
-## Arquitectura del Sistema
+## Arquitectura del Software
 
-### Clase Base: Persona
-```python
-class Persona:
-    # Atributos comunes: nombre, fecha_nac, telefono, direccion
-    # Método: mostrardatos()
+### Diagrama de Clases
+
 ```
+Persona (Abstracta)
+├── Paciente
+│   ├── _citas: List[Cita]
+│   ├── _diagnosticos: List[Diagnostico]
+│   └── _facturas: List[Factura]
+├── Medico
+│   ├── _especialidad: str
+│   ├── _citas: List[Cita]
+│   ├── _diagnosticos: List[Diagnostico]
+│   └── _facturas: List[Factura]
+└── Enfermera
+    ├── _turno: str
+    └── _facturas: List[Factura]
 
-### Clases Derivadas
+Cita
+├── paciente: Paciente
+├── medico: Medico
+├── fecha: str
+├── hora: str
+└── motivo: str
 
-#### Paciente
-- **Hereda de**: Persona
-- **Atributos adicionales**: tipo = "Paciente"
-- **Funcionalidad**: Registro de datos personales
+Diagnostico
+├── paciente: Paciente
+├── medico: Medico
+├── sintomas: str
+├── diagnostico: str
+└── tratamiento: str
 
-#### Medico
-- **Hereda de**: Persona
-- **Atributos adicionales**: especialidad, tipo = "Médico"
-- **Funcionalidad**: Registro de datos personales y especialidad
-
-#### Enfermera
-- **Hereda de**: Persona
-- **Atributos adicionales**: turno, tipo = "Enfermera"
-- **Funcionalidad**: Registro de datos personales y turno
+Factura
+├── paciente: Paciente
+├── profesional: Union[Medico, Enfermera]
+├── concepto: str
+├── monto: float
+└── tipo_servicio: TipoServicio
+```
 
 ## Uso del Sistema
 
 ### Menú Principal
-1. **Registrar Paciente** - Crear nuevo paciente
-2. **Registrar Médico** - Crear nuevo médico
-3. **Registrar Enfermera** - Crear nueva enfermera
-4. **Mostrar Todos los Registros** - Ver todos los registros
-0. **Salir** - Terminar programa
-
-### Ejemplo de Uso
-```python
-# El sistema solicita datos interactivamente
-# Ejemplo de registro de paciente:
-# Nombre: Juan Pérez
-# Fecha de nacimiento: 15/03/1990
-# Teléfono: 555-0123
-# Dirección: Calle Principal 123
+```
+========================================
+         MENÚ PRINCIPAL
+========================================
+1. Registro
+2. Citas
+3. Facturas
+4. Diagnóstico
+0. Salir
+========================================
 ```
 
-## Conceptos POO Implementados
+### Funcionalidades Disponibles
 
-### 1. Herencia
-- Todas las clases heredan de `Persona`
-- Uso de `super().__init__()` para inicialización del padre
+#### 1. Registro
+- Registrar Paciente, Médico o Enfermera
+- Editar información de personas registradas
+- Eliminar registros
+- Mostrar todos los registros
 
-### 2. Encapsulación
-- Atributos privados con `_` (ej: `_nombre`, `_telefono`)
-- Métodos públicos para acceso a datos
+#### 2. Citas
+- Agendar citas entre médicos y pacientes
+- Ver citas por paciente o médico
+- Cancelar citas
+- Consultar citas por fecha
 
-### 3. Polimorfismo
-- Método `mostrardatos()` personalizado en cada clase
-- Comportamiento diferente según el tipo de persona
+#### 3. Facturas
+- Emitir facturas por consultas médicas
+- Emitir facturas por servicios de enfermería
+- Ver facturas por paciente
+- Generar reportes de facturación
 
-### 4. Métodos de Clase
-- `@classmethod` para funciones de registro
-- Cada clase maneja su propio proceso de registro
+#### 4. Diagnóstico
+- Registrar diagnósticos médicos
+- Ver historial de diagnósticos
+- Buscar diagnósticos por paciente o médico
 
-## Desarrollo
+## Validaciones Implementadas
 
-### Flujo de trabajo Git
+### Datos Personales
+- **Nombres**: Solo letras, espacios, puntos, guiones y apóstrofes
+- **Fechas**: Formato dd/mm/yyyy con validación de fechas futuras
+- **Teléfonos**: Formato válido con regex (7-15 dígitos)
+- **Direcciones**: Mínimos y máximos para todos los campos
+
+### Datos Médicos
+- **Síntomas**: Mínimo 10, máximo 500 caracteres
+- **Diagnóstico**: Mínimo 5, máximo 200 caracteres
+- **Tratamiento**: Mínimo 10, máximo 500 caracteres
+- **Montos**: Positivos, máximo 2 decimales, límite superior
+
+### Horarios y Citas
+- **Horas**: Formato HH:MM, horario laboral 8:00-17:00
+- **Fechas de cita**: Deben ser futuras
+- **Conflictos**: Verificación automática de disponibilidad
+
+## Ejemplos de Uso
+
+### Registrar un Paciente
+```
+--- REGISTRAR NUEVO PACIENTE ---
+Nombre: María José García
+Fecha de nacimiento (dd/mm/yyyy): 15/03/1990
+Teléfono: 555-1234
+Dirección: Calle Principal 123
+```
+
+### Registrar un Médico
+```
+--- REGISTRAR NUEVO MÉDICO ---
+Nombre: Dr. Juan Carlos López
+Fecha de nacimiento (dd/mm/yyyy): 20/07/1975
+Teléfono: 555-5678
+Dirección: Av. Médica 456
+Especialidad: Cardiología
+```
+
+### Agendar una Cita
+```
+--- AGENDAR CITA DESDE SISTEMA ---
+PACIENTES DISPONIBLES:
+1. María José García
+
+MÉDICOS DISPONIBLES:
+1. Dr. Juan Carlos López - Cardiología
+
+Fecha (dd/mm/yyyy): 20/12/2024
+Hora (HH:MM): 14:30
+Motivo de la consulta: Consulta de control cardiológico
+```
+
+## Características Técnicas
+
+### Programación Orientada a Objetos
+- **Herencia**: Todas las personas heredan de la clase base `Persona`
+- **Encapsulación**: Atributos privados con métodos públicos
+- **Polimorfismo**: Métodos comunes implementados específicamente
+- **Composición**: Relaciones entre objetos (citas, diagnósticos, facturas)
+
+### Validaciones Robustas
+- **Pydantic**: Para modelos de datos y validación de esquemas
+- **Expresiones regulares**: Para validación de formatos
+- **Validaciones de negocio**: Horarios, fechas, montos
+- **Mensajes de error claros**: En español con ejemplos
+
+### Sin Try-Except
+- **Validaciones simples**: Usando `if/else` y validaciones directas
+- **Manejo de errores**: Con retorno de tuplas `(bool, str)`
+- **Código limpio**: Sin bloques try-except innecesarios
+
+## Información del Proyecto
+
+**Desarrollado para**: [NOMBRE DEL CURSO/ASIGNATURA]
+**Estudiante**: [NOMBRE DEL ESTUDIANTE]
+**Fecha de entrega**: [FECHA]
+**Versión de Python**: [VERSIÓN]
+
+## Comandos de Verificación
+
 ```bash
-# 1. Crear rama para nueva funcionalidad
-git checkout -b feature/nueva-funcionalidad
-
-# 2. Hacer cambios y commits
-git add .
-git commit -m "feat: agregar nueva funcionalidad"
-
-# 3. Subir cambios
-git push origin feature/nueva-funcionalidad
-
-# 4. Crear Pull Request en GitHub
-# 5. Esperar revisión del compañero (QA)
-# 6. Merge después de aprobación
+# Verificar que todo funciona correctamente
+python -c "from schemas import PacienteIn; print('Esquemas cargados correctamente')"
+python -c "from paciente import Paciente; print('Clases cargadas correctamente')"
+python -c "from pydantic import ValidationError; print('Pydantic disponible')"
 ```
-
-### Estándares de código
-- **PEP 8** para estilo de código Python
-- **Mensajes de commit** descriptivos
-- **Documentación** en funciones y clases
-- **Type hints** para mejor legibilidad
-
-## Solución de Problemas
-
-### Error común: "Python no se reconoce"
-```bash
-# Verificar instalación de Python
-py --version
-
-# Si no funciona, probar:
-python --version
-python3 --version
-```
-
-### Error: "Módulo no encontrado"
-```bash
-# Verificar que estás en el directorio correcto
-pwd
-
-# Verificar que el entorno virtual está activado
-# Deberías ver (venv) al inicio de tu línea de comando
-```
-
-### Error de imports
-```bash
-# Asegúrate de que todos los archivos estén en el mismo directorio
-# Los imports son relativos al directorio actual
-```
-
-## Próximas Funcionalidades
-
-- [ ] Sistema de citas médicas
-- [ ] Registro de diagnósticos
-- [ ] Sistema de facturación
-- [ ] Historial clínico de pacientes
-- [ ] Gestión de consultorios médicos
-- [ ] Sistema de turnos para enfermeras
-
-## Contribuir
-
-1. **Fork** el proyecto
-2. **Clone** tu fork
-3. **Crea** una rama para tu feature
-4. **Commit** tus cambios
-5. **Push** a tu rama
-6. **Crea** un Pull Request
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para detalles.
-
-## Autores
-
-- **Tu Nombre** - [@tu-usuario](https://github.com/tu-usuario)
-- **Tu Compañero** - [@compañero-usuario](https://github.com/compañero-usuario)
-
-## Agradecimientos
-
-- Profesor [Nombre] por la guía en POO
-- Compañeros de clase por la colaboración
-- Comunidad de Python por recursos y documentación
-
-## Contacto
-
-- **Email**: tu-email@ejemplo.com
-- **GitHub**: [@tu-usuario](https://github.com/tu-usuario)
-- **Issues**: [Crear issue](https://github.com/tu-usuario/trabajo-entrega-punto-7/issues)
 
 ---
 
-**Nota**: Este README debe actualizarse conforme el proyecto evolucione. Mantén la documentación actualizada para facilitar la colaboración y revisión del compañero QA.
+**Sistema Hospitalario - Hospital Los Enanos**
+*Desarrollado con Python y Pydantic*

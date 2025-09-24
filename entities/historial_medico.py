@@ -1,21 +1,19 @@
 # Muestra todo lo que se le ha hecho al paciente.
-from uuid import UUID
-from typing import (
-    Any,
-)  # esta diciendo que una variable o argumento puede ser de cualquier tipo de dato.
 
-
-from sqlalchemy import Column, UUID, ForeignKey
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship
 from .base import Base
+from pydantic import BaseModel
+from typing import List
+import uuid
 
 
 class HistorialMedico(Base):
     __tablename__ = "historiales"
-
-    id = Column(UUID, primary_key=True)
-    paciente_id = Column(UUID, ForeignKey("usuarios.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    paciente_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
     registros = Column(JSON)  # Lista de strings con eventos
 
     paciente = relationship("Usuario", back_populates="historial")
@@ -27,3 +25,8 @@ class HistorialMedico(Base):
         print(f"Historial de {self.paciente.nombre}:")
         for r in self.registros:
             print(r)
+
+
+class HistorialMedicoCreate(BaseModel):
+    paciente_id: str
+    registros: List[str] = []

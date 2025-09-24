@@ -1,54 +1,30 @@
-# Main.py
 # Este es el archivo principal donde se registra los datos y corre el sistema.
 # Permite modificar datos, eliminar usuarios, mostrar registros y volver al menú.
 
 import json
-import os
 from typing import List, Optional
-from Profesional import Profesional
-from Usuario import Usuario
-import Citas
-import Factura
-import Historial_Medico
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from entities import Base, Usuario, Profesional, Citas, Factura, HistorialMedico
+from entities.usuario import UsuarioCreate, UsuarioUpdate
+from entities.profesional import ProfesionalCreate
+from entities.citas import CitasCreate
+from entities.factura import FacturaCreate
+from dotenv import load_dotenv
+import os
+from datetime import datetime
+
+# Cargar variables de entorno desde .env
+load_dotenv()
+
+# Configuración de la base de datos con SQLAlchemy para Neon
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL, echo=False)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
 
 print("\n")
 print("---------------BIENVENIDOS A HOSPITAL LOS ENA-NOS---------------")
-
-# Almacenamiento en memoria (puede guardarse en archivos JSON para persistencia)
-usuarios: List[Usuario] = []
-profesionales: List[Profesional] = []
-citas: List[Citas.Citas] = []
-historiales: List[Historial_Medico.HistorialMedico] = []
-facturas: List[Factura.Factura] = []
-
-
-# Funciones para guardar y cargar datos (persistencia simple)
-def guardar_datos():
-    with open("datos.json", "w") as f:
-        json.dump(
-            {
-                "usuarios": [u.__dict__ for u in usuarios],
-                "profesionales": [p.__dict__ for p in profesionales],
-                "citas": [c.__dict__ for c in citas],
-                "historiales": [h.__dict__ for h in historiales],
-                "facturas": [f.__dict__ for f in facturas],
-            },
-            f,
-        )
-
-
-def cargar_datos():
-    global usuarios, profesionales, citas, historiales, facturas
-    if os.path.exists("datos.json"):
-        with open("datos.json", "r") as f:
-            data = json.load(f)
-            usuarios = [Usuario(**u) for u in data["usuarios"]]
-            profesionales = [Profesional(**p) for p in data["profesionales"]]
-            citas = [Citas(**c) for c in data["citas"]]
-            historiales = [
-                Historial_Medico.HistorialMedico(**h) for h in data["historiales"]
-            ]
-            facturas = [Factura(**f) for f in data["facturas"]]
 
 
 def registrar_usuario():
@@ -58,20 +34,35 @@ def registrar_usuario():
     necesita = input(
         "¿Necesita cita con doctor o servicios de enfermera? (doctor/enfermera): "
     )
-    usuario = Usuario(nombre, edad, diagnostico, necesita)
-    usuarios.append(usuario)
-    historial = Historial_Medico.HistorialMedico(usuario.nombre, [])
-    historiales.append(historial)
-    guardar_datos()
+    usuario_data = UsuarioCreate(
+        nombre=nombre, edad=edad, diagnostico=diagnostico, necesita=necesita
+    )
+    with Session() as session:
+        if session.query(Usuario).filter(Usuario.nombre == nombre).first():
+            print("Usuario ya existe.")
+            return
+        usuario = Usuario(**usuario_data.model_dump())
+        session.add(usuario)
+        session.commit()
+        historial = HistorialMedico(paciente=usuario, registros=[])
+        session.add(historial)
+        session.commit()
     print("Usuario registrado.")
 
 
 def registrar_profesional():
     nombre = input("Nombre del profesional: ")
     categoria_profesional = input("Categoría (doctor/enfermera): ")
-    profesional = Profesional(nombre, categoria_profesional)
-    profesionales.append(profesional)
-    guardar_datos()
+    profesional_data = ProfesionalCreate(
+        nombre=nombre, categoria_profesional=categoria_profesional
+    )
+    with Session() as session:
+        if session.query(Profesional).filter(Profesional.nombre == nombre).first():
+            print("Profesional ya existe.")
+            return
+        profesional = Profesional(**profesional_data.model_dump())
+        session.add(profesional)
+        session.commit()
     print("Profesional registrado.")
 
 
@@ -79,76 +70,160 @@ def agendar_cita():
     usuario_nombre = input("Nombre del usuario: ")
     profesional_nombre = input("Nombre del profesional: ")
     fecha = input("Fecha (YYYY-MM-DD): ")
-    cita = Citas(usuario_nombre, profesional_nombre, fecha)
-    citas.append(cita)
-    # Actualizar historial
-    for h in historiales:
-        if h.paciente == usuario_nombre:
-            h.registros.append(f"Cita agendada con {profesional_nombre} el {fecha}")
-    guardar_datos()
+    cita_data = CitasCreate(
+        usuario_nombre=usuario_nombre,
+        profesional_nombre=profesional_nombre,
+        fecha=fecha,
+    )
+    with Session() as session:
+        usuario = (
+            session.query(Usuario).filter(Usuario.nombre == usuario_nombre).first()
+        )
+        if not usuario:
+            print("Usuario no encontrado.")
+            return
+        profesional = (
+            session.query(Profesional)
+            .filter(Profesional.nombre == profesional_nombre)
+            .first()
+        )
+        if not profesional:
+            print("Profesional no encontrado.")
+            return
+        cita = Citas(usuario=usuario, profesional=profesional, fecha=cita_data.fecha)
+        session.add(cita)
+        historial = usuario.historial
+        if historial:
+            historial.registros.append(
+                f"Cita agendada con {profesional_nombre} el {fecha}"
+            )
+        session.commit()
     print("Cita agendada.")
 
 
 def modificar_dato_usuario():
     nombre = input("Nombre del usuario a modificar: ")
-    for u in usuarios:
-        if u.nombre == nombre:
-            print("¿Qué desea modificar? (nombre/edad/diagnostico/necesita)")
-            campo = input()
-            if campo == "nombre":
-                u.nombre = input("Nuevo nombre: ")
-            elif campo == "edad":
-                u.edad = int(input("Nueva edad: "))
-            elif campo == "diagnostico":
-                u.diagnostico = input("Nuevo diagnóstico: ")
-            elif campo == "necesita":
-                u.necesita = input("Nuevo necesita: ")
-            guardar_datos()
-            print("Dato modificado.")
+    with Session() as session:
+        usuario = session.query(Usuario).filter(Usuario.nombre == nombre).first()
+        if not usuario:
+            print("Usuario no encontrado.")
             return
-    print("Usuario no encontrado.")
+        print("¿Qué desea modificar? (nombre/edad/diagnostico/necesita)")
+        campo = input()
+        update_data = {}
+        if campo == "nombre":
+            update_data["nombre"] = input("Nuevo nombre: ")
+        elif campo == "edad":
+            update_data["edad"] = int(input("Nueva edad: "))
+        elif campo == "diagnostico":
+            update_data["diagnostico"] = input("Nuevo diagnóstico: ")
+        elif campo == "necesita":
+            update_data["necesita"] = input("Nuevo necesita: ")
+        else:
+            print("Campo inválido.")
+            return
+        usuario_update = UsuarioUpdate(**update_data)
+        for key, value in usuario_update.model_dump(exclude_unset=True).items():
+            setattr(usuario, key, value)
+        session.commit()
+    print("Dato modificado.")
+
+
+def modificar_dato_profesional():
+    nombre = input("Nombre del profesional a modificar: ")
+    with Session() as session:
+        profesional = (
+            session.query(Profesional).filter(Profesional.nombre == nombre).first()
+        )
+        if not profesional:
+            print("Profesional no encontrado.")
+            return
+        print("¿Qué desea modificar? (nombre/categoria_profesional)")
+        campo = input()
+        if campo == "nombre":
+            profesional.nombre = input("Nuevo nombre: ")
+        elif campo == "categoria_profesional":
+            categoria = input("Nueva categoría (doctor/enfermera): ")
+            profesional_data = ProfesionalCreate(
+                nombre=profesional.nombre, categoria_profesional=categoria
+            )
+            profesional.categoria_profesional = profesional_data.categoria_profesional
+        else:
+            print("Campo inválido.")
+            return
+        session.commit()
+    print("Dato modificado.")
 
 
 def eliminar_usuario():
     nombre = input("Nombre del usuario a eliminar: ")
-    global usuarios, historiales, citas, facturas
-    usuarios = [u for u in usuarios if u.nombre != nombre]
-    historiales = [h for h in historiales if h.paciente != nombre]
-    citas = [c for c in citas if c.usuario != nombre]
-    facturas = [f for f in facturas if f.usuario != nombre]
-    guardar_datos()
+    with Session() as session:
+        usuario = session.query(Usuario).filter(Usuario.nombre == nombre).first()
+        if not usuario:
+            print("Usuario no encontrado.")
+            return
+        session.delete(usuario)
+        session.commit()
     print("Usuario eliminado.")
 
 
+def eliminar_profesional():
+    nombre = input("Nombre del profesional a eliminar: ")
+    with Session() as session:
+        profesional = (
+            session.query(Profesional).filter(Profesional.nombre == nombre).first()
+        )
+        if not profesional:
+            print("Profesional no encontrado.")
+            return
+        session.delete(profesional)
+        session.commit()
+    print("Profesional eliminado.")
+
+
 def mostrar_registros():
-    print("Usuarios:")
-    for u in usuarios:
-        print(u.__dict__)
-    print("Profesionales:")
-    for p in profesionales:
-        print(p.__dict__)
-    print("Citas:")
-    for c in citas:
-        print(c.__dict__)
-    print("Historiales:")
-    for h in historiales:
-        print(h.__dict__)
-    print("Facturas:")
-    for f in facturas:
-        print(f.__dict__)
+    with Session() as session:
+        print("Usuarios:")
+        for u in session.query(Usuario).all():
+            print(u)
+        print("Profesionales:")
+        for p in session.query(Profesional).all():
+            print(p)
+        print("Citas:")
+        for c in session.query(Citas).all():
+            print(c)
+        print("Historiales:")
+        for h in session.query(HistorialMedico).all():
+            print(h)
+        print("Facturas:")
+        for f in session.query(Factura).all():
+            print(f)
 
 
 def generar_factura():
     usuario_nombre = input("Nombre del usuario: ")
     descripcion = input("Descripción de cobros: ")
     monto = float(input("Monto: "))
-    factura = Factura(usuario_nombre, descripcion, monto)
-    facturas.append(factura)
-    # Actualizar historial
-    for h in historiales:
-        if h.paciente == usuario_nombre:
-            h.registros.append(f"Factura generada: {descripcion} por {monto}")
-    guardar_datos()
+    factura_data = FacturaCreate(
+        usuario_nombre=usuario_nombre, descripcion=descripcion, monto=monto
+    )
+    with Session() as session:
+        usuario = (
+            session.query(Usuario).filter(Usuario.nombre == usuario_nombre).first()
+        )
+        if not usuario:
+            print("Usuario no encontrado.")
+            return
+        factura = Factura(
+            usuario=usuario,
+            descripcion=factura_data.descripcion,
+            monto=factura_data.monto,
+        )
+        session.add(factura)
+        historial = usuario.historial
+        if historial:
+            historial.registros.append(f"Factura generada: {descripcion} por {monto}")
+        session.commit()
     print("Factura generada.")
 
 
@@ -179,15 +254,11 @@ def submenu_registro(
         elif opcion == "3":
             modificar_dato_usuario()
         elif opcion == "4":
-            print(
-                "Funcionalidad de editar profesional no implementada."
-            )  # modificar_dato_profesional() FALTA AGREGARLA
+            modificar_dato_profesional()
         elif opcion == "5":
             eliminar_usuario()
         elif opcion == "6":
-            print(
-                "Funcionalidad de eliminar profesional no implementada."
-            )  # eliminar_profesional() FALTA AGREGARLA
+            eliminar_profesional()
         elif opcion == "7":
             mostrar_registros()
         elif opcion == "0":
@@ -218,25 +289,32 @@ def submenu_citas(pacientes: List[Usuario], medicos: List[Profesional]) -> None:
             agendar_cita()
         elif opcion == "2":
             nombre = input("Nombre del paciente: ")
-            Citas.Citas.ver_citas_paciente(nombre, citas)
+            with Session() as session:
+                Citas.ver_citas_paciente(nombre, session)
         elif opcion == "3":
             nombre = input("Nombre del médico: ")
-            Citas.Citas.ver_citas_medico(nombre, citas)
+            with Session() as session:
+                Citas.ver_citas_medico(nombre, session)
         elif opcion == "4":
             fecha = input("Fecha (YYYY-MM-DD): ")
-            Citas.Citas.ver_citas_fecha(fecha, citas)
+            with Session() as session:
+                Citas.ver_citas_fecha(fecha, session)
         elif opcion == "5":
             usuario_nombre = input("Nombre del usuario: ")
             profesional_nombre = input("Nombre del profesional: ")
             fecha = input("Fecha (YYYY-MM-DD): ")
-            Citas.Citas.cancelar_cita(usuario_nombre, profesional_nombre, fecha, citas)
-            # Actualizar historial
-            for h in historiales:
-                if h.paciente == usuario_nombre:
-                    h.registros.append(
+            with Session() as session:
+                Citas.cancelar_cita(usuario_nombre, profesional_nombre, fecha, session)
+                usuario = (
+                    session.query(Usuario)
+                    .filter(Usuario.nombre == usuario_nombre)
+                    .first()
+                )
+                if usuario and usuario.historial:
+                    usuario.historial.registros.append(
                         f"Cita cancelada con {profesional_nombre} el {fecha}"
                     )
-            guardar_datos()
+                    session.commit()
         elif opcion == "0":
             break
         else:
@@ -263,8 +341,9 @@ def submenu_facturas(
         if opcion == "1":
             generar_factura()
         elif opcion == "2":
-            for f in facturas:
-                f.mostrar_factura()
+            with Session() as session:
+                for f in session.query(Factura).all():
+                    f.mostrar_factura()
         elif opcion == "0":
             break
         else:
@@ -289,12 +368,14 @@ def submenu_Historial_Medico(
 
         if opcion == "1":
             nombre = input("Nombre del paciente: ")
-            for h in historiales:
-                if h.paciente == nombre:
-                    h.mostrar_historial()
-                    break
-            else:
-                print("Historial no encontrado.")
+            with Session() as session:
+                usuario = (
+                    session.query(Usuario).filter(Usuario.nombre == nombre).first()
+                )
+                if usuario and usuario.historial:
+                    usuario.historial.mostrar_historial()
+                else:
+                    print("Historial no encontrado.")
         elif opcion == "0":
             break
         else:
@@ -306,8 +387,6 @@ def submenu_Historial_Medico(
 def menu_principal():
     """Función principal del sistema"""
     print("       ¡Bienvenido al Sistema de Registro Hospitalario!")
-
-    cargar_datos()
     while True:
         print("\n" + "=" * 40)
         print("        MENÚ PRINCIPAL")
@@ -322,13 +401,25 @@ def menu_principal():
         opcion: str = input("Seleccione una opción: ")
 
         if opcion == "1":
-            submenu_registro(usuarios, profesionales, profesionales)
+            with Session() as session:
+                usuarios = session.query(Usuario).all()
+                profesionales = session.query(Profesional).all()
+                submenu_registro(usuarios, profesionales, profesionales)
         elif opcion == "2":
-            submenu_citas(usuarios, profesionales)
+            with Session() as session:
+                usuarios = session.query(Usuario).all()
+                profesionales = session.query(Profesional).all()
+                submenu_citas(usuarios, profesionales)
         elif opcion == "3":
-            submenu_facturas(usuarios, profesionales, profesionales)
+            with Session() as session:
+                usuarios = session.query(Usuario).all()
+                profesionales = session.query(Profesional).all()
+                submenu_facturas(usuarios, profesionales, profesionales)
         elif opcion == "4":
-            submenu_Historial_Medico(usuarios, profesionales)
+            with Session() as session:
+                usuarios = session.query(Usuario).all()
+                profesionales = session.query(Profesional).all()
+                submenu_Historial_Medico(usuarios, profesionales)
         elif opcion == "0":
             print("¡Gracias por usar el sistema!")
             break

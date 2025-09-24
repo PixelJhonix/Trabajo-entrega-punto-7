@@ -1,25 +1,31 @@
-# Sistema de Gestión Hospitalaria - Punto 7
+# Sistema de Gestión Hospitalaria - Hospital Los Enanos
 
 ## Descripción
-Sistema de gestión hospitalaria desarrollado en Python que implementa un sistema de registro de pacientes, médicos y enfermeras. El proyecto demuestra conceptos avanzados de Programación Orientada a Objetos (POO) incluyendo herencia, polimorfismo y encapsulación.
+
+Sistema de gestión hospitalaria desarrollado en Python que implementa un sistema de registro y gestión de pacientes, profesionales (médicos y enfermeras), citas, facturas e historiales médicos. Este proyecto utiliza conceptos avanzados de Programación Orientada a Objetos (POO) como herencia, encapsulación y polimorfismo, integrados con una base de datos PostgreSQL en Neon mediante SQLAlchemy y validación de datos con Pydantic.
 
 ## Características Principales
 
-- **Registro de Personas**: Sistema unificado para pacientes, médicos y enfermeras
-- **Herencia de Clases**: Estructura jerárquica con clase base `Persona`
-- **Encapsulación**: Atributos privados con métodos públicos para acceso
-- **Polimorfismo**: Métodos `mostrardatos()` personalizados para cada tipo
-- **Métodos de Clase**: Funciones de registro integradas en cada clase
-- **Interfaz de Consola**: Menú interactivo para gestión del sistema
+- **Registro de Personas**: Gestión unificada de pacientes, médicos y enfermeras.
+- **Gestión de Citas**: Agendamiento, visualización y cancelación de citas.
+- **Facturación**: Generación y visualización de facturas para pacientes.
+- **Historial Médico**: Registro y visualización de historiales médicos.
+- **Herencia de Clases**: Estructura jerárquica con modelos SQLAlchemy.
+- **Encapsulación**: Uso de relaciones entre entidades para mantener integridad de datos.
+- **Polimorfismo**: Representación personalizada de entidades en salidas (e.g., `__repr__`).
+- **Interfaz de Consola**: Menú interactivo para todas las funcionalidades.
+- **Validación de Datos**: Uso de Pydantic para asegurar datos correctos.
 
 ## Instalación
 
 ### Prerrequisitos
-- **Python 3.8+** instalado en tu sistema
-- **Git** para clonar el repositorio
-- **Editor de código** (VS Code, PyCharm, Cursor, etc.)
+
+- **Python 3.8+** instalado en tu sistema.
+- **Git** para clonar el repositorio.
+- **Editor de código** (VS Code, PyCharm, Cursor, etc.).
 
 ### Extensiones Recomendadas para VS Code/Cursor
+
 - **Python** (Microsoft)
 - **Pylance** (Microsoft)
 - **Python Indent** (Kevin Rose)
@@ -30,15 +36,16 @@ Sistema de gestión hospitalaria desarrollado en Python que implementa un sistem
 
 ```bash
 # Clonar desde GitHub
-git clone https://github.com/tu-usuario/trabajo-entrega-punto-7.git
+git clone https://github.com/PixelJhonix/Trabajo-entrega-punto-7.git
 
 # Navegar al directorio del proyecto
-cd trabajo-entrega-punto-7
+cd Trabajo-entrega-punto-7
 ```
 
 ## Configuración
 
 ### 1. Crear entorno virtual (Recomendado)
+
 ```bash
 # Crear entorno virtual
 py -m venv venv
@@ -52,103 +59,152 @@ source venv/bin/activate
 ```
 
 ### 2. Instalar dependencias
+
 ```bash
-# Este proyecto no requiere dependencias externas
-# Solo Python estándar (built-in modules)
+pip install sqlalchemy psycopg2-binary pydantic python-dotenv
 ```
+tambien esta el archivo (requirements.txt) y los ejecutas en la consola :)
+
+### 3. Configurar la base de datos
+
+- Crea un proyecto en Neon (https://neon.tech).
+
+- Obtén la conexión string (e.g., `postgresql://user:password@host/dbname`).
+
+- Crea un archivo `.env` en el directorio raíz con:
+
+  ```
+  DATABASE_URL=postgresql://[user]:[password]@[host]/[dbname]
+  ```
 
 ## Ejecutar el Proyecto
 
 ```bash
 # Ejecutar el sistema hospitalario
 py main.py
-
-# O ejecutar archivos específicos
-py persona.py
-py paciente.py
-py medico.py
-py enfermera.py
 ```
 
 ## Estructura del Proyecto
 
 ```
-trabajo-entrega-punto-7/
+hospital-los-enanos/
 ├── main.py                 # Archivo principal con menú y lógica
-├── persona.py              # Clase base Persona
-├── paciente.py             # Clase Paciente (hereda de Persona)
-├── medico.py               # Clase Medico (hereda de Persona)
-├── enfermera.py            # Clase Enfermera (hereda de Persona)
-├── .gitignore              # Archivos a ignorar
+├── database/
+│   ├── __init__.py
+│   ├── config.py
+├── entities/
+│   ├── __init__.py         # Importaciones de entidades
+│   ├── base.py             # Base SQLAlchemy
+│   ├── usuario.py          # Modelo de Usuario
+│   ├── profesional.py      # Modelo de Profesional
+│   ├── citas.py            # Modelo de Citas
+│   ├── factura.py          # Modelo de Factura
+│   ├── historial_medico.py # Modelo de Historial Médico
+├── migrations/
+│   ├── versions/
+│   ├── env.py 
+├── .env                    # Configuración de la base de datos
+├── alembic.ini
+├── requirements.txt
+├── test_connection.txt
 └── README.md               # Este archivo
 ```
 
 ## Arquitectura del Sistema
 
-### Clase Base: Persona
-```python
-class Persona:
-    # Atributos comunes: nombre, fecha_nac, telefono, direccion
-    # Método: mostrardatos()
-```
+### Entidades Principales
 
-### Clases Derivadas
+#### Usuario
 
-#### Paciente
-- **Hereda de**: Persona
-- **Atributos adicionales**: tipo = "Paciente"
-- **Funcionalidad**: Registro de datos personales
+- **Atributos**: `id` (UUID), `nombre`, `edad`, `diagnostico`, `necesita`.
+- **Relaciones**: `historial`, `citas`, `facturas`.
 
-#### Medico
-- **Hereda de**: Persona
-- **Atributos adicionales**: especialidad, tipo = "Médico"
-- **Funcionalidad**: Registro de datos personales y especialidad
+#### Profesional
 
-#### Enfermera
-- **Hereda de**: Persona
-- **Atributos adicionales**: turno, tipo = "Enfermera"
-- **Funcionalidad**: Registro de datos personales y turno
+- **Atributos**: `id` (UUID), `nombre`, `categoria_profesional`.
+- **Relaciones**: `citas`.
+
+#### Citas
+
+- **Atributos**: `id` (UUID), `usuario_id`, `profesional_id`, `fecha` (DateTime).
+- **Relaciones**: `usuario`, `profesional`.
+
+#### Factura
+
+- **Atributos**: `id` (UUID), `usuario_id`, `descripcion`, `monto`.
+- **Relaciones**: `usuario`.
+
+#### HistorialMedico
+
+- **Atributos**: `id` (UUID), `paciente_id`, `registros` (JSON).
+- **Relaciones**: `paciente`.
 
 ## Uso del Sistema
 
 ### Menú Principal
-1. **Registrar Paciente** - Crear nuevo paciente
-2. **Registrar Médico** - Crear nuevo médico
-3. **Registrar Enfermera** - Crear nueva enfermera
-4. **Mostrar Todos los Registros** - Ver todos los registros
-0. **Salir** - Terminar programa
+
+1. **Registrarse**: Accede al submenú de registro.
+   - Registrar Usuario
+   - Registrar Profesional
+   - Editar Usuario
+   - Editar Profesional
+   - Eliminar Usuario
+   - Eliminar Profesional
+   - Mostrar Registros
+   - Volver
+2. **Citas**: Accede al submenú de citas.
+   - Agendar Cita
+   - Ver Citas por Paciente
+   - Ver Citas por Médico
+   - Ver Citas por Fecha
+   - Cancelar Cita
+   - Volver
+3. **Facturas**: Accede al submenú de facturas.
+   - Generar Factura
+   - Ver Facturas
+   - Volver
+4. **Ver Historial Médico**: Accede al submenú de historial.
+   - Ver Historial por Paciente
+   - Volver
+5. **Salir**
 
 ### Ejemplo de Uso
+
 ```python
-# El sistema solicita datos interactivamente
-# Ejemplo de registro de paciente:
-# Nombre: Juan Pérez
-# Fecha de nacimiento: 15/03/1990
-# Teléfono: 555-0123
-# Dirección: Calle Principal 123
+# Registro de usuario:
+# Nombre del usuario: Juan Pérez
+# Edad: 25
+# Diagnóstico: Gripe
+# ¿Necesita cita con doctor o servicios de enfermera? (doctor/enfermera): doctor
+
+# Agendar cita:
+# Nombre del usuario: Juan Pérez
+# Nombre del profesional: Dr. Gómez
+# Fecha (YYYY-MM-DD): 2025-09-24
 ```
 
 ## Conceptos POO Implementados
 
 ### 1. Herencia
-- Todas las clases heredan de `Persona`
-- Uso de `super().__init__()` para inicialización del padre
+
+- Modelos SQLAlchemy heredan de `Base` para compartir estructura de base de datos.
 
 ### 2. Encapsulación
-- Atributos privados con `_` (ej: `_nombre`, `_telefono`)
-- Métodos públicos para acceso a datos
+
+- Uso de relaciones SQLAlchemy para mantener integridad de datos entre entidades.
 
 ### 3. Polimorfismo
-- Método `mostrardatos()` personalizado en cada clase
-- Comportamiento diferente según el tipo de persona
+
+- Método `__repr__` personalizado para cada entidad.
 
 ### 4. Métodos de Clase
-- `@classmethod` para funciones de registro
-- Cada clase maneja su propio proceso de registro
+
+- Funciones como `ver_citas_paciente` en `Citas` para operaciones específicas.
 
 ## Desarrollo
 
 ### Flujo de trabajo Git
+
 ```bash
 # 1. Crear rama para nueva funcionalidad
 git checkout -b feature/nueva-funcionalidad
@@ -161,19 +217,18 @@ git commit -m "feat: agregar nueva funcionalidad"
 git push origin feature/nueva-funcionalidad
 
 # 4. Crear Pull Request en GitHub
-# 5. Esperar revisión del compañero (QA)
-# 6. Merge después de aprobación
 ```
 
 ### Estándares de código
-- **PEP 8** para estilo de código Python
-- **Mensajes de commit** descriptivos
-- **Documentación** en funciones y clases
-- **Type hints** para mejor legibilidad
+
+- **PEP 8** para estilo de código Python.
+- **Mensajes de commit** descriptivos.
+- **Documentación** en funciones y clases.
 
 ## Solución de Problemas
 
 ### Error común: "Python no se reconoce"
+
 ```bash
 # Verificar instalación de Python
 py --version
@@ -183,60 +238,55 @@ python --version
 python3 --version
 ```
 
-### Error: "Módulo no encontrado"
-```bash
-# Verificar que estás en el directorio correcto
-pwd
+### Error: "No se encuentra el módulo sqlalchemy"
 
-# Verificar que el entorno virtual está activado
-# Deberías ver (venv) al inicio de tu línea de comando
+```bash
+# Instalar dependencias faltantes
+pip install sqlalchemy psycopg2-binary pydantic python-dotenv
 ```
 
-### Error de imports
+### Error de conexión a la base de datos
+
 ```bash
-# Asegúrate de que todos los archivos estén en el mismo directorio
-# Los imports son relativos al directorio actual
+# Verifica el archivo .env
+# Asegúrate de que DATABASE_URL sea correcto
 ```
 
 ## Próximas Funcionalidades
 
-- [ ] Sistema de citas médicas
-- [ ] Registro de diagnósticos
-- [ ] Sistema de facturación
-- [ ] Historial clínico de pacientes
-- [ ] Gestión de consultorios médicos
-- [ ] Sistema de turnos para enfermeras
+- [ ] Interfaz gráfica (GUI).
+
+- [ ] Notificaciones de citas.
+
+- [ ] Reportes de facturación.
+
+- [ ] Gestión de inventario médico.
 
 ## Contribuir
 
-1. **Fork** el proyecto
-2. **Clone** tu fork
-3. **Crea** una rama para tu feature
-4. **Commit** tus cambios
-5. **Push** a tu rama
-6. **Crea** un Pull Request
+1. **Fork** el proyecto.
+2. **Clone** tu fork.
+3. **Crea** una rama para tu feature.
+4. **Commit** tus cambios.
+5. **Push** a tu rama.
+6. **Crea** un Pull Request.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para detalles.
+Este proyecto está bajo la Licencia ITM - ver el archivo LICENSE.md para detalles.  (EJEMPLO DE LICENCIA)
 
 ## Autores
 
-- **Tu Nombre** - [@tu-usuario](https://github.com/tu-usuario)
-- **Tu Compañero** - [@compañero-usuario](https://github.com/compañero-usuario)
+- **@Miguel1820** 
+- **@PixelJhonix** 
 
 ## Agradecimientos
 
-- Profesor [Nombre] por la guía en POO
-- Compañeros de clase por la colaboración
-- Comunidad de Python por recursos y documentación
+- Profe Alejandro Salgar - Guia del Proyecto
 
-## Contacto
+## Contactos
 
-- **Email**: tu-email@ejemplo.com
-- **GitHub**: [@tu-usuario](https://github.com/tu-usuario)
-- **Issues**: [Crear issue](https://github.com/tu-usuario/trabajo-entrega-punto-7/issues)
+- **Email's**: cortazar1820@gmail.com, ...
+- **GitHub's**: @Miguel1820, @PixelJhonix
 
 ---
-
-**Nota**: Este README debe actualizarse conforme el proyecto evolucione. Mantén la documentación actualizada para facilitar la colaboración y revisión del compañero QA.

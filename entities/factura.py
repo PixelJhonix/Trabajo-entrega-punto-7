@@ -1,19 +1,17 @@
 # Genera factura con lo que necesitaba el paciente y descripción.
-from uuid import UUID
-from typing import (
-    Any,
-)  # esta diciendo que una variable o argumento puede ser de cualquier tipo de dato.
 
-
-from sqlalchemy import UUID, Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, String, Float, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import Base
+from pydantic import BaseModel, Field
+import uuid
 
 
 class Factura(Base):
     __tablename__ = "facturas"
-    id = Column(UUID, primary_key=True)
-    usuario_id = Column(UUID, ForeignKey("usuarios.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    usuario_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
     descripcion = Column(String)
     monto = Column(Float)
 
@@ -26,3 +24,9 @@ class Factura(Base):
         print(
             f"Factura para {self.usuario.nombre}: {self.descripcion} - Monto: {self.monto}"
         )
+
+
+class FacturaCreate(BaseModel):
+    usuario_nombre: str = Field(..., min_length=1)
+    descripcion: str = Field(..., min_length=1)
+    monto: float = Field(..., gt=0)

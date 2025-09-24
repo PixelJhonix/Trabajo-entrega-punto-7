@@ -48,7 +48,7 @@ coverage.xml
 # SQLAlchemy / Alembic (migraciones)
 alembic/versions/*.pyc
 alembic/versions/__pycache__/
-alembic.ini
+TRABAJO-ENTREGA-PUNTO-7/alembic.ini
 
 # Logs
 *.log

@@ -6,7 +6,7 @@ from paciente import Paciente
 from medico import Medico
 from enfermera import Enfermera
 from typing import List
-from pydantic import BaseModel, ValidationError, conint
+from pydantic import BaseModel, conint
 
 print("---------------BIENVENIDOS A HOSPITAL LOS ENA-NOS---------------")
 

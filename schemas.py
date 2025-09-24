@@ -252,7 +252,7 @@ class FacturaIn(BaseModel):
             raise ValueError("El monto debe tener máximo 2 decimales")
         return v
 
-# Funciones de validación simplificadas sin try-except
+
 def validar_campo_nombre(nombre: str) -> tuple[bool, str]:
     """Valida el campo nombre usando validación simple"""
     if not nombre or len(nombre.strip()) < 1:
@@ -271,7 +271,7 @@ def validar_campo_fecha(fecha: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}/\d{2}/\d{4}$", fecha):
         return False, "La fecha debe tener el formato dd/mm/yyyy"
     
-    # Validar que sea una fecha válida sin try-except
+
     partes = fecha.split('/')
     if len(partes) != 3:
         return False, "La fecha debe tener el formato dd/mm/yyyy"
@@ -368,7 +368,7 @@ def validar_campo_fecha_servicio(fecha_servicio: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}/\d{2}/\d{4}$", fecha_servicio):
         return False, "La fecha debe tener el formato dd/mm/yyyy"
     
-    # Validar que sea una fecha válida sin try-except
+
     partes = fecha_servicio.split('/')
     if len(partes) != 3:
         return False, "La fecha debe tener el formato dd/mm/yyyy"
@@ -420,7 +420,7 @@ def validar_campo_hora(hora: str) -> tuple[bool, str]:
     if not re.match(r"^\d{2}:\d{2}$", hora):
         return False, "La hora debe tener el formato HH:MM"
     
-    # Validar hora sin try-except
+
     partes = hora.split(':')
     if len(partes) != 2:
         return False, "La hora debe tener el formato HH:MM"

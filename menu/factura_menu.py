@@ -20,7 +20,7 @@ class FacturaMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del módulo."""
-        print("💵 GESTIÓN DE FACTURAS")
+        print("FACTURA GESTIÓN DE FACTURAS")
         print("=" * 40)
 
     def mostrar_menu(self):
@@ -29,17 +29,17 @@ class FacturaMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("\n📋 OPCIONES DISPONIBLES")
+                print("\nLICENCIA OPCIONES DISPONIBLES")
                 print("-" * 25)
-                print("1. ➕ Crear Nueva Factura")
-                print("2. 🔍 Buscar Factura")
-                print("3. 📋 Listar Facturas")
-                print("4. ✏️ Actualizar Factura")
+                print("1. + Crear Nueva Factura")
+                print("2. DIAGNOSTICO Buscar Factura")
+                print("3. LICENCIA Listar Facturas")
+                print("4. EDITAR Actualizar Factura")
                 print("5. 💳 Marcar como Pagada")
-                print("6. ❌ Cancelar Factura")
-                print("0. 🔙 Volver al Menú Principal")
+                print("6. ERROR Cancelar Factura")
+                print("0. VOLVER Volver al Menú Principal")
 
-                opcion = input("\n🔹 Seleccione una opción: ").strip()
+                opcion = input("\n-> Seleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -56,56 +56,56 @@ class FacturaMenu:
                 elif opcion == "6":
                     self.cancelar_factura()
                 else:
-                    print("❌ Opción inválida. Presione Enter para continuar...")
+                    print("ERROR Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR Error: {e}")
                 input("Presione Enter para continuar...")
 
     def crear_factura(self):
         """Crear una nueva factura."""
         self.limpiar_pantalla()
-        print("➕ CREAR NUEVA FACTURA")
+        print("+ CREAR NUEVA FACTURA")
         print("-" * 35)
 
         try:
-            paciente_id = input("🆔 ID del paciente: ").strip()
+            paciente_id = input("ID ID del paciente: ").strip()
             if not paciente_id:
-                print("❌ El ID del paciente es obligatorio")
+                print("ERROR El ID del paciente es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             numero_factura = input("📄 Número de factura: ").strip()
             if not numero_factura:
-                print("❌ El número de factura es obligatorio")
+                print("ERROR El número de factura es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_emision = input("📅 Fecha de emisión (YYYY-MM-DD): ").strip()
+            fecha_emision = input("FECHA Fecha de emisión (YYYY-MM-DD): ").strip()
             if not fecha_emision:
-                print("❌ La fecha de emisión es obligatoria")
+                print("ERROR La fecha de emisión es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_limite_pago = input("📅 Fecha límite de pago (YYYY-MM-DD): ").strip()
+            fecha_limite_pago = input("FECHA Fecha límite de pago (YYYY-MM-DD): ").strip()
             if not fecha_limite_pago:
-                print("❌ La fecha límite de pago es obligatoria")
+                print("ERROR La fecha límite de pago es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
             total = input("💰 Total de la factura: ").strip()
             if not total:
-                print("❌ El total es obligatorio")
+                print("ERROR El total es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             try:
                 total_decimal = Decimal(total)
             except:
-                print("❌ El total debe ser un número válido")
+                print("ERROR El total debe ser un número válido")
                 input("Presione Enter para continuar...")
                 return
 
@@ -115,7 +115,7 @@ class FacturaMenu:
 
             usuario_actual = self.auth_service.usuario_actual
             if not usuario_actual:
-                print("❌ No hay usuario autenticado")
+                print("ERROR No hay usuario autenticado")
                 input("Presione Enter para continuar...")
                 return
 
@@ -129,23 +129,23 @@ class FacturaMenu:
                 metodo_pago=metodo_pago,
             )
 
-            print(f"\n✅ Factura creada exitosamente!")
-            print(f"🆔 ID: {factura.id}")
+            print(f"\nOK Factura creada exitosamente!")
+            print(f"ID ID: {factura.id}")
             print(f"📄 Número: {factura.numero_factura}")
             print(f"💰 Total: ${factura.total}")
-            print(f"📊 Estado: {factura.estado}")
+            print(f"ESTADO Estado: {factura.estado}")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def buscar_factura(self):
         """Buscar una factura."""
         self.limpiar_pantalla()
-        print("🔍 BUSCAR FACTURA")
+        print("DIAGNOSTICO BUSCAR FACTURA")
         print("-" * 25)
 
         try:
@@ -153,12 +153,12 @@ class FacturaMenu:
             print("1. Por ID")
             print("2. Por número de factura")
 
-            opcion = input("\n🔹 Seleccione una opción: ").strip()
+            opcion = input("\n-> Seleccione una opción: ").strip()
 
             if opcion == "1":
-                factura_id = input("🆔 ID de la factura: ").strip()
+                factura_id = input("ID ID de la factura: ").strip()
                 if not factura_id:
-                    print("❌ El ID es obligatorio")
+                    print("ERROR El ID es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -166,12 +166,12 @@ class FacturaMenu:
                 if factura:
                     self.mostrar_factura(factura)
                 else:
-                    print("❌ Factura no encontrada")
+                    print("ERROR Factura no encontrada")
 
             elif opcion == "2":
                 numero_factura = input("📄 Número de factura: ").strip()
                 if not numero_factura:
-                    print("❌ El número de factura es obligatorio")
+                    print("ERROR El número de factura es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -179,61 +179,61 @@ class FacturaMenu:
                 if factura:
                     self.mostrar_factura(factura)
                 else:
-                    print("❌ Factura no encontrada")
+                    print("ERROR Factura no encontrada")
 
             else:
-                print("❌ Opción inválida")
+                print("ERROR Opción inválida")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def listar_facturas(self):
         """Listar todas las facturas."""
         self.limpiar_pantalla()
-        print("📋 LISTA DE FACTURAS")
+        print("LICENCIA LISTA DE FACTURAS")
         print("-" * 25)
 
         try:
             facturas = self.factura_crud.obtener_facturas()
             if facturas:
-                print(f"\n📊 Total de facturas: {len(facturas)}")
+                print(f"\nESTADO Total de facturas: {len(facturas)}")
                 print("-" * 80)
                 for i, factura in enumerate(facturas, 1):
                     print(f"{i:2d}. Factura #{factura.numero_factura}")
                     print(f"     💰 Total: ${factura.total}")
-                    print(f"     📊 Estado: {factura.estado}")
-                    print(f"     📅 Emisión: {factura.fecha_emision}")
-                    print(f"     📅 Límite: {factura.fecha_limite_pago}")
-                    print(f"     🆔 ID: {factura.id}")
+                    print(f"     ESTADO Estado: {factura.estado}")
+                    print(f"     FECHA Emisión: {factura.fecha_emision}")
+                    print(f"     FECHA Límite: {factura.fecha_limite_pago}")
+                    print(f"     ID ID: {factura.id}")
                     print("-" * 80)
             else:
                 print("📭 No hay facturas registradas")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def actualizar_factura(self):
         """Actualizar una factura."""
         self.limpiar_pantalla()
-        print("✏️ ACTUALIZAR FACTURA")
+        print("EDITAR ACTUALIZAR FACTURA")
         print("-" * 30)
 
         try:
-            factura_id = input("🆔 ID de la factura: ").strip()
+            factura_id = input("ID ID de la factura: ").strip()
             if not factura_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             factura = self.factura_crud.obtener_factura(UUID(factura_id))
             if not factura:
-                print("❌ Factura no encontrada")
+                print("ERROR Factura no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
@@ -242,7 +242,7 @@ class FacturaMenu:
 
             campos = {}
 
-            nuevo_estado = input(f"📊 Estado [{factura.estado}]: ").strip()
+            nuevo_estado = input(f"ESTADO Estado [{factura.estado}]: ").strip()
             if nuevo_estado:
                 campos["estado"] = nuevo_estado
 
@@ -257,14 +257,14 @@ class FacturaMenu:
                 factura_actualizada = self.factura_crud.actualizar_factura(
                     UUID(factura_id), usuario_actual.id, **campos
                 )
-                print(f"\n✅ Factura actualizada exitosamente!")
+                print(f"\nOK Factura actualizada exitosamente!")
             else:
                 print("ℹ️ No se realizaron cambios")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
@@ -275,15 +275,15 @@ class FacturaMenu:
         print("-" * 30)
 
         try:
-            factura_id = input("🆔 ID de la factura: ").strip()
+            factura_id = input("ID ID de la factura: ").strip()
             if not factura_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             metodo_pago = input("💳 Método de pago utilizado: ").strip()
             if not metodo_pago:
-                print("❌ El método de pago es obligatorio")
+                print("ERROR El método de pago es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -291,39 +291,39 @@ class FacturaMenu:
             if self.factura_crud.pagar_factura(
                 UUID(factura_id), metodo_pago, usuario_actual.id
             ):
-                print("✅ Factura marcada como pagada exitosamente")
+                print("OK Factura marcada como pagada exitosamente")
             else:
-                print("❌ Error al marcar la factura como pagada")
+                print("ERROR Error al marcar la factura como pagada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def cancelar_factura(self):
         """Cancelar una factura."""
         self.limpiar_pantalla()
-        print("❌ CANCELAR FACTURA")
+        print("ERROR CANCELAR FACTURA")
         print("-" * 25)
 
         try:
-            factura_id = input("🆔 ID de la factura: ").strip()
+            factura_id = input("ID ID de la factura: ").strip()
             if not factura_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             factura = self.factura_crud.obtener_factura(UUID(factura_id))
             if not factura:
-                print("❌ Factura no encontrada")
+                print("ERROR Factura no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
             print(f"\n📄 Factura: {factura.numero_factura}")
             print(f"💰 Total: ${factura.total}")
-            print(f"📊 Estado: {factura.estado}")
+            print(f"ESTADO Estado: {factura.estado}")
 
             confirmar = (
                 input("\n¿Está seguro de cancelar esta factura? (s/N): ")
@@ -335,29 +335,29 @@ class FacturaMenu:
                 if self.factura_crud.cancelar_factura(
                     UUID(factura_id), usuario_actual.id
                 ):
-                    print("✅ Factura cancelada exitosamente")
+                    print("OK Factura cancelada exitosamente")
                 else:
-                    print("❌ Error al cancelar la factura")
+                    print("ERROR Error al cancelar la factura")
             else:
                 print("ℹ️ Operación cancelada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def mostrar_factura(self, factura):
         """Mostrar información de una factura."""
-        print(f"\n💵 INFORMACIÓN DE LA FACTURA")
+        print(f"\nFACTURA INFORMACIÓN DE LA FACTURA")
         print("-" * 35)
-        print(f"🆔 ID: {factura.id}")
+        print(f"ID ID: {factura.id}")
         print(f"📄 Número: {factura.numero_factura}")
         print(f"💰 Total: ${factura.total}")
-        print(f"📊 Estado: {factura.estado}")
-        print(f"📅 Fecha de emisión: {factura.fecha_emision}")
-        print(f"📅 Fecha límite: {factura.fecha_limite_pago}")
+        print(f"ESTADO Estado: {factura.estado}")
+        print(f"FECHA Fecha de emisión: {factura.fecha_emision}")
+        print(f"FECHA Fecha límite: {factura.fecha_limite_pago}")
         if factura.metodo_pago:
             print(f"💳 Método de pago: {factura.metodo_pago}")
-        print(f"📅 Creada: {factura.created_at}")
+        print(f"FECHA Creada: {factura.created_at}")

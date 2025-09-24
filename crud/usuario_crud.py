@@ -102,7 +102,9 @@ class UsuarioCRUD:
         """
         return self.db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
-    def obtener_usuario_por_nombre_usuario(self, nombre_usuario: str) -> Optional[Usuario]:
+    def obtener_usuario_por_nombre_usuario(
+        self, nombre_usuario: str
+    ) -> Optional[Usuario]:
         """
         Obtener un usuario por nombre de usuario.
 
@@ -158,11 +160,7 @@ class UsuarioCRUD:
             Lista de usuarios que coinciden
         """
         search_pattern = f"%{nombre.lower()}%"
-        return (
-            self.db.query(Usuario)
-            .filter(Usuario.nombre.ilike(search_pattern))
-            .all()
-        )
+        return self.db.query(Usuario).filter(Usuario.nombre.ilike(search_pattern)).all()
 
     def actualizar_usuario(
         self, usuario_id: UUID, id_usuario_edicion: UUID, **kwargs
@@ -202,7 +200,9 @@ class UsuarioCRUD:
             # Verificar unicidad del nombre_usuario, excluyendo al propio usuario
             existing_usuario = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
             if existing_usuario and existing_usuario.id != usuario_id:
-                raise ValueError("El nombre de usuario ya está registrado por otro usuario")
+                raise ValueError(
+                    "El nombre de usuario ya está registrado por otro usuario"
+                )
             kwargs["nombre_usuario"] = nombre_usuario.strip().lower()
 
         if "email" in kwargs:
@@ -263,7 +263,9 @@ class UsuarioCRUD:
             return True
         return False
 
-    def cambiar_estado_usuario(self, usuario_id: UUID, activo: bool, id_usuario_edicion: UUID) -> Optional[Usuario]:
+    def cambiar_estado_usuario(
+        self, usuario_id: UUID, activo: bool, id_usuario_edicion: UUID
+    ) -> Optional[Usuario]:
         """
         Cambiar el estado activo/inactivo de un usuario.
 

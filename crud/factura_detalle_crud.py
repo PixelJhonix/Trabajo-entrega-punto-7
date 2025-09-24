@@ -54,7 +54,9 @@ class FacturaDetalleCRUD:
             raise ValueError("Debe especificar cita_id o hospitalizacion_id")
 
         if cita_id and hospitalizacion_id:
-            raise ValueError("No puede especificar cita_id y hospitalizacion_id al mismo tiempo")
+            raise ValueError(
+                "No puede especificar cita_id y hospitalizacion_id al mismo tiempo"
+            )
 
         subtotal = cantidad * precio_unitario
 
@@ -83,7 +85,11 @@ class FacturaDetalleCRUD:
         Returns:
             FacturaDetalle encontrado o None
         """
-        return self.db.query(FacturaDetalle).filter(FacturaDetalle.id == detalle_id).first()
+        return (
+            self.db.query(FacturaDetalle)
+            .filter(FacturaDetalle.id == detalle_id)
+            .first()
+        )
 
     def obtener_detalles_por_factura(self, factura_id: UUID) -> List[FacturaDetalle]:
         """

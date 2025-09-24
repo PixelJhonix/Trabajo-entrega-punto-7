@@ -57,6 +57,7 @@ class HistorialEntradaCRUD:
         # Validar fecha
         try:
             from datetime import datetime
+
             datetime.strptime(fecha_registro, "%Y-%m-%d")
         except ValueError:
             raise ValueError("La fecha debe tener el formato YYYY-MM-DD")
@@ -87,9 +88,15 @@ class HistorialEntradaCRUD:
         Returns:
             HistorialEntrada encontrada o None
         """
-        return self.db.query(HistorialEntrada).filter(HistorialEntrada.id == entrada_id).first()
+        return (
+            self.db.query(HistorialEntrada)
+            .filter(HistorialEntrada.id == entrada_id)
+            .first()
+        )
 
-    def obtener_entradas_por_historial(self, historial_id: UUID) -> List[HistorialEntrada]:
+    def obtener_entradas_por_historial(
+        self, historial_id: UUID
+    ) -> List[HistorialEntrada]:
         """
         Obtener todas las entradas de un historial.
 
@@ -123,7 +130,9 @@ class HistorialEntradaCRUD:
             .all()
         )
 
-    def obtener_entradas(self, skip: int = 0, limit: int = 100) -> List[HistorialEntrada]:
+    def obtener_entradas(
+        self, skip: int = 0, limit: int = 100
+    ) -> List[HistorialEntrada]:
         """
         Obtener lista de entradas con paginación.
 
@@ -142,7 +151,9 @@ class HistorialEntradaCRUD:
             .all()
         )
 
-    def buscar_entradas_por_diagnostico(self, diagnostico: str) -> List[HistorialEntrada]:
+    def buscar_entradas_por_diagnostico(
+        self, diagnostico: str
+    ) -> List[HistorialEntrada]:
         """
         Buscar entradas por diagnóstico.
 
@@ -199,6 +210,7 @@ class HistorialEntradaCRUD:
                 raise ValueError("La fecha de registro es obligatoria")
             try:
                 from datetime import datetime
+
                 datetime.strptime(fecha_registro, "%Y-%m-%d")
             except ValueError:
                 raise ValueError("La fecha debe tener el formato YYYY-MM-DD")

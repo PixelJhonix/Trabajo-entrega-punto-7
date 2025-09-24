@@ -19,7 +19,7 @@ class MedicoMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del módulo."""
-        print("👨‍⚕️ GESTIÓN DE MÉDICOS")
+        print("DOCTOR GESTIÓN DE MÉDICOS")
         print("=" * 40)
 
     def mostrar_menu(self):
@@ -28,16 +28,16 @@ class MedicoMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("\n📋 OPCIONES DISPONIBLES")
+                print("\nLICENCIA OPCIONES DISPONIBLES")
                 print("-" * 25)
-                print("1. ➕ Registrar Nuevo Médico")
-                print("2. 🔍 Buscar Médico")
-                print("3. 📋 Listar Médicos")
-                print("4. ✏️ Actualizar Médico")
-                print("5. 🗑️ Eliminar Médico")
-                print("0. 🔙 Volver al Menú Principal")
+                print("1. + Registrar Nuevo Médico")
+                print("2. DIAGNOSTICO Buscar Médico")
+                print("3. LICENCIA Listar Médicos")
+                print("4. EDITAR Actualizar Médico")
+                print("5. ELIMINAR Eliminar Médico")
+                print("0. VOLVER Volver al Menú Principal")
 
-                opcion = input("\n🔹 Seleccione una opción: ").strip()
+                opcion = input("\n-> Seleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -52,79 +52,79 @@ class MedicoMenu:
                 elif opcion == "5":
                     self.eliminar_medico()
                 else:
-                    print("❌ Opción inválida. Presione Enter para continuar...")
+                    print("ERROR Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR Error: {e}")
                 input("Presione Enter para continuar...")
 
     def registrar_medico(self):
         """Registrar un nuevo médico."""
         self.limpiar_pantalla()
-        print("➕ REGISTRAR NUEVO MÉDICO")
+        print("+ REGISTRAR NUEVO MÉDICO")
         print("-" * 35)
 
         try:
-            primer_nombre = input("👤 Primer nombre: ").strip()
+            primer_nombre = input("USUARIO Primer nombre: ").strip()
             if not primer_nombre:
-                print("❌ El primer nombre es obligatorio")
+                print("ERROR El primer nombre es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            segundo_nombre = input("👤 Segundo nombre (opcional): ").strip()
+            segundo_nombre = input("USUARIO Segundo nombre (opcional): ").strip()
             if not segundo_nombre:
                 segundo_nombre = None
 
-            apellido = input("👤 Apellido: ").strip()
+            apellido = input("USUARIO Apellido: ").strip()
             if not apellido:
-                print("❌ El apellido es obligatorio")
+                print("ERROR El apellido es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_nacimiento = input("📅 Fecha de nacimiento (YYYY-MM-DD): ").strip()
+            fecha_nacimiento = input("FECHA Fecha de nacimiento (YYYY-MM-DD): ").strip()
             if not fecha_nacimiento:
-                print("❌ La fecha de nacimiento es obligatoria")
+                print("ERROR La fecha de nacimiento es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
             especialidad = input("🩺 Especialidad: ").strip()
             if not especialidad:
-                print("❌ La especialidad es obligatoria")
+                print("ERROR La especialidad es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
             numero_licencia = input("📜 Número de licencia: ").strip()
             if not numero_licencia:
-                print("❌ El número de licencia es obligatorio")
+                print("ERROR El número de licencia es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            consultorio = input("🏥 Consultorio (opcional): ").strip()
+            consultorio = input("SISTEMA Consultorio (opcional): ").strip()
             if not consultorio:
                 consultorio = None
 
-            telefono = input("📞 Teléfono: ").strip()
+            telefono = input("TELEFONO Teléfono: ").strip()
             if not telefono:
-                print("❌ El teléfono es obligatorio")
+                print("ERROR El teléfono es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            email = input("📧 Email (opcional): ").strip()
+            email = input("EMAIL Email (opcional): ").strip()
             if not email:
                 email = None
 
-            direccion = input("🏠 Dirección: ").strip()
+            direccion = input("DIRECCION Dirección: ").strip()
             if not direccion:
-                print("❌ La dirección es obligatoria")
+                print("ERROR La dirección es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
             usuario_actual = self.auth_service.usuario_actual
             if not usuario_actual:
-                print("❌ No hay usuario autenticado")
+                print("ERROR No hay usuario autenticado")
                 input("Presione Enter para continuar...")
                 return
 
@@ -142,22 +142,22 @@ class MedicoMenu:
                 email=email,
             )
 
-            print(f"\n✅ Médico registrado exitosamente!")
-            print(f"🆔 ID: {medico.id}")
-            print(f"👤 Nombre: Dr. {medico.primer_nombre} {medico.apellido}")
+            print(f"\nOK Médico registrado exitosamente!")
+            print(f"ID ID: {medico.id}")
+            print(f"USUARIO Nombre: Dr. {medico.primer_nombre} {medico.apellido}")
             print(f"🩺 Especialidad: {medico.especialidad}")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def buscar_medico(self):
         """Buscar un médico."""
         self.limpiar_pantalla()
-        print("🔍 BUSCAR MÉDICO")
+        print("DIAGNOSTICO BUSCAR MÉDICO")
         print("-" * 25)
 
         try:
@@ -167,12 +167,12 @@ class MedicoMenu:
             print("3. Por nombre")
             print("4. Por especialidad")
 
-            opcion = input("\n🔹 Seleccione una opción: ").strip()
+            opcion = input("\n-> Seleccione una opción: ").strip()
 
             if opcion == "1":
-                medico_id = input("🆔 ID del médico: ").strip()
+                medico_id = input("ID ID del médico: ").strip()
                 if not medico_id:
-                    print("❌ El ID es obligatorio")
+                    print("ERROR El ID es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -181,14 +181,14 @@ class MedicoMenu:
                     if medico:
                         self.mostrar_medico(medico)
                     else:
-                        print("❌ Médico no encontrado")
+                        print("ERROR Médico no encontrado")
                 except ValueError:
-                    print("❌ ID inválido")
+                    print("ERROR ID inválido")
 
             elif opcion == "2":
-                email = input("📧 Email del médico: ").strip()
+                email = input("EMAIL Email del médico: ").strip()
                 if not email:
-                    print("❌ El email es obligatorio")
+                    print("ERROR El email es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -196,29 +196,29 @@ class MedicoMenu:
                 if medico:
                     self.mostrar_medico(medico)
                 else:
-                    print("❌ Médico no encontrado")
+                    print("ERROR Médico no encontrado")
 
             elif opcion == "3":
-                nombre = input("👤 Nombre a buscar: ").strip()
+                nombre = input("USUARIO Nombre a buscar: ").strip()
                 if not nombre:
-                    print("❌ El nombre es obligatorio")
+                    print("ERROR El nombre es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
                 medicos = self.medico_crud.buscar_medicos_por_nombre(nombre)
                 if medicos:
-                    print(f"\n📋 Se encontraron {len(medicos)} médico(s):")
+                    print(f"\nLICENCIA Se encontraron {len(medicos)} médico(s):")
                     for i, medico in enumerate(medicos, 1):
                         print(
                             f"{i}. Dr. {medico.primer_nombre} {medico.apellido} - {medico.especialidad}"
                         )
                 else:
-                    print("❌ No se encontraron médicos")
+                    print("ERROR No se encontraron médicos")
 
             elif opcion == "4":
                 especialidad = input("🩺 Especialidad a buscar: ").strip()
                 if not especialidad:
-                    print("❌ La especialidad es obligatoria")
+                    print("ERROR La especialidad es obligatoria")
                     input("Presione Enter para continuar...")
                     return
 
@@ -227,78 +227,78 @@ class MedicoMenu:
                 )
                 if medicos:
                     print(
-                        f"\n📋 Se encontraron {len(medicos)} médico(s) de {especialidad}:"
+                        f"\nLICENCIA Se encontraron {len(medicos)} médico(s) de {especialidad}:"
                     )
                     for i, medico in enumerate(medicos, 1):
                         print(f"{i}. Dr. {medico.primer_nombre} {medico.apellido}")
                 else:
-                    print("❌ No se encontraron médicos de esa especialidad")
+                    print("ERROR No se encontraron médicos de esa especialidad")
 
             else:
-                print("❌ Opción inválida")
+                print("ERROR Opción inválida")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def listar_medicos(self):
         """Listar todos los médicos."""
         self.limpiar_pantalla()
-        print("📋 LISTA DE MÉDICOS")
+        print("LICENCIA LISTA DE MÉDICOS")
         print("-" * 25)
 
         try:
             medicos = self.medico_crud.obtener_medicos()
             if medicos:
-                print(f"\n📊 Total de médicos: {len(medicos)}")
+                print(f"\nESTADO Total de médicos: {len(medicos)}")
                 print("-" * 80)
                 for i, medico in enumerate(medicos, 1):
                     print(f"{i:2d}. Dr. {medico.primer_nombre} {medico.apellido}")
                     print(f"     🩺 Especialidad: {medico.especialidad}")
                     print(f"     📜 Licencia: {medico.numero_licencia}")
-                    print(f"     📧 Email: {medico.email or 'No especificado'}")
-                    print(f"     🆔 ID: {medico.id}")
+                    print(f"     EMAIL Email: {medico.email or 'No especificado'}")
+                    print(f"     ID ID: {medico.id}")
                     print("-" * 80)
             else:
                 print("📭 No hay médicos registrados")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def actualizar_medico(self):
         """Actualizar un médico."""
         self.limpiar_pantalla()
-        print("✏️ ACTUALIZAR MÉDICO")
+        print("EDITAR ACTUALIZAR MÉDICO")
         print("-" * 30)
 
         try:
-            medico_id = input("🆔 ID del médico: ").strip()
+            medico_id = input("ID ID del médico: ").strip()
             if not medico_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             medico = self.medico_crud.obtener_medico(UUID(medico_id))
             if not medico:
-                print("❌ Médico no encontrado")
+                print("ERROR Médico no encontrado")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n👤 Médico: Dr. {medico.primer_nombre} {medico.apellido}")
+            print(f"\nUSUARIO Médico: Dr. {medico.primer_nombre} {medico.apellido}")
             print("Deje en blanco para mantener el valor actual\n")
 
             campos = {}
 
             nuevo_primer_nombre = input(
-                f"👤 Primer nombre [{medico.primer_nombre}]: "
+                f"USUARIO Primer nombre [{medico.primer_nombre}]: "
             ).strip()
             if nuevo_primer_nombre:
                 campos["primer_nombre"] = nuevo_primer_nombre
 
-            nuevo_apellido = input(f"👤 Apellido [{medico.apellido}]: ").strip()
+            nuevo_apellido = input(f"USUARIO Apellido [{medico.apellido}]: ").strip()
             if nuevo_apellido:
                 campos["apellido"] = nuevo_apellido
 
@@ -308,17 +308,17 @@ class MedicoMenu:
             if nueva_especialidad:
                 campos["especialidad"] = nueva_especialidad
 
-            nuevo_telefono = input(f"📞 Teléfono [{medico.telefono}]: ").strip()
+            nuevo_telefono = input(f"TELEFONO Teléfono [{medico.telefono}]: ").strip()
             if nuevo_telefono:
                 campos["telefono"] = nuevo_telefono
 
             nuevo_email = input(
-                f"📧 Email [{medico.email or 'No especificado'}]: "
+                f"EMAIL Email [{medico.email or 'No especificado'}]: "
             ).strip()
             if nuevo_email:
                 campos["email"] = nuevo_email
 
-            nueva_direccion = input(f"🏠 Dirección [{medico.direccion}]: ").strip()
+            nueva_direccion = input(f"DIRECCION Dirección [{medico.direccion}]: ").strip()
             if nueva_direccion:
                 campos["direccion"] = nueva_direccion
 
@@ -327,38 +327,38 @@ class MedicoMenu:
                 medico_actualizado = self.medico_crud.actualizar_medico(
                     UUID(medico_id), usuario_actual.id, **campos
                 )
-                print(f"\n✅ Médico actualizado exitosamente!")
+                print(f"\nOK Médico actualizado exitosamente!")
             else:
                 print("ℹ️ No se realizaron cambios")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def eliminar_medico(self):
         """Eliminar un médico."""
         self.limpiar_pantalla()
-        print("🗑️ ELIMINAR MÉDICO")
+        print("ELIMINAR ELIMINAR MÉDICO")
         print("-" * 25)
 
         try:
-            medico_id = input("🆔 ID del médico: ").strip()
+            medico_id = input("ID ID del médico: ").strip()
             if not medico_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             medico = self.medico_crud.obtener_medico(UUID(medico_id))
             if not medico:
-                print("❌ Médico no encontrado")
+                print("ERROR Médico no encontrado")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n⚠️ ADVERTENCIA: Esta acción no se puede deshacer")
-            print(f"👤 Médico: Dr. {medico.primer_nombre} {medico.apellido}")
+            print(f"\nADVERTENCIA ADVERTENCIA: Esta acción no se puede deshacer")
+            print(f"USUARIO Médico: Dr. {medico.primer_nombre} {medico.apellido}")
             print(f"🩺 Especialidad: {medico.especialidad}")
 
             confirmar = (
@@ -366,32 +366,32 @@ class MedicoMenu:
             )
             if confirmar in ["s", "si", "sí", "y", "yes"]:
                 if self.medico_crud.eliminar_medico(UUID(medico_id)):
-                    print("✅ Médico eliminado exitosamente")
+                    print("OK Médico eliminado exitosamente")
                 else:
-                    print("❌ Error al eliminar el médico")
+                    print("ERROR Error al eliminar el médico")
             else:
                 print("ℹ️ Operación cancelada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def mostrar_medico(self, medico):
         """Mostrar información de un médico."""
-        print(f"\n👨‍⚕️ INFORMACIÓN DEL MÉDICO")
+        print(f"\nDOCTOR INFORMACIÓN DEL MÉDICO")
         print("-" * 35)
-        print(f"🆔 ID: {medico.id}")
-        print(f"👤 Nombre: Dr. {medico.primer_nombre} {medico.apellido}")
+        print(f"ID ID: {medico.id}")
+        print(f"USUARIO Nombre: Dr. {medico.primer_nombre} {medico.apellido}")
         if medico.segundo_nombre:
-            print(f"👤 Segundo nombre: {medico.segundo_nombre}")
+            print(f"USUARIO Segundo nombre: {medico.segundo_nombre}")
         print(f"🩺 Especialidad: {medico.especialidad}")
         print(f"📜 Licencia: {medico.numero_licencia}")
         if medico.consultorio:
-            print(f"🏥 Consultorio: {medico.consultorio}")
-        print(f"📞 Teléfono: {medico.telefono}")
-        print(f"📧 Email: {medico.email or 'No especificado'}")
-        print(f"🏠 Dirección: {medico.direccion}")
-        print(f"📅 Registrado: {medico.created_at}")
+            print(f"SISTEMA Consultorio: {medico.consultorio}")
+        print(f"TELEFONO Teléfono: {medico.telefono}")
+        print(f"EMAIL Email: {medico.email or 'No especificado'}")
+        print(f"DIRECCION Dirección: {medico.direccion}")
+        print(f"FECHA Registrado: {medico.created_at}")

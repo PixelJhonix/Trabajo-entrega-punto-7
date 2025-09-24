@@ -37,7 +37,7 @@ class MainMenu:
     def mostrar_titulo(self):
         """Mostrar título del sistema."""
         print("=" * 60)
-        print("🏥 SISTEMA DE GESTIÓN HOSPITALARIA")
+        print("SISTEMA DE GESTION HOSPITALARIA")
         print("=" * 60)
 
     def login(self) -> bool:
@@ -49,7 +49,7 @@ class MainMenu:
         """
         self.limpiar_pantalla()
         self.mostrar_titulo()
-        print("\n🔐 INICIAR SESIÓN")
+        print("\nINICIAR SESION")
         print("-" * 30)
 
         intentos = 0
@@ -57,11 +57,11 @@ class MainMenu:
 
         while intentos < max_intentos:
             try:
-                nombre_usuario = input("👤 Usuario o Email: ").strip()
-                contraseña = input("🔒 Contraseña: ").strip()
+                nombre_usuario = input("Usuario o Email: ").strip()
+                contraseña = input("Contraseña: ").strip()
 
                 if not nombre_usuario or not contraseña:
-                    print("❌ Usuario y contraseña son obligatorios")
+                    print("ERROR: Usuario y contraseña son obligatorios")
                     intentos += 1
                     continue
 
@@ -70,24 +70,24 @@ class MainMenu:
                 )
 
                 if self.usuario_actual:
-                    print(f"\n✅ ¡Bienvenido, {self.usuario_actual.nombre}!")
+                    print(f"\nBIENVENIDO, {self.usuario_actual.nombre}!")
                     if self.usuario_actual.es_admin:
-                        print("👑 Acceso de Administrador")
+                        print("ACCESO DE ADMINISTRADOR")
                     return True
                 else:
                     intentos += 1
                     print(
-                        f"❌ Credenciales inválidas. Intentos restantes: {max_intentos - intentos}"
+                        f"ERROR: Credenciales invalidas. Intentos restantes: {max_intentos - intentos}"
                     )
 
             except KeyboardInterrupt:
-                print("\n\n👋 ¡Hasta luego!")
+                print("\n\nHASTA LUEGO!")
                 return False
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR: {e}")
                 intentos += 1
 
-        print("\n❌ Demasiados intentos fallidos. Acceso denegado.")
+        print("\nERROR: Demasiados intentos fallidos. Acceso denegado.")
         return False
 
     def mostrar_menu_principal(self):
@@ -96,26 +96,26 @@ class MainMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print(f"\n👤 Usuario: {self.usuario_actual.nombre}")
+                print(f"\nUsuario: {self.usuario_actual.nombre}")
                 if self.usuario_actual.es_admin:
-                    print("👑 Administrador")
-                print("\n📋 MENÚ PRINCIPAL")
+                    print("ADMINISTRADOR")
+                print("\nMENU PRINCIPAL")
                 print("-" * 30)
-                print("1. 👥 Gestión de Pacientes")
-                print("2. 👨‍⚕️ Gestión de Médicos")
-                print("3. 👩‍⚕️ Gestión de Enfermeras")
-                print("4. 📅 Gestión de Citas")
-                print("5. 🏥 Gestión de Hospitalizaciones")
-                print("6. 💵 Gestión de Facturas")
-                print("7. 📋 Historiales Médicos")
+                print("1. Gestion de Pacientes")
+                print("2. Gestion de Medicos")
+                print("3. Gestion de Enfermeras")
+                print("4. Gestion de Citas")
+                print("5. Gestion de Hospitalizaciones")
+                print("6. Gestion de Facturas")
+                print("7. Historiales Medicos")
                 if self.usuario_actual.es_admin:
-                    print("8. 👥 Gestión de Usuarios")
-                print("0. 🚪 Salir")
+                    print("8. Gestion de Usuarios")
+                print("0. Salir")
 
-                opcion = input("\n🔹 Seleccione una opción: ").strip()
+                opcion = input("\nSeleccione una opcion: ").strip()
 
                 if opcion == "0":
-                    print("\n👋 ¡Hasta luego!")
+                    print("\nHASTA LUEGO!")
                     break
                 elif opcion == "1":
                     self.paciente_menu.mostrar_menu()
@@ -134,25 +134,24 @@ class MainMenu:
                 elif opcion == "8" and self.usuario_actual.es_admin:
                     self.usuario_menu.mostrar_menu()
                 else:
-                    print("❌ Opción inválida. Presione Enter para continuar...")
+                    print("ERROR: Opcion invalida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\n👋 ¡Hasta luego!")
+                print("\n\nHASTA LUEGO!")
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR: {e}")
                 input("Presione Enter para continuar...")
-
 
     def inicializar_sistema(self):
         """Inicializar el sistema y crear admin por defecto."""
         try:
             # Crear admin por defecto
             self.auth_service.crear_admin_por_defecto()
-            print("✅ Sistema inicializado correctamente")
+            print("Sistema inicializado correctamente")
         except Exception as e:
-            print(f"⚠️ Advertencia: {e}")
+            print(f"ADVERTENCIA: {e}")
 
     def ejecutar(self):
         """Ejecutar el sistema principal."""
@@ -162,7 +161,7 @@ class MainMenu:
             if self.login():
                 self.mostrar_menu_principal()
         except Exception as e:
-            print(f"❌ Error crítico: {e}")
+            print(f"ERROR CRITICO: {e}")
         finally:
             self.db.close()
 

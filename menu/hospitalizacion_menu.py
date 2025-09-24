@@ -19,7 +19,7 @@ class HospitalizacionMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del módulo."""
-        print("🏥 GESTIÓN DE HOSPITALIZACIONES")
+        print("SISTEMA GESTIÓN DE HOSPITALIZACIONES")
         print("=" * 40)
 
     def mostrar_menu(self):
@@ -28,17 +28,17 @@ class HospitalizacionMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("\n📋 OPCIONES DISPONIBLES")
+                print("\nLICENCIA OPCIONES DISPONIBLES")
                 print("-" * 25)
-                print("1. ➕ Registrar Nueva Hospitalización")
-                print("2. 🔍 Buscar Hospitalización")
-                print("3. 📋 Listar Hospitalizaciones")
-                print("4. ✏️ Actualizar Hospitalización")
-                print("5. ✅ Completar Hospitalización")
-                print("6. ❌ Cancelar Hospitalización")
-                print("0. 🔙 Volver al Menú Principal")
+                print("1. + Registrar Nueva Hospitalización")
+                print("2. DIAGNOSTICO Buscar Hospitalización")
+                print("3. LICENCIA Listar Hospitalizaciones")
+                print("4. EDITAR Actualizar Hospitalización")
+                print("5. OK Completar Hospitalización")
+                print("6. ERROR Cancelar Hospitalización")
+                print("0. VOLVER Volver al Menú Principal")
 
-                opcion = input("\n🔹 Seleccione una opción: ").strip()
+                opcion = input("\n-> Seleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -55,79 +55,79 @@ class HospitalizacionMenu:
                 elif opcion == "6":
                     self.cancelar_hospitalizacion()
                 else:
-                    print("❌ Opción inválida. Presione Enter para continuar...")
+                    print("ERROR Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR Error: {e}")
                 input("Presione Enter para continuar...")
 
     def registrar_hospitalizacion(self):
         """Registrar una nueva hospitalización."""
         self.limpiar_pantalla()
-        print("➕ REGISTRAR NUEVA HOSPITALIZACIÓN")
+        print("+ REGISTRAR NUEVA HOSPITALIZACIÓN")
         print("-" * 45)
 
         try:
-            paciente_id = input("🆔 ID del paciente: ").strip()
+            paciente_id = input("ID ID del paciente: ").strip()
             if not paciente_id:
-                print("❌ El ID del paciente es obligatorio")
+                print("ERROR El ID del paciente es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            medico_id = input("🆔 ID del médico responsable: ").strip()
+            medico_id = input("ID ID del médico responsable: ").strip()
             if not medico_id:
-                print("❌ El ID del médico es obligatorio")
+                print("ERROR El ID del médico es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            enfermera_id = input("🆔 ID de la enfermera (opcional): ").strip()
+            enfermera_id = input("ID ID de la enfermera (opcional): ").strip()
             if not enfermera_id:
                 enfermera_id = None
 
             tipo_cuidado = input(
-                "🏥 Tipo de cuidado (Intensivo/Intermedio/Básico): "
+                "SISTEMA Tipo de cuidado (Intensivo/Intermedio/Básico): "
             ).strip()
             if not tipo_cuidado:
-                print("❌ El tipo de cuidado es obligatorio")
+                print("ERROR El tipo de cuidado es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            descripcion = input("📝 Descripción: ").strip()
+            descripcion = input("NOTAS Descripción: ").strip()
             if not descripcion:
-                print("❌ La descripción es obligatoria")
+                print("ERROR La descripción es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            numero_habitacion = input("🏠 Número de habitación: ").strip()
+            numero_habitacion = input("DIRECCION Número de habitación: ").strip()
             if not numero_habitacion:
-                print("❌ El número de habitación es obligatorio")
+                print("ERROR El número de habitación es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             tipo_habitacion = input(
-                "🏠 Tipo de habitación (Individual/Compartida/ICU): "
+                "DIRECCION Tipo de habitación (Individual/Compartida/ICU): "
             ).strip()
             if not tipo_habitacion:
-                print("❌ El tipo de habitación es obligatorio")
+                print("ERROR El tipo de habitación es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_inicio = input("📅 Fecha de inicio (YYYY-MM-DD): ").strip()
+            fecha_inicio = input("FECHA Fecha de inicio (YYYY-MM-DD): ").strip()
             if not fecha_inicio:
-                print("❌ La fecha de inicio es obligatoria")
+                print("ERROR La fecha de inicio es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_fin = input("📅 Fecha de fin (opcional, YYYY-MM-DD): ").strip()
+            fecha_fin = input("FECHA Fecha de fin (opcional, YYYY-MM-DD): ").strip()
             if not fecha_fin:
                 fecha_fin = None
 
             usuario_actual = self.auth_service.usuario_actual
             if not usuario_actual:
-                print("❌ No hay usuario autenticado")
+                print("ERROR No hay usuario autenticado")
                 input("Presione Enter para continuar...")
                 return
 
@@ -144,28 +144,28 @@ class HospitalizacionMenu:
                 fecha_fin=fecha_fin,
             )
 
-            print(f"\n✅ Hospitalización registrada exitosamente!")
-            print(f"🆔 ID: {hospitalizacion.id}")
-            print(f"🏠 Habitación: {hospitalizacion.numero_habitacion}")
-            print(f"🏥 Tipo: {hospitalizacion.tipo_cuidado}")
+            print(f"\nOK Hospitalización registrada exitosamente!")
+            print(f"ID ID: {hospitalizacion.id}")
+            print(f"DIRECCION Habitación: {hospitalizacion.numero_habitacion}")
+            print(f"SISTEMA Tipo: {hospitalizacion.tipo_cuidado}")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def buscar_hospitalizacion(self):
         """Buscar una hospitalización."""
         self.limpiar_pantalla()
-        print("🔍 BUSCAR HOSPITALIZACIÓN")
+        print("DIAGNOSTICO BUSCAR HOSPITALIZACIÓN")
         print("-" * 35)
 
         try:
-            hospitalizacion_id = input("🆔 ID de la hospitalización: ").strip()
+            hospitalizacion_id = input("ID ID de la hospitalización: ").strip()
             if not hospitalizacion_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -175,53 +175,53 @@ class HospitalizacionMenu:
             if hospitalizacion:
                 self.mostrar_hospitalizacion(hospitalizacion)
             else:
-                print("❌ Hospitalización no encontrada")
+                print("ERROR Hospitalización no encontrada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def listar_hospitalizaciones(self):
         """Listar todas las hospitalizaciones."""
         self.limpiar_pantalla()
-        print("📋 LISTA DE HOSPITALIZACIONES")
+        print("LICENCIA LISTA DE HOSPITALIZACIONES")
         print("-" * 35)
 
         try:
             hospitalizaciones = self.hospitalizacion_crud.obtener_hospitalizaciones()
             if hospitalizaciones:
-                print(f"\n📊 Total de hospitalizaciones: {len(hospitalizaciones)}")
+                print(f"\nESTADO Total de hospitalizaciones: {len(hospitalizaciones)}")
                 print("-" * 80)
                 for i, hosp in enumerate(hospitalizaciones, 1):
                     print(f"{i:2d}. Hospitalización #{hosp.id}")
-                    print(f"     🏠 Habitación: {hosp.numero_habitacion}")
-                    print(f"     🏥 Tipo: {hosp.tipo_cuidado}")
-                    print(f"     📊 Estado: {hosp.estado}")
-                    print(f"     📅 Inicio: {hosp.fecha_inicio}")
+                    print(f"     DIRECCION Habitación: {hosp.numero_habitacion}")
+                    print(f"     SISTEMA Tipo: {hosp.tipo_cuidado}")
+                    print(f"     ESTADO Estado: {hosp.estado}")
+                    print(f"     FECHA Inicio: {hosp.fecha_inicio}")
                     if hosp.fecha_fin:
-                        print(f"     📅 Fin: {hosp.fecha_fin}")
+                        print(f"     FECHA Fin: {hosp.fecha_fin}")
                     print("-" * 80)
             else:
                 print("📭 No hay hospitalizaciones registradas")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def actualizar_hospitalizacion(self):
         """Actualizar una hospitalización."""
         self.limpiar_pantalla()
-        print("✏️ ACTUALIZAR HOSPITALIZACIÓN")
+        print("EDITAR ACTUALIZAR HOSPITALIZACIÓN")
         print("-" * 40)
 
         try:
-            hospitalizacion_id = input("🆔 ID de la hospitalización: ").strip()
+            hospitalizacion_id = input("ID ID de la hospitalización: ").strip()
             if not hospitalizacion_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -229,21 +229,21 @@ class HospitalizacionMenu:
                 UUID(hospitalizacion_id)
             )
             if not hospitalizacion:
-                print("❌ Hospitalización no encontrada")
+                print("ERROR Hospitalización no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n🏥 Hospitalización: {hospitalizacion.numero_habitacion}")
+            print(f"\nSISTEMA Hospitalización: {hospitalizacion.numero_habitacion}")
             print("Deje en blanco para mantener el valor actual\n")
 
             campos = {}
 
-            nuevo_estado = input(f"📊 Estado [{hospitalizacion.estado}]: ").strip()
+            nuevo_estado = input(f"ESTADO Estado [{hospitalizacion.estado}]: ").strip()
             if nuevo_estado:
                 campos["estado"] = nuevo_estado
 
             nueva_descripcion = input(
-                f"📝 Descripción [{hospitalizacion.descripcion}]: "
+                f"NOTAS Descripción [{hospitalizacion.descripcion}]: "
             ).strip()
             if nueva_descripcion:
                 campos["descripcion"] = nueva_descripcion
@@ -253,33 +253,33 @@ class HospitalizacionMenu:
                 hosp_actualizada = self.hospitalizacion_crud.actualizar_hospitalizacion(
                     UUID(hospitalizacion_id), usuario_actual.id, **campos
                 )
-                print(f"\n✅ Hospitalización actualizada exitosamente!")
+                print(f"\nOK Hospitalización actualizada exitosamente!")
             else:
                 print("ℹ️ No se realizaron cambios")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def completar_hospitalizacion(self):
         """Completar una hospitalización."""
         self.limpiar_pantalla()
-        print("✅ COMPLETAR HOSPITALIZACIÓN")
+        print("OK COMPLETAR HOSPITALIZACIÓN")
         print("-" * 35)
 
         try:
-            hospitalizacion_id = input("🆔 ID de la hospitalización: ").strip()
+            hospitalizacion_id = input("ID ID de la hospitalización: ").strip()
             if not hospitalizacion_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_fin = input("📅 Fecha de fin (YYYY-MM-DD): ").strip()
+            fecha_fin = input("FECHA Fecha de fin (YYYY-MM-DD): ").strip()
             if not fecha_fin:
-                print("❌ La fecha de fin es obligatoria")
+                print("ERROR La fecha de fin es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
@@ -287,27 +287,27 @@ class HospitalizacionMenu:
             if self.hospitalizacion_crud.completar_hospitalizacion(
                 UUID(hospitalizacion_id), fecha_fin, usuario_actual.id
             ):
-                print("✅ Hospitalización completada exitosamente")
+                print("OK Hospitalización completada exitosamente")
             else:
-                print("❌ Error al completar la hospitalización")
+                print("ERROR Error al completar la hospitalización")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def cancelar_hospitalizacion(self):
         """Cancelar una hospitalización."""
         self.limpiar_pantalla()
-        print("❌ CANCELAR HOSPITALIZACIÓN")
+        print("ERROR CANCELAR HOSPITALIZACIÓN")
         print("-" * 35)
 
         try:
-            hospitalizacion_id = input("🆔 ID de la hospitalización: ").strip()
+            hospitalizacion_id = input("ID ID de la hospitalización: ").strip()
             if not hospitalizacion_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -315,12 +315,12 @@ class HospitalizacionMenu:
                 UUID(hospitalizacion_id)
             )
             if not hospitalizacion:
-                print("❌ Hospitalización no encontrada")
+                print("ERROR Hospitalización no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n🏥 Hospitalización: {hospitalizacion.numero_habitacion}")
-            print(f"📊 Estado: {hospitalizacion.estado}")
+            print(f"\nSISTEMA Hospitalización: {hospitalizacion.numero_habitacion}")
+            print(f"ESTADO Estado: {hospitalizacion.estado}")
 
             confirmar = (
                 input("\n¿Está seguro de cancelar esta hospitalización? (s/N): ")
@@ -332,30 +332,30 @@ class HospitalizacionMenu:
                 if self.hospitalizacion_crud.cancelar_hospitalizacion(
                     UUID(hospitalizacion_id), usuario_actual.id
                 ):
-                    print("✅ Hospitalización cancelada exitosamente")
+                    print("OK Hospitalización cancelada exitosamente")
                 else:
-                    print("❌ Error al cancelar la hospitalización")
+                    print("ERROR Error al cancelar la hospitalización")
             else:
                 print("ℹ️ Operación cancelada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def mostrar_hospitalizacion(self, hospitalizacion):
         """Mostrar información de una hospitalización."""
-        print(f"\n🏥 INFORMACIÓN DE LA HOSPITALIZACIÓN")
+        print(f"\nSISTEMA INFORMACIÓN DE LA HOSPITALIZACIÓN")
         print("-" * 45)
-        print(f"🆔 ID: {hospitalizacion.id}")
-        print(f"🏠 Habitación: {hospitalizacion.numero_habitacion}")
-        print(f"🏥 Tipo de habitación: {hospitalizacion.tipo_habitacion}")
-        print(f"🏥 Tipo de cuidado: {hospitalizacion.tipo_cuidado}")
-        print(f"📝 Descripción: {hospitalizacion.descripcion}")
-        print(f"📅 Fecha de inicio: {hospitalizacion.fecha_inicio}")
+        print(f"ID ID: {hospitalizacion.id}")
+        print(f"DIRECCION Habitación: {hospitalizacion.numero_habitacion}")
+        print(f"SISTEMA Tipo de habitación: {hospitalizacion.tipo_habitacion}")
+        print(f"SISTEMA Tipo de cuidado: {hospitalizacion.tipo_cuidado}")
+        print(f"NOTAS Descripción: {hospitalizacion.descripcion}")
+        print(f"FECHA Fecha de inicio: {hospitalizacion.fecha_inicio}")
         if hospitalizacion.fecha_fin:
-            print(f"📅 Fecha de fin: {hospitalizacion.fecha_fin}")
-        print(f"📊 Estado: {hospitalizacion.estado}")
-        print(f"📅 Registrada: {hospitalizacion.created_at}")
+            print(f"FECHA Fecha de fin: {hospitalizacion.fecha_fin}")
+        print(f"ESTADO Estado: {hospitalizacion.estado}")
+        print(f"FECHA Registrada: {hospitalizacion.created_at}")

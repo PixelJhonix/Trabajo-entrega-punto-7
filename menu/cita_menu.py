@@ -19,7 +19,7 @@ class CitaMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del módulo."""
-        print("📅 GESTIÓN DE CITAS")
+        print("FECHA GESTIÓN DE CITAS")
         print("=" * 40)
 
     def mostrar_menu(self):
@@ -28,17 +28,17 @@ class CitaMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("\n📋 OPCIONES DISPONIBLES")
+                print("\nLICENCIA OPCIONES DISPONIBLES")
                 print("-" * 25)
-                print("1. ➕ Agendar Nueva Cita")
-                print("2. 🔍 Buscar Cita")
-                print("3. 📋 Listar Citas")
-                print("4. ✏️ Actualizar Cita")
-                print("5. ❌ Cancelar Cita")
-                print("6. ✅ Completar Cita")
-                print("0. 🔙 Volver al Menú Principal")
+                print("1. + Agendar Nueva Cita")
+                print("2. DIAGNOSTICO Buscar Cita")
+                print("3. LICENCIA Listar Citas")
+                print("4. EDITAR Actualizar Cita")
+                print("5. ERROR Cancelar Cita")
+                print("6. OK Completar Cita")
+                print("0. VOLVER Volver al Menú Principal")
 
-                opcion = input("\n🔹 Seleccione una opción: ").strip()
+                opcion = input("\n-> Seleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -55,49 +55,49 @@ class CitaMenu:
                 elif opcion == "6":
                     self.completar_cita()
                 else:
-                    print("❌ Opción inválida. Presione Enter para continuar...")
+                    print("ERROR Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"ERROR Error: {e}")
                 input("Presione Enter para continuar...")
 
     def agendar_cita(self):
         """Agendar una nueva cita."""
         self.limpiar_pantalla()
-        print("➕ AGENDAR NUEVA CITA")
+        print("+ AGENDAR NUEVA CITA")
         print("-" * 35)
 
         try:
-            paciente_id = input("🆔 ID del paciente: ").strip()
+            paciente_id = input("ID ID del paciente: ").strip()
             if not paciente_id:
-                print("❌ El ID del paciente es obligatorio")
+                print("ERROR El ID del paciente es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            medico_id = input("🆔 ID del médico: ").strip()
+            medico_id = input("ID ID del médico: ").strip()
             if not medico_id:
-                print("❌ El ID del médico es obligatorio")
+                print("ERROR El ID del médico es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha = input("📅 Fecha (YYYY-MM-DD): ").strip()
+            fecha = input("FECHA Fecha (YYYY-MM-DD): ").strip()
             if not fecha:
-                print("❌ La fecha es obligatoria")
+                print("ERROR La fecha es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
             hora = input("🕐 Hora (HH:MM:SS): ").strip()
             if not hora:
-                print("❌ La hora es obligatoria")
+                print("ERROR La hora es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            motivo = input("📝 Motivo de la consulta: ").strip()
+            motivo = input("NOTAS Motivo de la consulta: ").strip()
             if not motivo:
-                print("❌ El motivo es obligatorio")
+                print("ERROR El motivo es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -107,7 +107,7 @@ class CitaMenu:
 
             usuario_actual = self.auth_service.usuario_actual
             if not usuario_actual:
-                print("❌ No hay usuario autenticado")
+                print("ERROR No hay usuario autenticado")
                 input("Presione Enter para continuar...")
                 return
 
@@ -121,29 +121,29 @@ class CitaMenu:
                 observaciones=observaciones,
             )
 
-            print(f"\n✅ Cita agendada exitosamente!")
-            print(f"🆔 ID: {cita.id}")
-            print(f"📅 Fecha: {cita.fecha}")
+            print(f"\nOK Cita agendada exitosamente!")
+            print(f"ID ID: {cita.id}")
+            print(f"FECHA Fecha: {cita.fecha}")
             print(f"🕐 Hora: {cita.hora}")
-            print(f"📝 Motivo: {cita.motivo}")
+            print(f"NOTAS Motivo: {cita.motivo}")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def buscar_cita(self):
         """Buscar una cita."""
         self.limpiar_pantalla()
-        print("🔍 BUSCAR CITA")
+        print("DIAGNOSTICO BUSCAR CITA")
         print("-" * 25)
 
         try:
-            cita_id = input("🆔 ID de la cita: ").strip()
+            cita_id = input("ID ID de la cita: ").strip()
             if not cita_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
@@ -151,70 +151,70 @@ class CitaMenu:
             if cita:
                 self.mostrar_cita(cita)
             else:
-                print("❌ Cita no encontrada")
+                print("ERROR Cita no encontrada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def listar_citas(self):
         """Listar todas las citas."""
         self.limpiar_pantalla()
-        print("📋 LISTA DE CITAS")
+        print("LICENCIA LISTA DE CITAS")
         print("-" * 25)
 
         try:
             citas = self.cita_crud.obtener_citas()
             if citas:
-                print(f"\n📊 Total de citas: {len(citas)}")
+                print(f"\nESTADO Total de citas: {len(citas)}")
                 print("-" * 80)
                 for i, cita in enumerate(citas, 1):
                     print(f"{i:2d}. Cita #{cita.id}")
-                    print(f"     📅 Fecha: {cita.fecha} - {cita.hora}")
-                    print(f"     📝 Motivo: {cita.motivo}")
-                    print(f"     📊 Estado: {cita.estado}")
-                    print(f"     🆔 ID: {cita.id}")
+                    print(f"     FECHA Fecha: {cita.fecha} - {cita.hora}")
+                    print(f"     NOTAS Motivo: {cita.motivo}")
+                    print(f"     ESTADO Estado: {cita.estado}")
+                    print(f"     ID ID: {cita.id}")
                     print("-" * 80)
             else:
                 print("📭 No hay citas registradas")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def actualizar_cita(self):
         """Actualizar una cita."""
         self.limpiar_pantalla()
-        print("✏️ ACTUALIZAR CITA")
+        print("EDITAR ACTUALIZAR CITA")
         print("-" * 30)
 
         try:
-            cita_id = input("🆔 ID de la cita: ").strip()
+            cita_id = input("ID ID de la cita: ").strip()
             if not cita_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             cita = self.cita_crud.obtener_cita(UUID(cita_id))
             if not cita:
-                print("❌ Cita no encontrada")
+                print("ERROR Cita no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n📅 Cita: {cita.fecha} - {cita.hora}")
+            print(f"\nFECHA Cita: {cita.fecha} - {cita.hora}")
             print("Deje en blanco para mantener el valor actual\n")
 
             campos = {}
 
-            nuevo_motivo = input(f"📝 Motivo [{cita.motivo}]: ").strip()
+            nuevo_motivo = input(f"NOTAS Motivo [{cita.motivo}]: ").strip()
             if nuevo_motivo:
                 campos["motivo"] = nuevo_motivo
 
-            nuevo_estado = input(f"📊 Estado [{cita.estado}]: ").strip()
+            nuevo_estado = input(f"ESTADO Estado [{cita.estado}]: ").strip()
             if nuevo_estado:
                 campos["estado"] = nuevo_estado
 
@@ -229,38 +229,38 @@ class CitaMenu:
                 cita_actualizada = self.cita_crud.actualizar_cita(
                     UUID(cita_id), usuario_actual.id, **campos
                 )
-                print(f"\n✅ Cita actualizada exitosamente!")
+                print(f"\nOK Cita actualizada exitosamente!")
             else:
                 print("ℹ️ No se realizaron cambios")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def cancelar_cita(self):
         """Cancelar una cita."""
         self.limpiar_pantalla()
-        print("❌ CANCELAR CITA")
+        print("ERROR CANCELAR CITA")
         print("-" * 25)
 
         try:
-            cita_id = input("🆔 ID de la cita: ").strip()
+            cita_id = input("ID ID de la cita: ").strip()
             if not cita_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             cita = self.cita_crud.obtener_cita(UUID(cita_id))
             if not cita:
-                print("❌ Cita no encontrada")
+                print("ERROR Cita no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n📅 Cita: {cita.fecha} - {cita.hora}")
-            print(f"📝 Motivo: {cita.motivo}")
+            print(f"\nFECHA Cita: {cita.fecha} - {cita.hora}")
+            print(f"NOTAS Motivo: {cita.motivo}")
 
             confirmar = (
                 input("\n¿Está seguro de cancelar esta cita? (s/N): ").strip().lower()
@@ -268,40 +268,40 @@ class CitaMenu:
             if confirmar in ["s", "si", "sí", "y", "yes"]:
                 usuario_actual = self.auth_service.usuario_actual
                 if self.cita_crud.cancelar_cita(UUID(cita_id), usuario_actual.id):
-                    print("✅ Cita cancelada exitosamente")
+                    print("OK Cita cancelada exitosamente")
                 else:
-                    print("❌ Error al cancelar la cita")
+                    print("ERROR Error al cancelar la cita")
             else:
                 print("ℹ️ Operación cancelada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def completar_cita(self):
         """Completar una cita."""
         self.limpiar_pantalla()
-        print("✅ COMPLETAR CITA")
+        print("OK COMPLETAR CITA")
         print("-" * 25)
 
         try:
-            cita_id = input("🆔 ID de la cita: ").strip()
+            cita_id = input("ID ID de la cita: ").strip()
             if not cita_id:
-                print("❌ El ID es obligatorio")
+                print("ERROR El ID es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             cita = self.cita_crud.obtener_cita(UUID(cita_id))
             if not cita:
-                print("❌ Cita no encontrada")
+                print("ERROR Cita no encontrada")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\n📅 Cita: {cita.fecha} - {cita.hora}")
-            print(f"📝 Motivo: {cita.motivo}")
+            print(f"\nFECHA Cita: {cita.fecha} - {cita.hora}")
+            print(f"NOTAS Motivo: {cita.motivo}")
 
             confirmar = (
                 input("\n¿Está seguro de marcar esta cita como completada? (s/N): ")
@@ -311,28 +311,28 @@ class CitaMenu:
             if confirmar in ["s", "si", "sí", "y", "yes"]:
                 usuario_actual = self.auth_service.usuario_actual
                 if self.cita_crud.completar_cita(UUID(cita_id), usuario_actual.id):
-                    print("✅ Cita completada exitosamente")
+                    print("OK Cita completada exitosamente")
                 else:
-                    print("❌ Error al completar la cita")
+                    print("ERROR Error al completar la cita")
             else:
                 print("ℹ️ Operación cancelada")
 
         except ValueError as e:
-            print(f"❌ Error de validación: {e}")
+            print(f"ERROR Error de validación: {e}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"ERROR Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def mostrar_cita(self, cita):
         """Mostrar información de una cita."""
-        print(f"\n📅 INFORMACIÓN DE LA CITA")
+        print(f"\nFECHA INFORMACIÓN DE LA CITA")
         print("-" * 35)
-        print(f"🆔 ID: {cita.id}")
-        print(f"📅 Fecha: {cita.fecha}")
+        print(f"ID ID: {cita.id}")
+        print(f"FECHA Fecha: {cita.fecha}")
         print(f"🕐 Hora: {cita.hora}")
-        print(f"📝 Motivo: {cita.motivo}")
-        print(f"📊 Estado: {cita.estado}")
+        print(f"NOTAS Motivo: {cita.motivo}")
+        print(f"ESTADO Estado: {cita.estado}")
         if cita.observaciones:
             print(f"📄 Observaciones: {cita.observaciones}")
-        print(f"📅 Creada: {cita.created_at}")
+        print(f"FECHA Creada: {cita.created_at}")

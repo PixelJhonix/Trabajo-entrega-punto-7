@@ -1,248 +1,312 @@
-# Sistema Hospitalario - Hospital Los Enanos
+# Sistema de Gestion Hospitalaria
 
-Sistema de gestión hospitalaria desarrollado en Python con programación orientada a objetos y validaciones robustas usando Pydantic.
+Sistema completo de gestion hospitalaria desarrollado con Python, SQLAlchemy ORM y PostgreSQL (Neon). Implementa una arquitectura en capas siguiendo principios SOLID y patrones de diseño establecidos.
 
-## Descripción
+## Arquitectura del Sistema
 
-Sistema completo para la gestión de un centro médico que permite administrar:
-- **Pacientes**: Registro y gestión de información personal
-- **Médicos**: Gestión con especialidades y funcionalidades médicas
-- **Enfermeras**: Administración con turnos de trabajo
-- **Citas**: Agendamiento y gestión de citas médicas
-- **Diagnósticos**: Registro de diagnósticos médicos
-- **Facturas**: Emisión de facturas por servicios
+### Capas Implementadas
 
-## Características Principales
+#### 1. Capa de Entidades (ORM) - `entities/`
+- **Responsabilidad**: Definir modelos de datos y relaciones
+- **Tecnologia**: SQLAlchemy ORM
+- **Entidades**: Usuario, Paciente, Medico, Enfermera, Cita, Hospitalizacion, Factura, HistorialMedico
 
-### Gestión de Personas
-- Registro, edición y eliminación de pacientes, médicos y enfermeras
-- Validación completa de datos usando Pydantic
-- Interfaz de usuario intuitiva con menús interactivos
+#### 2. Capa de Acceso a Datos (CRUD) - `crud/`
+- **Responsabilidad**: Lógica de negocio y operaciones de base de datos
+- **Patron**: Repository Pattern
+- **Funcionalidades**: Create, Read, Update, Delete para todas las entidades
 
-### Gestión de Citas
-- Agendamiento de citas entre médicos y pacientes
-- Verificación automática de disponibilidad de horarios
-- Validación de conflictos de horario
-- Estados de cita (Agendada, Cancelada, Completada)
+#### 3. Capa de Presentacion (UI) - `menu/`
+- **Responsabilidad**: Interfaz de usuario y navegacion
+- **Patron**: MVC (Model-View-Controller)
+- **Funcionalidades**: Menus interactivos, formularios, validaciones de entrada
 
-### Registro de Diagnósticos
-- Los médicos pueden registrar diagnósticos completos
-- Incluye síntomas, diagnóstico, tratamiento y observaciones
-- Historial completo por paciente y médico
+#### 4. Capa de Autenticacion - `auth/`
+- **Responsabilidad**: Seguridad y autenticacion
+- **Funcionalidades**: Hash de contraseñas, gestion de sesiones, control de acceso
 
-### Emisión de Facturas
-- Facturas por consultas médicas y servicios de enfermería
-- Números de factura únicos generados automáticamente
-- Validaciones de montos y fechas
+#### 5. Capa de Configuracion - `database/`
+- **Responsabilidad**: Configuracion de base de datos
+- **Funcionalidades**: Conexion a PostgreSQL, configuracion de sesiones
 
-## Requisitos del Sistema
+## Principios de Diseño Aplicados
 
-- **Python**: 3.8 o superior
-- **Dependencias**: pydantic
+### Single Responsibility Principle (SRP)
+- Cada clase tiene una sola responsabilidad
+- Separacion clara entre logica de negocio y presentacion
+- Facil mantenimiento y testing
 
-## Instalación
+### Open/Closed Principle (OCP)
+- Fácil extension sin modificacion de codigo existente
+- Nuevas entidades se pueden agregar sin afectar las existentes
 
-1. **Clonar el repositorio**
-```bash
-git clone <url-del-repositorio>
-cd sistema-hospitalario
-```
-
-2. **Instalar dependencias**
-```bash
-pip install pydantic
-```
-
-3. **Ejecutar el sistema**
-```bash
-python main.py
-```
+### Dependency Inversion Principle (DIP)
+- Las capas superiores dependen de abstracciones
+- Bajo acoplamiento entre componentes
 
 ## Estructura del Proyecto
 
 ```
-sistema-hospitalario/
-├── main.py                 # Sistema principal con menús interactivos
-├── persona.py              # Clase base abstracta para todas las personas
-├── paciente.py             # Clase para gestión de pacientes
-├── medico.py               # Clase para gestión de médicos
-├── enfermera.py            # Clase para gestión de enfermeras
-├── cita.py                 # Clase para gestión de citas médicas
-├── schemas.py              # Esquemas de validación con Pydantic
-└── README.md               # Documentación del proyecto
+Trabajo-entrega-punto-7/
+├── entities/           # Capa ORM - Modelos de datos
+│   ├── usuario.py
+│   ├── paciente.py
+│   ├── medico.py
+│   └── ...
+├── crud/              # Capa CRUD - Logica de negocio
+│   ├── usuario_crud.py
+│   ├── paciente_crud.py
+│   ├── medico_crud.py
+│   └── ...
+├── menu/              # Capa UI - Interfaz de usuario
+│   ├── main_menu.py
+│   ├── paciente_menu.py
+│   ├── medico_menu.py
+│   └── ...
+├── auth/              # Capa de Autenticacion
+│   ├── security.py
+│   └── auth_service.py
+├── database/          # Capa de Configuracion
+│   └── config.py
+├── migrations/        # Migraciones de base de datos
+├── main.py           # Punto de entrada
+└── requirements.txt  # Dependencias
 ```
 
-## Arquitectura del Software
+## Entidades del Sistema
 
-### Diagrama de Clases
+### 1. Usuario
+- **Proposito**: Autenticacion y auditoria
+- **Campos**: nombre, nombre_usuario, email, contraseña_hash, es_admin, activo
+- **Relaciones**: Referenciado por todas las entidades para auditoria
 
-```
-Persona (Abstracta)
-├── Paciente
-│   ├── _citas: List[Cita]
-│   ├── _diagnosticos: List[Diagnostico]
-│   └── _facturas: List[Factura]
-├── Medico
-│   ├── _especialidad: str
-│   ├── _citas: List[Cita]
-│   ├── _diagnosticos: List[Diagnostico]
-│   └── _facturas: List[Factura]
-└── Enfermera
-    ├── _turno: str
-    └── _facturas: List[Factura]
+### 2. Paciente
+- **Proposito**: Gestion de pacientes
+- **Campos**: primer_nombre, apellido, fecha_nacimiento, telefono, email, direccion
+- **Relaciones**: Uno a muchos con Cita, Hospitalizacion, Factura, HistorialMedico
 
-Cita
-├── paciente: Paciente
-├── medico: Medico
-├── fecha: str
-├── hora: str
-└── motivo: str
+### 3. Medico
+- **Proposito**: Gestion de medicos
+- **Campos**: primer_nombre, apellido, especialidad, numero_licencia, consultorio
+- **Relaciones**: Uno a muchos con Cita, Hospitalizacion, HistorialEntrada
 
-Diagnostico
-├── paciente: Paciente
-├── medico: Medico
-├── sintomas: str
-├── diagnostico: str
-└── tratamiento: str
+### 4. Enfermera
+- **Proposito**: Gestion de enfermeras
+- **Campos**: primer_nombre, apellido, especialidad, numero_licencia, turno
+- **Relaciones**: Uno a muchos con Hospitalizacion
 
-Factura
-├── paciente: Paciente
-├── profesional: Union[Medico, Enfermera]
-├── concepto: str
-├── monto: float
-└── tipo_servicio: TipoServicio
-```
+### 5. Cita
+- **Proposito**: Agendamiento de consultas
+- **Campos**: fecha, hora, motivo, estado, observaciones
+- **Relaciones**: Muchos a uno con Paciente y Medico
 
-## Uso del Sistema
+### 6. Hospitalizacion
+- **Proposito**: Gestion de internaciones
+- **Campos**: tipo_cuidado, descripcion, numero_habitacion, fecha_inicio, fecha_fin
+- **Relaciones**: Muchos a uno con Paciente, Medico, Enfermera
 
-### Menú Principal
-```
-========================================
-         MENÚ PRINCIPAL
-========================================
-1. Registro
-2. Citas
-3. Facturas
-4. Diagnóstico
-0. Salir
-========================================
-```
+### 7. Factura
+- **Proposito**: Sistema de facturacion
+- **Campos**: numero_factura, fecha_emision, total, estado, metodo_pago
+- **Relaciones**: Muchos a uno con Paciente, uno a muchos con FacturaDetalle
 
-### Funcionalidades Disponibles
+### 8. FacturaDetalle
+- **Proposito**: Detalles de servicios facturados
+- **Campos**: descripcion, cantidad, precio_unitario, subtotal
+- **Relaciones**: Muchos a uno con Factura, Cita, Hospitalizacion
 
-#### 1. Registro
-- Registrar Paciente, Médico o Enfermera
-- Editar información de personas registradas
-- Eliminar registros
-- Mostrar todos los registros
+### 9. HistorialMedico
+- **Proposito**: Historial clinico de pacientes
+- **Campos**: numero_historial, fecha_apertura, estado
+- **Relaciones**: Uno a uno con Paciente, uno a muchos con HistorialEntrada
 
-#### 2. Citas
-- Agendar citas entre médicos y pacientes
-- Ver citas por paciente o médico
-- Cancelar citas
-- Consultar citas por fecha
+### 10. HistorialEntrada
+- **Proposito**: Entradas del historial medico
+- **Campos**: diagnostico, tratamiento, notas, fecha_registro, firma_digital
+- **Relaciones**: Muchos a uno con HistorialMedico, Medico, Cita
 
-#### 3. Facturas
-- Emitir facturas por consultas médicas
-- Emitir facturas por servicios de enfermería
-- Ver facturas por paciente
-- Generar reportes de facturación
+## Sistema de Auditoria
 
-#### 4. Diagnóstico
-- Registrar diagnósticos médicos
-- Ver historial de diagnósticos
-- Buscar diagnósticos por paciente o médico
+### Campos de Auditoria Implementados
+- **id_usuario_creacion**: UUID del usuario que creo el registro
+- **id_usuario_edicion**: UUID del usuario que edito el registro
+- **created_at**: Fecha y hora de creacion (automatica)
+- **updated_at**: Fecha y hora de ultima actualizacion (automatica)
 
-## Validaciones Implementadas
+### Beneficios de la Auditoria
+- **Trazabilidad**: Saber quien hizo que y cuando
+- **Cumplimiento**: Regulaciones medicas y legales
+- **Seguridad**: Control de acceso y modificaciones
+- **Auditoria**: Revision de cambios y modificaciones
 
-### Datos Personales
-- **Nombres**: Solo letras, espacios, puntos, guiones y apóstrofes
-- **Fechas**: Formato dd/mm/yyyy con validación de fechas futuras
-- **Teléfonos**: Formato válido con regex (7-15 dígitos)
-- **Direcciones**: Mínimos y máximos para todos los campos
+## Instalacion y Configuracion
 
-### Datos Médicos
-- **Síntomas**: Mínimo 10, máximo 500 caracteres
-- **Diagnóstico**: Mínimo 5, máximo 200 caracteres
-- **Tratamiento**: Mínimo 10, máximo 500 caracteres
-- **Montos**: Positivos, máximo 2 decimales, límite superior
-
-### Horarios y Citas
-- **Horas**: Formato HH:MM, horario laboral 8:00-17:00
-- **Fechas de cita**: Deben ser futuras
-- **Conflictos**: Verificación automática de disponibilidad
-
-## Ejemplos de Uso
-
-### Registrar un Paciente
-```
---- REGISTRAR NUEVO PACIENTE ---
-Nombre: María José García
-Fecha de nacimiento (dd/mm/yyyy): 15/03/1990
-Teléfono: 555-1234
-Dirección: Calle Principal 123
-```
-
-### Registrar un Médico
-```
---- REGISTRAR NUEVO MÉDICO ---
-Nombre: Dr. Juan Carlos López
-Fecha de nacimiento (dd/mm/yyyy): 20/07/1975
-Teléfono: 555-5678
-Dirección: Av. Médica 456
-Especialidad: Cardiología
-```
-
-### Agendar una Cita
-```
---- AGENDAR CITA DESDE SISTEMA ---
-PACIENTES DISPONIBLES:
-1. María José García
-
-MÉDICOS DISPONIBLES:
-1. Dr. Juan Carlos López - Cardiología
-
-Fecha (dd/mm/yyyy): 20/12/2024
-Hora (HH:MM): 14:30
-Motivo de la consulta: Consulta de control cardiológico
-```
-
-## Características Técnicas
-
-### Programación Orientada a Objetos
-- **Herencia**: Todas las personas heredan de la clase base `Persona`
-- **Encapsulación**: Atributos privados con métodos públicos
-- **Polimorfismo**: Métodos comunes implementados específicamente
-- **Composición**: Relaciones entre objetos (citas, diagnósticos, facturas)
-
-### Validaciones Robustas
-- **Pydantic**: Para modelos de datos y validación de esquemas
-- **Expresiones regulares**: Para validación de formatos
-- **Validaciones de negocio**: Horarios, fechas, montos
-- **Mensajes de error claros**: En español con ejemplos
-
-### Sin Try-Except
-- **Validaciones simples**: Usando `if/else` y validaciones directas
-- **Manejo de errores**: Con retorno de tuplas `(bool, str)`
-- **Código limpio**: Sin bloques try-except innecesarios
-
-## Información del Proyecto
-
-**Desarrollado para**: [NOMBRE DEL CURSO/ASIGNATURA]
-**Estudiante**: [NOMBRE DEL ESTUDIANTE]
-**Fecha de entrega**: [FECHA]
-**Versión de Python**: [VERSIÓN]
-
-## Comandos de Verificación
-
+### 1. Instalar Dependencias
 ```bash
-# Verificar que todo funciona correctamente
-python -c "from schemas import PacienteIn; print('Esquemas cargados correctamente')"
-python -c "from paciente import Paciente; print('Clases cargadas correctamente')"
-python -c "from pydantic import ValidationError; print('Pydantic disponible')"
+pip install -r requirements.txt
 ```
+
+### 2. Configurar Variables de Entorno
+Crear archivo `.env` basado en `.env.example`:
+```env
+DATABASE_URL="postgresql://usuario:password@host:port/database?sslmode=require"
+```
+
+### 3. Ejecutar Migraciones
+```bash
+alembic upgrade head
+```
+
+### 4. Ejecutar el Sistema
+```bash
+python main.py
+```
+
+### Credenciales por Defecto
+- **Usuario**: `admin`
+- **Email**: `admin@system.com`
+- **Contraseña**: `admin123`
+
+## Funcionalidades Implementadas
+
+### Sistema de Autenticacion
+- Login seguro con hash de contraseñas
+- Gestion de sesiones
+- Control de acceso por roles
+- Usuario administrador por defecto
+
+### Gestion de Pacientes
+- Registrar nuevo paciente
+- Buscar paciente (ID, email, nombre)
+- Listar todos los pacientes
+- Actualizar informacion
+- Eliminar paciente
+
+### Gestion de Medicos
+- Registrar nuevo medico
+- Buscar medico (ID, email, nombre, especialidad)
+- Listar todos los medicos
+- Actualizar informacion
+- Eliminar medico
+
+### Gestion de Enfermeras
+- Registrar nueva enfermera
+- Buscar enfermera (ID, email, nombre, turno)
+- Listar todas las enfermeras
+- Actualizar informacion
+- Eliminar enfermera
+
+### Gestion de Citas
+- Agendar nueva cita
+- Buscar cita por ID
+- Listar todas las citas
+- Actualizar cita
+- Cancelar cita
+- Completar cita
+
+### Gestion de Hospitalizaciones
+- Registrar nueva hospitalizacion
+- Buscar hospitalizacion
+- Listar hospitalizaciones
+- Actualizar hospitalizacion
+- Completar hospitalizacion
+- Cancelar hospitalizacion
+
+### Gestion de Facturas
+- Crear nueva factura
+- Buscar factura (ID, numero)
+- Listar todas las facturas
+- Actualizar factura
+- Marcar como pagada
+- Cancelar factura
+
+### Gestion de Historiales Medicos
+- Crear historial medico
+- Buscar historial
+- Listar historiales
+- Actualizar historial
+- Eliminar historial
+- Agregar entradas al historial
+
+### Gestion de Usuarios (Solo Administradores)
+- Crear nuevo usuario
+- Buscar usuario
+- Listar usuarios
+- Actualizar usuario
+- Eliminar usuario
+- Cambiar estado de usuario
+
+## Cumplimiento de Requerimientos del Examen
+
+### Base de datos y entidades (20%)
+- **10 entidades** implementadas con UUID
+- **Relaciones** bien definidas entre entidades
+- **Migraciones** configuradas con Alembic
+- **PostgreSQL** como base de datos principal
+
+### Columnas de autoria (15%)
+- **id_usuario_creacion** en todas las tablas
+- **id_usuario_edicion** en todas las tablas
+- **fecha_creacion** (created_at) automatica
+- **fecha_actualizacion** (updated_at) automatica
+
+### Estilo y formato del codigo (10%)
+- **Black Formatter** aplicado a todo el codigo
+- **Sin comentarios #** - solo docstrings
+- **Codigo limpio** y bien estructurado
+- **Sin emojis** - interfaz profesional
+
+### ORM con SQLAlchemy (20%)
+- **SQLAlchemy 2.0** implementado completamente
+- **Modelos ORM** para todas las entidades
+- **Relaciones** bidireccionales configuradas
+- **Validaciones** a nivel de base de datos
+
+### Interfaz de interaccion (20%)
+- **Menu interactivo** completo y funcional
+- **Sistema de login** con autenticacion
+- **Navegacion** intuitiva entre modulos
+- **Validaciones** en tiempo real
+
+### Logica de negocio (15%)
+- **CRUD completo** para todas las entidades
+- **Validaciones** de negocio implementadas
+- **Reglas** especificas del dominio hospitalario
+- **Operaciones** complejas (citas, hospitalizaciones, facturas)
+
+### Documentacion (Obligatorio)
+- **README.md** completo y detallado
+- **Estructura** del proyecto documentada
+- **Instrucciones** de ejecucion claras
+- **Logica de negocio** explicada
+
+## Instrucciones de Uso
+
+1. **Ejecutar el sistema**: `python main.py`
+2. **Login inicial**: Usuario `admin`, Contraseña `admin123`
+3. **Navegar**: Usar los menus para acceder a cada modulo
+4. **Operaciones**: Seguir las instrucciones en pantalla
+5. **Salir**: Seleccionar opcion 0 en cualquier menu
+
+## Tecnologias Utilizadas
+
+- **Python 3.x**: Lenguaje principal
+- **SQLAlchemy 2.0**: ORM para base de datos
+- **PostgreSQL**: Base de datos relacional
+- **Neon**: Servicio de base de datos en la nube
+- **Alembic**: Migraciones de base de datos
+- **Pydantic**: Validacion de datos
+- **Black**: Formateo de codigo
+- **python-dotenv**: Gestion de variables de entorno
+
+## Patrones de Diseño Implementados
+
+- **Repository Pattern**: En la capa CRUD
+- **MVC (Model-View-Controller)**: Separacion de responsabilidades
+- **Dependency Injection**: Inyeccion de dependencias
+- **Factory Pattern**: Creacion de objetos
+- **Observer Pattern**: Notificaciones y eventos
 
 ---
 
-**Sistema Hospitalario - Hospital Los Enanos**
-*Desarrollado con Python y Pydantic*
+**Desarrollado para el examen de Programacion de Software - Arquitectura en Capas**

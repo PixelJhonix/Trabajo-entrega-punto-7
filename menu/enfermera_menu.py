@@ -70,7 +70,9 @@ class EnfermeraMenu:
             print("-" * 30)
 
             primer_nombre = input("USUARIO Primer nombre: ").strip()
-            segundo_nombre = input("USUARIO Segundo nombre (opcional): ").strip() or None
+            segundo_nombre = (
+                input("USUARIO Segundo nombre (opcional): ").strip() or None
+            )
             apellido = input("USUARIO Apellido: ").strip()
             fecha_nacimiento = input("FECHA Fecha de nacimiento (YYYY-MM-DD): ").strip()
             especialidad = input("SISTEMA Especialidad (opcional): ").strip() or None
@@ -206,7 +208,9 @@ class EnfermeraMenu:
             print(f"\nLICENCIA Enfermera actual:")
             self.mostrar_enfermera(enfermera)
 
-            print("\nEDITAR Ingrese nuevos datos (deje en blanco para mantener el actual):")
+            print(
+                "\nEDITAR Ingrese nuevos datos (deje en blanco para mantener el actual):"
+            )
 
             primer_nombre = input(
                 f"USUARIO Primer nombre [{enfermera.primer_nombre}]: "

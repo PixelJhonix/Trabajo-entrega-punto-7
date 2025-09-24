@@ -273,7 +273,9 @@ class PacienteMenu:
             if nuevo_email:
                 campos["email"] = nuevo_email
 
-            nueva_direccion = input(f"DIRECCION Dirección [{paciente.direccion}]: ").strip()
+            nueva_direccion = input(
+                f"DIRECCION Dirección [{paciente.direccion}]: "
+            ).strip()
             if nueva_direccion:
                 campos["direccion"] = nueva_direccion
 

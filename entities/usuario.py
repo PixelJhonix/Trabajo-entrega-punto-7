@@ -1,4 +1,8 @@
-# Registro de datos del usuario, diagnóstico y decisión de profesional needed.
+"""Módulo para la gestión de datos de usuarios (pacientes) en el sistema de salud.
+
+Este módulo define el modelo Usuario para almacenar información de los pacientes y
+modelos Pydantic para validar los datos de creación y actualización de usuarios.
+"""
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -9,6 +13,19 @@ import uuid
 
 
 class Usuario(Base):
+    """Modelo SQLAlchemy que representa un usuario (paciente) en el sistema.
+
+    Atributos:
+        id (UUID): Identificador único del usuario.
+        nombre (str): Nombre único del usuario.
+        edad (str): Edad del usuario.
+        diagnostico (str): Diagnóstico médico del usuario.
+        necesita (str): Tipo de profesional necesario ('doctor' o 'enfermera').
+        historial (HistorialMedico): Relación con el historial médico del usuario.
+        citas (List[Citas]): Relación con las citas del usuario.
+        facturas (List[Factura]): Relación con las facturas del usuario.
+    """
+
     __tablename__ = "usuarios"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String, unique=True)
@@ -26,10 +43,20 @@ class Usuario(Base):
     facturas = relationship("Factura", back_populates="usuario", cascade="all, delete")
 
     def __repr__(self):
+        """Representación en cadena de la instancia de Usuario."""
         return f"Usuario(id={self.id}, nombre='{self.nombre}', edad={self.edad}, diagnostico='{self.diagnostico}', necesita='{self.necesita}')"
 
 
 class UsuarioCreate(BaseModel):
+    """Modelo Pydantic para validar los datos de creación de usuarios.
+
+    Atributos:
+        nombre (str): Nombre del usuario (no debe estar vacío).
+        edad (int): Edad del usuario (debe ser no negativa).
+        diagnostico (str): Diagnóstico médico (no debe estar vacío).
+        necesita (str): Tipo de profesional necesario ('doctor' o 'enfermera').
+    """
+
     nombre: str = Field(..., min_length=1)
     edad: int = Field(..., ge=0)
     diagnostico: str = Field(..., min_length=1)
@@ -37,6 +64,15 @@ class UsuarioCreate(BaseModel):
 
 
 class UsuarioUpdate(BaseModel):
+    """Modelo Pydantic para validar los datos de actualización de usuarios.
+
+    Atributos:
+        nombre (str, opcional): Nombre actualizado del usuario.
+        edad (int, opcional): Edad actualizada del usuario.
+        diagnostico (str, opcional): Diagnóstico médico actualizado.
+        necesita (str, opcional): Tipo de profesional necesario ('doctor' o 'enfermera').
+    """
+
     nombre: str | None = Field(None, min_length=1)
     edad: int | None = Field(None, ge=0)
     diagnostico: str | None = Field(None, min_length=1)

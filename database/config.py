@@ -1,6 +1,12 @@
 """
-Configuración de la base de datos PostgreSQL con Neon
+Configuración de la base de datos PostgreSQL con Neon.
 
+Este módulo realiza las siguientes tareas:
+- Carga las variables de entorno desde el archivo .env.
+- Obtiene la URL de conexión a la base de datos desde la variable de entorno DATABASE_URL.
+- Crea el motor de SQLAlchemy para gestionar la conexión con la base de datos.
+- Define la clase base para los modelos ORM.
+- Proporciona funciones para obtener sesiones de base de datos y crear tablas.
 """
 
 import os
@@ -13,7 +19,6 @@ from sqlalchemy.orm import sessionmaker
 # Cargar variables de entorno
 load_dotenv()
 
-# Configuración de la base de datos Neon PostgreSQL
 # Obtener la URL completa de conexión desde las variables de entorno
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -34,8 +39,10 @@ Base = declarative_base()
 
 
 def get_db():
-    """
-    Generador de sesiones de base de datos
+    """Generador de sesiones de base de datos.
+
+    Yields:
+        db (Session): Sesión de base de datos para operaciones ORM.
     """
     db = SessionLocal()
     try:
@@ -46,6 +53,8 @@ def get_db():
 
 def create_tables():
     """
-    Crear todas las tablas definidas en los modelos
+    Crear todas las tablas definidas en los modelos ORM.
+
+    Utiliza la metadata de la clase Base para crear las tablas en la base de datos.
     """
     Base.metadata.create_all(bind=engine)

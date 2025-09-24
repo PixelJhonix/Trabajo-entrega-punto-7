@@ -1,5 +1,10 @@
-# Este es el archivo principal donde se registra los datos y corre el sistema.
-# Permite modificar datos, eliminar usuarios, mostrar registros y volver al menú.
+"""Módulo principal para la gestión del sistema hospitalario.
+
+Este módulo proporciona una interfaz de consola para registrar usuarios y profesionales,
+gestionar citas, facturas y historiales médicos, y realizar operaciones como modificar
+o eliminar datos. Utiliza SQLAlchemy para interactuar con la base de datos y Pydantic
+para validar los datos de entrada.
+"""
 
 import json
 from typing import List, Optional
@@ -14,10 +19,8 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 
-# Cargar variables de entorno desde .env
 load_dotenv()
 
-# Configuración de la base de datos con SQLAlchemy para Neon
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, echo=False)
 Base.metadata.create_all(engine)
@@ -28,6 +31,11 @@ print("---------------BIENVENIDOS A HOSPITAL LOS ENA-NOS---------------")
 
 
 def registrar_usuario():
+    """Registra un nuevo usuario (paciente) en el sistema.
+
+    Solicita los datos del usuario a través de la consola, valida la entrada con
+    el modelo Pydantic UsuarioCreate y crea un nuevo usuario con un historial médico vacío.
+    """
     nombre = input("Nombre del usuario: ")
     edad = int(input("Edad: "))
     diagnostico = input("Diagnóstico: ")
@@ -51,6 +59,11 @@ def registrar_usuario():
 
 
 def registrar_profesional():
+    """Registra un nuevo profesional médico en el sistema.
+
+    Solicita los datos del profesional a través de la consola, valida la entrada con
+    el modelo Pydantic ProfesionalCreate y crea un nuevo profesional.
+    """
     nombre = input("Nombre del profesional: ")
     categoria_profesional = input("Categoría (doctor/enfermera): ")
     profesional_data = ProfesionalCreate(
@@ -67,6 +80,12 @@ def registrar_profesional():
 
 
 def agendar_cita():
+    """Agenda una nueva cita médica.
+
+    Solicita los datos de la cita (usuario, profesional y fecha) a través de la consola,
+    valida la entrada con el modelo Pydantic CitasCreate y registra la cita en la base de datos,
+    actualizando también el historial médico del usuario.
+    """
     usuario_nombre = input("Nombre del usuario: ")
     profesional_nombre = input("Nombre del profesional: ")
     fecha = input("Fecha (YYYY-MM-DD): ")
@@ -102,6 +121,11 @@ def agendar_cita():
 
 
 def modificar_dato_usuario():
+    """Modifica los datos de un usuario existente.
+
+    Solicita el nombre del usuario y el campo a modificar (nombre, edad, diagnóstico o necesita),
+    valida la entrada con el modelo Pydantic UsuarioUpdate y actualiza los datos en la base de datos.
+    """
     nombre = input("Nombre del usuario a modificar: ")
     with Session() as session:
         usuario = session.query(Usuario).filter(Usuario.nombre == nombre).first()
@@ -130,6 +154,11 @@ def modificar_dato_usuario():
 
 
 def modificar_dato_profesional():
+    """Modifica los datos de un profesional existente.
+
+    Solicita el nombre del profesional y el campo a modificar (nombre o categoría profesional),
+    valida la entrada y actualiza los datos en la base de datos.
+    """
     nombre = input("Nombre del profesional a modificar: ")
     with Session() as session:
         profesional = (
@@ -156,6 +185,10 @@ def modificar_dato_profesional():
 
 
 def eliminar_usuario():
+    """Elimina un usuario de la base de datos.
+
+    Solicita el nombre del usuario y elimina el registro correspondiente junto con sus datos asociados.
+    """
     nombre = input("Nombre del usuario a eliminar: ")
     with Session() as session:
         usuario = session.query(Usuario).filter(Usuario.nombre == nombre).first()
@@ -168,6 +201,10 @@ def eliminar_usuario():
 
 
 def eliminar_profesional():
+    """Elimina un profesional de la base de datos.
+
+    Solicita el nombre del profesional y elimina el registro correspondiente junto con sus datos asociados.
+    """
     nombre = input("Nombre del profesional a eliminar: ")
     with Session() as session:
         profesional = (
@@ -182,6 +219,10 @@ def eliminar_profesional():
 
 
 def mostrar_registros():
+    """Muestra todos los registros de usuarios, profesionales, citas, historiales y facturas.
+
+    Consulta y muestra todos los datos almacenados en la base de datos.
+    """
     with Session() as session:
         print("Usuarios:")
         for u in session.query(Usuario).all():
@@ -201,6 +242,11 @@ def mostrar_registros():
 
 
 def generar_factura():
+    """Genera una nueva factura para un usuario.
+
+    Solicita los datos de la factura a través de la consola, valida la entrada con
+    el modelo Pydantic FacturaCreate y registra la factura en la base de datos.
+    """
     usuario_nombre = input("Nombre del usuario: ")
     descripcion = input("Descripción de cobros: ")
     monto = float(input("Monto: "))

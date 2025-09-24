@@ -14,9 +14,16 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Importar los modelos para que Alembic los detecte
 from database.config import Base
-from entities.categoria import Categoria
-from entities.producto import Producto
 from entities.usuario import Usuario
+from entities.paciente import Paciente
+from entities.medico import Medico
+from entities.enfermera import Enfermera
+from entities.cita import Cita
+from entities.hospitalizacion import Hospitalizacion
+from entities.factura import Factura
+from entities.factura_detalle import FacturaDetalle
+from entities.historial_medico import HistorialMedico
+from entities.historial_entrada import HistorialEntrada
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -95,4 +102,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

@@ -1,7 +1,4 @@
-"""
-Entidad Hospitalizacion - Sistema Hospitalario
-Modelo ORM para la gestión de hospitalizaciones
-"""
+"""Entidad Hospitalizacion: modelo ORM para hospitalizaciones."""
 
 import uuid
 from sqlalchemy import Column, DateTime, String, Date, ForeignKey, Text
@@ -13,14 +10,12 @@ from database.config import Base
 
 
 class Hospitalizacion(Base):
-    """Modelo de Hospitalizacion para el sistema hospitalario"""
+    """Modelo ORM de hospitalización."""
 
     __tablename__ = "hospitalizaciones"
 
-    # Clave primaria
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    # Claves foráneas
     paciente_id = Column(
         UUID(as_uuid=True), ForeignKey("pacientes.id"), nullable=False, index=True
     )
@@ -31,24 +26,21 @@ class Hospitalizacion(Base):
         UUID(as_uuid=True), ForeignKey("enfermeras.id"), nullable=True, index=True
     )
 
-    # Datos de la hospitalización
-    tipo_cuidado = Column(String(50), nullable=False)  # Intensivo, Intermedio, Básico
+    tipo_cuidado = Column(String(50), nullable=False)
     descripcion = Column(Text, nullable=False)
     numero_habitacion = Column(String(10), nullable=False)
-    tipo_habitacion = Column(String(20), nullable=False)  # Individual, Compartida, VIP
+    tipo_habitacion = Column(String(20), nullable=False)
     fecha_inicio = Column(Date, nullable=False)
     fecha_fin = Column(Date, nullable=True)
-    estado = Column(
-        String(20), nullable=False, default="Activa", index=True
-    )  # Activa, Finalizada, Trasladada
+    estado = Column(String(20), nullable=False, default="Activa", index=True)
 
-    # Auditoría automática
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
-    # Relaciones
     paciente = relationship("Paciente", back_populates="hospitalizaciones")
     medico_responsable = relationship(
         "Medico", back_populates="hospitalizaciones_responsable"

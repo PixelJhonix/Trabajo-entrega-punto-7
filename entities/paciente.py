@@ -18,6 +18,8 @@ class Paciente(Base):
     telefono = Column(String(20), nullable=False)
     email = Column(String(150), nullable=True)
     direccion = Column(String(500), nullable=False)
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

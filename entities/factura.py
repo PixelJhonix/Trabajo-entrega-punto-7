@@ -1,7 +1,4 @@
-"""
-Entidad Factura - Sistema Hospitalario
-Modelo ORM para la gestión de facturas
-"""
+"""Entidad Factura: modelo ORM para facturación."""
 
 import uuid
 from sqlalchemy import Column, DateTime, String, Date, ForeignKey, Numeric
@@ -13,19 +10,16 @@ from database.config import Base
 
 
 class Factura(Base):
-    """Modelo de Factura para el sistema hospitalario"""
+    """Modelo ORM de factura."""
 
     __tablename__ = "facturas"
 
-    # Clave primaria
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    # Clave foránea
     paciente_id = Column(
         UUID(as_uuid=True), ForeignKey("pacientes.id"), nullable=False, index=True
     )
 
-    # Datos de la factura
     numero_factura = Column(String(50), unique=True, nullable=False, index=True)
     fecha_emision = Column(Date, nullable=False)
     fecha_limite_pago = Column(Date, nullable=False)
@@ -35,13 +29,13 @@ class Factura(Base):
     )  # Pendiente, Pagada, Vencida, Cancelada
     metodo_pago = Column(String(50), nullable=True)
 
-    # Auditoría automática
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
-    # Relaciones
     paciente = relationship("Paciente", back_populates="facturas")
     detalles = relationship(
         "FacturaDetalle", back_populates="factura", cascade="all, delete-orphan"

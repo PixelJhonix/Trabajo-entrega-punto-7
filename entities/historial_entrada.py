@@ -41,7 +41,8 @@ class HistorialEntrada(Base):
     fecha_registro = Column(Date, nullable=False)
     firma_digital = Column(Text, nullable=True)
 
-    # Auditoría automática
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

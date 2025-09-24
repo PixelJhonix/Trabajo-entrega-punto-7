@@ -1,7 +1,4 @@
-"""
-Entidad Medico - Sistema Hospitalario
-Modelo ORM para la gestión de médicos
-"""
+"""Entidad Medico: modelo ORM para médicos."""
 
 import uuid
 from sqlalchemy import Column, DateTime, String, Date
@@ -13,14 +10,12 @@ from database.config import Base
 
 
 class Medico(Base):
-    """Modelo de Medico para el sistema hospitalario"""
+    """Modelo ORM de médico."""
 
     __tablename__ = "medicos"
 
-    # Clave primaria
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    # Datos personales
     primer_nombre = Column(String(100), nullable=False)
     segundo_nombre = Column(String(100), nullable=True)
     apellido = Column(String(100), nullable=False)
@@ -32,13 +27,13 @@ class Medico(Base):
     email = Column(String(150), nullable=True)
     direccion = Column(String(500), nullable=False)
 
-    # Auditoría automática
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
-    # Relaciones
     citas = relationship("Cita", back_populates="medico")
     hospitalizaciones_responsable = relationship(
         "Hospitalizacion", back_populates="medico_responsable"

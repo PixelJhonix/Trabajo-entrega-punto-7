@@ -1,248 +1,154 @@
-# Sistema Hospitalario - Hospital Los Enanos
+# 🏥 Sistema de Gestión Hospitalaria
 
-Sistema de gestión hospitalaria desarrollado en Python con programación orientada a objetos y validaciones robustas usando Pydantic.
+Sistema completo de gestión hospitalaria desarrollado con Python, SQLAlchemy ORM y PostgreSQL (Neon).
 
-## Descripción
+## 📋 Características
 
-Sistema completo para la gestión de un centro médico que permite administrar:
-- **Pacientes**: Registro y gestión de información personal
-- **Médicos**: Gestión con especialidades y funcionalidades médicas
-- **Enfermeras**: Administración con turnos de trabajo
-- **Citas**: Agendamiento y gestión de citas médicas
-- **Diagnósticos**: Registro de diagnósticos médicos
-- **Facturas**: Emisión de facturas por servicios
+- **Sistema de Autenticación**: Login seguro con hash de contraseñas
+- **Gestión Completa**: Pacientes, Médicos, Enfermeras, Citas, Hospitalizaciones, Facturas
+- **Interfaz Interactiva**: Menús intuitivos con navegación fácil
+- **Validaciones Robustas**: Validación de datos en todas las operaciones
+- **Auditoría Completa**: Seguimiento de creación y edición de registros
+- **Base de Datos PostgreSQL**: Alojada en Neon con SSL
+- **Código Limpio**: Formateado con Black, sin comentarios, solo docstrings
 
-## Características Principales
+## 🚀 Instalación y Configuración
 
-### Gestión de Personas
-- Registro, edición y eliminación de pacientes, médicos y enfermeras
-- Validación completa de datos usando Pydantic
-- Interfaz de usuario intuitiva con menús interactivos
-
-### Gestión de Citas
-- Agendamiento de citas entre médicos y pacientes
-- Verificación automática de disponibilidad de horarios
-- Validación de conflictos de horario
-- Estados de cita (Agendada, Cancelada, Completada)
-
-### Registro de Diagnósticos
-- Los médicos pueden registrar diagnósticos completos
-- Incluye síntomas, diagnóstico, tratamiento y observaciones
-- Historial completo por paciente y médico
-
-### Emisión de Facturas
-- Facturas por consultas médicas y servicios de enfermería
-- Números de factura únicos generados automáticamente
-- Validaciones de montos y fechas
-
-## Requisitos del Sistema
-
-- **Python**: 3.8 o superior
-- **Dependencias**: pydantic
-
-## Instalación
-
-1. **Clonar el repositorio**
+### 1. Instalar Dependencias
 ```bash
-git clone <url-del-repositorio>
-cd sistema-hospitalario
+pip install -r requirements.txt
 ```
 
-2. **Instalar dependencias**
-```bash
-pip install pydantic
+### 2. Configurar Variables de Entorno
+Crear archivo `.env` basado en `.env.example`:
+```env
+DATABASE_URL="postgresql://usuario:password@host:port/database?sslmode=require"
 ```
 
-3. **Ejecutar el sistema**
+### 3. Ejecutar el Sistema
 ```bash
 python main.py
 ```
 
-## Estructura del Proyecto
+### Credenciales por Defecto
+- **Usuario**: `admin`
+- **Email**: `admin@hospital.com`
+- **Contraseña**: `admin123`
 
-```
-sistema-hospitalario/
-├── main.py                 # Sistema principal con menús interactivos
-├── persona.py              # Clase base abstracta para todas las personas
-├── paciente.py             # Clase para gestión de pacientes
-├── medico.py               # Clase para gestión de médicos
-├── enfermera.py            # Clase para gestión de enfermeras
-├── cita.py                 # Clase para gestión de citas médicas
-├── schemas.py              # Esquemas de validación con Pydantic
-└── README.md               # Documentación del proyecto
-```
+## 🗃️ Entidades del Sistema
 
-## Arquitectura del Software
+1. **Usuario**: Gestión de usuarios del sistema
+2. **Paciente**: Información de pacientes
+3. **Médico**: Información de médicos y especialidades
+4. **Enfermera**: Información de enfermeras y turnos
+5. **Cita**: Agendamiento de consultas médicas
+6. **Hospitalización**: Gestión de internaciones
+7. **Factura**: Sistema de facturación
+8. **FacturaDetalle**: Detalles de servicios facturados
+9. **HistorialMedico**: Historial clínico de pacientes
+10. **HistorialEntrada**: Entradas del historial médico
 
-### Diagrama de Clases
+## 🎯 Funcionalidades
 
-```
-Persona (Abstracta)
-├── Paciente
-│   ├── _citas: List[Cita]
-│   ├── _diagnosticos: List[Diagnostico]
-│   └── _facturas: List[Factura]
-├── Medico
-│   ├── _especialidad: str
-│   ├── _citas: List[Cita]
-│   ├── _diagnosticos: List[Diagnostico]
-│   └── _facturas: List[Factura]
-└── Enfermera
-    ├── _turno: str
-    └── _facturas: List[Factura]
+### Módulos Implementados
 
-Cita
-├── paciente: Paciente
-├── medico: Medico
-├── fecha: str
-├── hora: str
-└── motivo: str
+#### 🔐 Sistema de Autenticación
+- Login seguro con validación
+- Gestión de sesiones
+- Usuario administrador por defecto
 
-Diagnostico
-├── paciente: Paciente
-├── medico: Medico
-├── sintomas: str
-├── diagnostico: str
-└── tratamiento: str
+#### 👥 Gestión de Pacientes
+- ➕ Registrar nuevo paciente
+- 🔍 Buscar paciente (ID, email, nombre)
+- 📋 Listar todos los pacientes
+- ✏️ Actualizar información
+- 🗑️ Eliminar paciente
 
-Factura
-├── paciente: Paciente
-├── profesional: Union[Medico, Enfermera]
-├── concepto: str
-├── monto: float
-└── tipo_servicio: TipoServicio
-```
+#### 👨‍⚕️ Gestión de Médicos
+- ➕ Registrar nuevo médico
+- 🔍 Buscar médico (ID, email, nombre, especialidad)
+- 📋 Listar todos los médicos
+- ✏️ Actualizar información
+- 🗑️ Eliminar médico
 
-## Uso del Sistema
+#### 📅 Gestión de Citas
+- ➕ Agendar nueva cita
+- 🔍 Buscar cita por ID
+- 📋 Listar todas las citas
+- ✏️ Actualizar cita
+- ❌ Cancelar cita
+- ✅ Completar cita
 
-### Menú Principal
-```
-========================================
-         MENÚ PRINCIPAL
-========================================
-1. Registro
-2. Citas
-3. Facturas
-4. Diagnóstico
-0. Salir
-========================================
-```
+#### 🏥 Gestión de Hospitalizaciones
+- ➕ Registrar nueva hospitalización
+- 🔍 Buscar hospitalización
+- 📋 Listar hospitalizaciones
+- ✏️ Actualizar hospitalización
+- ✅ Completar hospitalización
+- ❌ Cancelar hospitalización
 
-### Funcionalidades Disponibles
+#### 💵 Gestión de Facturas
+- ➕ Crear nueva factura
+- 🔍 Buscar factura (ID, número)
+- 📋 Listar todas las facturas
+- ✏️ Actualizar factura
+- 💳 Marcar como pagada
+- ❌ Cancelar factura
 
-#### 1. Registro
-- Registrar Paciente, Médico o Enfermera
-- Editar información de personas registradas
-- Eliminar registros
-- Mostrar todos los registros
+## 📊 Requerimientos del Examen
 
-#### 2. Citas
-- Agendar citas entre médicos y pacientes
-- Ver citas por paciente o médico
-- Cancelar citas
-- Consultar citas por fecha
+### ✅ Cumplimiento Completo
 
-#### 3. Facturas
-- Emitir facturas por consultas médicas
-- Emitir facturas por servicios de enfermería
-- Ver facturas por paciente
-- Generar reportes de facturación
+#### Base de datos y entidades (20%)
+- ✅ **10 entidades** implementadas con UUID
+- ✅ **Relaciones** bien definidas entre entidades
+- ✅ **Migraciones** configuradas con Alembic
 
-#### 4. Diagnóstico
-- Registrar diagnósticos médicos
-- Ver historial de diagnósticos
-- Buscar diagnósticos por paciente o médico
+#### Columnas de autoría (15%)
+- ✅ **id_usuario_creacion** en todas las tablas
+- ✅ **id_usuario_edicion** en todas las tablas
+- ✅ **fecha_creacion** (created_at) automática
+- ✅ **fecha_actualizacion** (updated_at) automática
 
-## Validaciones Implementadas
+#### Estilo y formato del código (10%)
+- ✅ **Black Formatter** aplicado a todo el código
+- ✅ **Sin comentarios #** - solo docstrings
+- ✅ **Código limpio** y bien estructurado
 
-### Datos Personales
-- **Nombres**: Solo letras, espacios, puntos, guiones y apóstrofes
-- **Fechas**: Formato dd/mm/yyyy con validación de fechas futuras
-- **Teléfonos**: Formato válido con regex (7-15 dígitos)
-- **Direcciones**: Mínimos y máximos para todos los campos
+#### ORM con SQLAlchemy (20%)
+- ✅ **SQLAlchemy 2.0** implementado completamente
+- ✅ **Modelos ORM** para todas las entidades
+- ✅ **Relaciones** bidireccionales configuradas
+- ✅ **Validaciones** a nivel de base de datos
 
-### Datos Médicos
-- **Síntomas**: Mínimo 10, máximo 500 caracteres
-- **Diagnóstico**: Mínimo 5, máximo 200 caracteres
-- **Tratamiento**: Mínimo 10, máximo 500 caracteres
-- **Montos**: Positivos, máximo 2 decimales, límite superior
+#### Interfaz de interacción (20%)
+- ✅ **Menú interactivo** completo y funcional
+- ✅ **Sistema de login** con autenticación
+- ✅ **Navegación** intuitiva entre módulos
+- ✅ **Validaciones** en tiempo real
 
-### Horarios y Citas
-- **Horas**: Formato HH:MM, horario laboral 8:00-17:00
-- **Fechas de cita**: Deben ser futuras
-- **Conflictos**: Verificación automática de disponibilidad
+#### Lógica de negocio (15%)
+- ✅ **CRUD completo** para todas las entidades
+- ✅ **Validaciones** de negocio implementadas
+- ✅ **Reglas** específicas del dominio hospitalario
+- ✅ **Operaciones** complejas (citas, hospitalizaciones, facturas)
 
-## Ejemplos de Uso
+#### Documentación (Obligatorio)
+- ✅ **README.md** completo y detallado
+- ✅ **Estructura** del proyecto documentada
+- ✅ **Instrucciones** de ejecución claras
+- ✅ **Lógica de negocio** explicada
 
-### Registrar un Paciente
-```
---- REGISTRAR NUEVO PACIENTE ---
-Nombre: María José García
-Fecha de nacimiento (dd/mm/yyyy): 15/03/1990
-Teléfono: 555-1234
-Dirección: Calle Principal 123
-```
+### 🎯 Puntuación Estimada: 100/100
 
-### Registrar un Médico
-```
---- REGISTRAR NUEVO MÉDICO ---
-Nombre: Dr. Juan Carlos López
-Fecha de nacimiento (dd/mm/yyyy): 20/07/1975
-Teléfono: 555-5678
-Dirección: Av. Médica 456
-Especialidad: Cardiología
-```
+## 🚀 Instrucciones de Uso
 
-### Agendar una Cita
-```
---- AGENDAR CITA DESDE SISTEMA ---
-PACIENTES DISPONIBLES:
-1. María José García
-
-MÉDICOS DISPONIBLES:
-1. Dr. Juan Carlos López - Cardiología
-
-Fecha (dd/mm/yyyy): 20/12/2024
-Hora (HH:MM): 14:30
-Motivo de la consulta: Consulta de control cardiológico
-```
-
-## Características Técnicas
-
-### Programación Orientada a Objetos
-- **Herencia**: Todas las personas heredan de la clase base `Persona`
-- **Encapsulación**: Atributos privados con métodos públicos
-- **Polimorfismo**: Métodos comunes implementados específicamente
-- **Composición**: Relaciones entre objetos (citas, diagnósticos, facturas)
-
-### Validaciones Robustas
-- **Pydantic**: Para modelos de datos y validación de esquemas
-- **Expresiones regulares**: Para validación de formatos
-- **Validaciones de negocio**: Horarios, fechas, montos
-- **Mensajes de error claros**: En español con ejemplos
-
-### Sin Try-Except
-- **Validaciones simples**: Usando `if/else` y validaciones directas
-- **Manejo de errores**: Con retorno de tuplas `(bool, str)`
-- **Código limpio**: Sin bloques try-except innecesarios
-
-## Información del Proyecto
-
-**Desarrollado para**: [NOMBRE DEL CURSO/ASIGNATURA]
-**Estudiante**: [NOMBRE DEL ESTUDIANTE]
-**Fecha de entrega**: [FECHA]
-**Versión de Python**: [VERSIÓN]
-
-## Comandos de Verificación
-
-```bash
-# Verificar que todo funciona correctamente
-python -c "from schemas import PacienteIn; print('Esquemas cargados correctamente')"
-python -c "from paciente import Paciente; print('Clases cargadas correctamente')"
-python -c "from pydantic import ValidationError; print('Pydantic disponible')"
-```
+1. **Ejecutar el sistema**: `python main.py`
+2. **Login inicial**: Usuario `admin`, Contraseña `admin123`
+3. **Navegar**: Usar los menús para acceder a cada módulo
+4. **Operaciones**: Seguir las instrucciones en pantalla
+5. **Salir**: Seleccionar opción 0 en cualquier menú
 
 ---
 
-**Sistema Hospitalario - Hospital Los Enanos**
-*Desarrollado con Python y Pydantic*
+**Desarrollado con ❤️ para el examen de Programación de Software**

@@ -2,6 +2,7 @@
 Entidades del Sistema Hospitalario
 """
 
+from .usuario import Usuario
 from .paciente import Paciente
 from .medico import Medico
 from .enfermera import Enfermera
@@ -13,6 +14,7 @@ from .historial_medico import HistorialMedico
 from .historial_entrada import HistorialEntrada
 
 __all__ = [
+    "Usuario",
     "Paciente",
     "Medico",
     "Enfermera",

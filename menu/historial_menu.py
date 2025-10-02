@@ -2,12 +2,13 @@
 
 import os
 from uuid import UUID
-from sqlalchemy.orm import Session
-from crud.historial_medico_crud import HistorialMedicoCRUD
-from crud.historial_entrada_crud import HistorialEntradaCRUD
-from crud.paciente_crud import PacienteCRUD
-from crud.medico_crud import MedicoCRUD
+
 from auth.auth_service import AuthService
+from crud.historial_entrada_crud import HistorialEntradaCRUD
+from crud.historial_medico_crud import HistorialMedicoCRUD
+from crud.medico_crud import MedicoCRUD
+from crud.paciente_crud import PacienteCRUD
+from sqlalchemy.orm import Session
 
 
 class HistorialMenu:
@@ -27,7 +28,7 @@ class HistorialMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del menú."""
-        print("LICENCIA GESTIÓN DE HISTORIALES MÉDICOS")
+        print("GESTIÓN DE HISTORIALES MÉDICOS")
         print("-" * 40)
 
     def mostrar_menu(self):
@@ -36,11 +37,11 @@ class HistorialMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("1. LICENCIA Gestión de Historiales")
+                print("1. Gestión de Historiales")
                 print("2. NOTAS Gestión de Entradas")
-                print("0. VOLVER Volver al Menú Principal")
+                print("0. Volver al Menú Principal")
 
-                opcion = input("\n-> Seleccione una opción: ").strip()
+                opcion = input("\nSeleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -49,14 +50,14 @@ class HistorialMenu:
                 elif opcion == "2":
                     self.menu_entradas()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print("Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\nADIOS Regresando al menú principal...")
+                print("\n\nRegresando al menú principal...")
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f"Error: {e}")
                 input("Presione Enter para continuar...")
 
     def menu_historiales(self):
@@ -64,16 +65,16 @@ class HistorialMenu:
         while True:
             try:
                 self.limpiar_pantalla()
-                print("LICENCIA GESTIÓN DE HISTORIALES")
+                print("GESTIÓN DE HISTORIALES")
                 print("-" * 30)
-                print("1. + Crear Historial")
-                print("2. DIAGNOSTICO Buscar Historial")
-                print("3. LICENCIA Listar Historiales")
-                print("4. EDITAR Actualizar Historial")
-                print("5. ELIMINAR Eliminar Historial")
-                print("0. VOLVER Volver")
+                print("1. Crear Historial")
+                print("2. Buscar Historial")
+                print("3. Listar Historiales")
+                print("4. Actualizar Historial")
+                print("5. Eliminar Historial")
+                print("0. Volver")
 
-                opcion = input("\n-> Seleccione una opción: ").strip()
+                opcion = input("\nSeleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -88,14 +89,14 @@ class HistorialMenu:
                 elif opcion == "5":
                     self.eliminar_historial()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print("Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\nADIOS Regresando...")
+                print("\n\nRegresando...")
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f"Error: {e}")
                 input("Presione Enter para continuar...")
 
     def menu_entradas(self):
@@ -105,14 +106,14 @@ class HistorialMenu:
                 self.limpiar_pantalla()
                 print("NOTAS GESTIÓN DE ENTRADAS")
                 print("-" * 30)
-                print("1. + Agregar Entrada")
-                print("2. DIAGNOSTICO Buscar Entrada")
-                print("3. LICENCIA Listar Entradas")
-                print("4. EDITAR Actualizar Entrada")
-                print("5. ELIMINAR Eliminar Entrada")
-                print("0. VOLVER Volver")
+                print("1. Agregar Entrada")
+                print("2. Buscar Entrada")
+                print("3. Listar Entradas")
+                print("4. Actualizar Entrada")
+                print("5. Eliminar Entrada")
+                print("0. Volver")
 
-                opcion = input("\n-> Seleccione una opción: ").strip()
+                opcion = input("\nSeleccione una opción: ").strip()
 
                 if opcion == "0":
                     break
@@ -127,33 +128,33 @@ class HistorialMenu:
                 elif opcion == "5":
                     self.eliminar_entrada()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print("Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\nADIOS Regresando...")
+                print("\n\nRegresando...")
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f"Error: {e}")
                 input("Presione Enter para continuar...")
 
     def crear_historial(self):
         """Crear un nuevo historial médico."""
         try:
             self.limpiar_pantalla()
-            print("LICENCIA CREAR HISTORIAL MÉDICO")
+            print("CREAR HISTORIAL MÉDICO")
             print("-" * 30)
 
-            paciente_id = input("ID ID del paciente: ").strip()
+            paciente_id = input("del paciente: ").strip()
             paciente = self.paciente_crud.obtener_paciente(UUID(paciente_id))
             if not paciente:
-                print("ERROR Paciente no encontrado")
+                print("Paciente no encontrado")
                 return
 
-            print(f"USUARIO Paciente: {paciente.primer_nombre} {paciente.apellido}")
+            print(f"Paciente: {paciente.primer_nombre} {paciente.apellido}")
 
-            numero_historial = input("LICENCIA Número de historial: ").strip()
-            fecha_apertura = input("FECHA Fecha de apertura (YYYY-MM-DD): ").strip()
+            numero_historial = input("Número de historial: ").strip()
+            fecha_apertura = input("Fecha de apertura (YYYY-MM-DD): ").strip()
 
             historial = self.historial_crud.crear_historial(
                 paciente_id=paciente.id,
@@ -162,15 +163,15 @@ class HistorialMenu:
                 id_usuario_creacion=self.auth_service.get_current_user().id,
             )
 
-            print(f"\nOK Historial creado exitosamente!")
-            print(f"ID ID: {historial.id}")
-            print(f"LICENCIA Número: {historial.numero_historial}")
-            print(f"USUARIO Paciente: {paciente.primer_nombre} {paciente.apellido}")
+            print(f"\nHistorial creado exitosamente!")
+            print(f"ID: {historial.id}")
+            print(f"Número: {historial.numero_historial}")
+            print(f"Paciente: {paciente.primer_nombre} {paciente.apellido}")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -178,20 +179,20 @@ class HistorialMenu:
         """Buscar un historial médico."""
         try:
             self.limpiar_pantalla()
-            print("DIAGNOSTICO BUSCAR HISTORIAL")
+            print("BUSCAR HISTORIAL")
             print("-" * 25)
 
-            historial_id = input("ID Ingrese ID del historial: ").strip()
+            historial_id = input("Ingrese del historial: ").strip()
             historial = self.historial_crud.obtener_historial(UUID(historial_id))
             if historial:
                 self.mostrar_historial(historial)
             else:
-                print("ERROR Historial no encontrado")
+                print("Historial no encontrado")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -199,19 +200,19 @@ class HistorialMenu:
         """Listar todos los historiales."""
         try:
             self.limpiar_pantalla()
-            print("LICENCIA LISTAR HISTORIALES")
+            print("LISTAR HISTORIALES")
             print("-" * 25)
 
             historiales = self.historial_crud.obtener_historiales()
             if historiales:
-                print(f"\nLICENCIA Total de historiales: {len(historiales)}")
+                print(f"\nTotal de historiales: {len(historiales)}")
                 for historial in historiales:
                     self.mostrar_historial_resumen(historial)
             else:
-                print("ERROR No hay historiales registrados")
+                print("No hay historiales registrados")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -219,27 +220,27 @@ class HistorialMenu:
         """Actualizar un historial médico."""
         try:
             self.limpiar_pantalla()
-            print("EDITAR ACTUALIZAR HISTORIAL")
+            print("ACTUALIZAR HISTORIAL")
             print("-" * 30)
 
-            historial_id = input("ID Ingrese ID del historial: ").strip()
+            historial_id = input("Ingrese del historial: ").strip()
             historial = self.historial_crud.obtener_historial(UUID(historial_id))
             if not historial:
-                print("ERROR Historial no encontrado")
+                print("Historial no encontrado")
                 return
 
-            print(f"\nLICENCIA Historial actual:")
+            print(f"\nHistorial actual:")
             self.mostrar_historial(historial)
 
-            print("\nEDITAR Ingrese nuevos datos (deje en blanco para mantener el actual):")
+            print("\nIngrese nuevos datos (deje en blanco para mantener el actual):")
 
             numero_historial = input(
-                f"LICENCIA Número de historial [{historial.numero_historial}]: "
+                f"Número de historial [{historial.numero_historial}]: "
             ).strip()
             fecha_apertura = input(
-                f"FECHA Fecha de apertura [{historial.fecha_apertura}]: "
+                f"Fecha de apertura [{historial.fecha_apertura}]: "
             ).strip()
-            estado = input(f"ESTADO Estado [{historial.estado}]: ").strip()
+            estado = input(f"Estado [{historial.estado}]: ").strip()
 
             kwargs = {}
             if numero_historial:
@@ -253,15 +254,15 @@ class HistorialMenu:
                 historial_actualizado = self.historial_crud.actualizar_historial(
                     historial.id, self.auth_service.get_current_user().id, **kwargs
                 )
-                print(f"\nOK Historial actualizado exitosamente!")
+                print(f"\nHistorial actualizado exitosamente!")
                 self.mostrar_historial(historial_actualizado)
             else:
-                print("ℹ️ No se realizaron cambios")
+                print(" No se realizaron cambios")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -269,35 +270,35 @@ class HistorialMenu:
         """Eliminar un historial médico."""
         try:
             self.limpiar_pantalla()
-            print("ELIMINAR ELIMINAR HISTORIAL")
+            print("HISTORIAL")
             print("-" * 25)
 
-            historial_id = input("ID Ingrese ID del historial: ").strip()
+            historial_id = input("Ingrese del historial: ").strip()
             historial = self.historial_crud.obtener_historial(UUID(historial_id))
             if not historial:
-                print("ERROR Historial no encontrado")
+                print("Historial no encontrado")
                 return
 
-            print(f"\nLICENCIA Historial a eliminar:")
+            print(f"\nHistorial a eliminar:")
             self.mostrar_historial(historial)
 
             confirmacion = (
-                input("\nADVERTENCIA ¿Está seguro de eliminar este historial? (s/N): ")
+                input("\n¿Está seguro de eliminar este historial? (s/N): ")
                 .strip()
                 .lower()
             )
             if confirmacion == "s":
                 if self.historial_crud.eliminar_historial(historial.id):
-                    print("OK Historial eliminado exitosamente!")
+                    print("Historial eliminado exitosamente!")
                 else:
-                    print("ERROR Error al eliminar el historial")
+                    print("Error al eliminar el historial")
             else:
-                print("ℹ️ Operación cancelada")
+                print(" Operación cancelada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -308,25 +309,25 @@ class HistorialMenu:
             print("NOTAS AGREGAR ENTRADA AL HISTORIAL")
             print("-" * 35)
 
-            historial_id = input("ID ID del historial: ").strip()
+            historial_id = input("del historial: ").strip()
             historial = self.historial_crud.obtener_historial(UUID(historial_id))
             if not historial:
-                print("ERROR Historial no encontrado")
+                print("Historial no encontrado")
                 return
 
-            medico_id = input("DOCTOR ID del médico: ").strip()
+            medico_id = input("DOCTOR del médico: ").strip()
             medico = self.medico_crud.obtener_medico(UUID(medico_id))
             if not medico:
-                print("ERROR Médico no encontrado")
+                print("Médico no encontrado")
                 return
 
-            print(f"LICENCIA Historial: {historial.numero_historial}")
+            print(f"Historial: {historial.numero_historial}")
             print(f"DOCTOR Médico: Dr. {medico.primer_nombre} {medico.apellido}")
 
-            diagnostico = input("DIAGNOSTICO Diagnóstico: ").strip()
+            diagnostico = input("Diagnóstico: ").strip()
             tratamiento = input("TRATAMIENTO Tratamiento: ").strip()
-            fecha_registro = input("FECHA Fecha de registro (YYYY-MM-DD): ").strip()
-            cita_id = input("FECHA ID de cita (opcional): ").strip() or None
+            fecha_registro = input("Fecha de registro (YYYY-MM-DD): ").strip()
+            cita_id = input("de cita (opcional): ").strip() or None
             notas = input("NOTAS Notas adicionales (opcional): ").strip() or None
             firma_digital = input("FIRMA Firma digital (opcional): ").strip() or None
 
@@ -342,15 +343,15 @@ class HistorialMenu:
                 firma_digital=firma_digital,
             )
 
-            print(f"\nOK Entrada agregada exitosamente!")
-            print(f"ID ID: {entrada.id}")
-            print(f"DIAGNOSTICO Diagnóstico: {entrada.diagnostico}")
-            print(f"FECHA Fecha: {entrada.fecha_registro}")
+            print(f"\nEntrada agregada exitosamente!")
+            print(f"ID: {entrada.id}")
+            print(f"Diagnóstico: {entrada.diagnostico}")
+            print(f"Fecha: {entrada.fecha_registro}")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -358,20 +359,20 @@ class HistorialMenu:
         """Buscar una entrada del historial."""
         try:
             self.limpiar_pantalla()
-            print("DIAGNOSTICO BUSCAR ENTRADA")
+            print("BUSCAR ENTRADA")
             print("-" * 25)
 
-            entrada_id = input("ID Ingrese ID de la entrada: ").strip()
+            entrada_id = input("Ingrese de la entrada: ").strip()
             entrada = self.entrada_crud.obtener_entrada(UUID(entrada_id))
             if entrada:
                 self.mostrar_entrada(entrada)
             else:
-                print("ERROR Entrada no encontrada")
+                print("Entrada no encontrada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -388,10 +389,10 @@ class HistorialMenu:
                 for entrada in entradas:
                     self.mostrar_entrada_resumen(entrada)
             else:
-                print("ERROR No hay entradas registradas")
+                print("No hay entradas registradas")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -399,24 +400,26 @@ class HistorialMenu:
         """Actualizar una entrada del historial."""
         try:
             self.limpiar_pantalla()
-            print("EDITAR ACTUALIZAR ENTRADA")
+            print("ACTUALIZAR ENTRADA")
             print("-" * 30)
 
-            entrada_id = input("ID Ingrese ID de la entrada: ").strip()
+            entrada_id = input("Ingrese de la entrada: ").strip()
             entrada = self.entrada_crud.obtener_entrada(UUID(entrada_id))
             if not entrada:
-                print("ERROR Entrada no encontrada")
+                print("Entrada no encontrada")
                 return
 
             print(f"\nNOTAS Entrada actual:")
             self.mostrar_entrada(entrada)
 
-            print("\nEDITAR Ingrese nuevos datos (deje en blanco para mantener el actual):")
+            print("\nIngrese nuevos datos (deje en blanco para mantener el actual):")
 
-            diagnostico = input(f"DIAGNOSTICO Diagnóstico [{entrada.diagnostico}]: ").strip()
-            tratamiento = input(f"TRATAMIENTO Tratamiento [{entrada.tratamiento}]: ").strip()
+            diagnostico = input(f"Diagnóstico [{entrada.diagnostico}]: ").strip()
+            tratamiento = input(
+                f"TRATAMIENTO Tratamiento [{entrada.tratamiento}]: "
+            ).strip()
             fecha_registro = input(
-                f"FECHA Fecha de registro [{entrada.fecha_registro}]: "
+                f"Fecha de registro [{entrada.fecha_registro}]: "
             ).strip()
             notas = input(f"NOTAS Notas [{entrada.notas or 'N/A'}]: ").strip()
             firma_digital = input(
@@ -439,15 +442,15 @@ class HistorialMenu:
                 entrada_actualizada = self.entrada_crud.actualizar_entrada(
                     entrada.id, self.auth_service.get_current_user().id, **kwargs
                 )
-                print(f"\nOK Entrada actualizada exitosamente!")
+                print(f"\nEntrada actualizada exitosamente!")
                 self.mostrar_entrada(entrada_actualizada)
             else:
-                print("ℹ️ No se realizaron cambios")
+                print(" No se realizaron cambios")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -455,71 +458,71 @@ class HistorialMenu:
         """Eliminar una entrada del historial."""
         try:
             self.limpiar_pantalla()
-            print("ELIMINAR ELIMINAR ENTRADA")
+            print("ENTRADA")
             print("-" * 25)
 
-            entrada_id = input("ID Ingrese ID de la entrada: ").strip()
+            entrada_id = input("Ingrese de la entrada: ").strip()
             entrada = self.entrada_crud.obtener_entrada(UUID(entrada_id))
             if not entrada:
-                print("ERROR Entrada no encontrada")
+                print("Entrada no encontrada")
                 return
 
             print(f"\nNOTAS Entrada a eliminar:")
             self.mostrar_entrada(entrada)
 
             confirmacion = (
-                input("\nADVERTENCIA ¿Está seguro de eliminar esta entrada? (s/N): ")
+                input("\n¿Está seguro de eliminar esta entrada? (s/N): ")
                 .strip()
                 .lower()
             )
             if confirmacion == "s":
                 if self.entrada_crud.eliminar_entrada(entrada.id):
-                    print("OK Entrada eliminada exitosamente!")
+                    print("Entrada eliminada exitosamente!")
                 else:
-                    print("ERROR Error al eliminar la entrada")
+                    print("Error al eliminar la entrada")
             else:
-                print("ℹ️ Operación cancelada")
+                print(" Operación cancelada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
     def mostrar_historial(self, historial):
         """Mostrar información completa de un historial."""
-        print(f"\nLICENCIA INFORMACIÓN DEL HISTORIAL")
+        print(f"\nINFORMACIÓN DEL HISTORIAL")
         print("-" * 35)
-        print(f"ID ID: {historial.id}")
-        print(f"LICENCIA Número: {historial.numero_historial}")
-        print(f"USUARIO Paciente ID: {historial.paciente_id}")
-        print(f"FECHA Fecha de apertura: {historial.fecha_apertura}")
-        print(f"ESTADO Estado: {historial.estado}")
-        print(f"FECHA Creado: {historial.created_at}")
+        print(f"ID: {historial.id}")
+        print(f"Número: {historial.numero_historial}")
+        print(f"Paciente ID: {historial.paciente_id}")
+        print(f"Fecha de apertura: {historial.fecha_apertura}")
+        print(f"Estado: {historial.estado}")
+        print(f"Creado: {historial.created_at}")
 
     def mostrar_historial_resumen(self, historial):
         """Mostrar resumen de un historial."""
         print(
-            f"ID {historial.id} | LICENCIA {historial.numero_historial} | USUARIO {historial.paciente_id} | ESTADO {historial.estado}"
+            f"{historial.id} | {historial.numero_historial} | {historial.paciente_id} | {historial.estado}"
         )
 
     def mostrar_entrada(self, entrada):
         """Mostrar información completa de una entrada."""
         print(f"\nNOTAS INFORMACIÓN DE LA ENTRADA")
         print("-" * 35)
-        print(f"ID ID: {entrada.id}")
-        print(f"LICENCIA Historial ID: {entrada.historial_id}")
+        print(f"ID: {entrada.id}")
+        print(f"Historial ID: {entrada.historial_id}")
         print(f"DOCTOR Médico ID: {entrada.medico_id}")
-        print(f"DIAGNOSTICO Diagnóstico: {entrada.diagnostico}")
+        print(f"Diagnóstico: {entrada.diagnostico}")
         print(f"TRATAMIENTO Tratamiento: {entrada.tratamiento}")
-        print(f"FECHA Fecha de registro: {entrada.fecha_registro}")
+        print(f"Fecha de registro: {entrada.fecha_registro}")
         print(f"NOTAS Notas: {entrada.notas or 'N/A'}")
         print(f"FIRMA Firma digital: {entrada.firma_digital or 'N/A'}")
-        print(f"FECHA Creado: {entrada.created_at}")
+        print(f"Creado: {entrada.created_at}")
 
     def mostrar_entrada_resumen(self, entrada):
         """Mostrar resumen de una entrada."""
         print(
-            f"ID {entrada.id} | DIAGNOSTICO {entrada.diagnostico[:50]}... | FECHA {entrada.fecha_registro}"
+            f"{entrada.id} | {entrada.diagnostico[:50]}... | {entrada.fecha_registro}"
         )

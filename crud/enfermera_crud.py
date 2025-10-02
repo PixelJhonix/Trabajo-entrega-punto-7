@@ -316,9 +316,27 @@ class EnfermeraCRUD:
         Returns:
             True si se eliminó, False si no existe
         """
-        enfermera = self.obtener_enfermera(enfermera_id)
-        if enfermera:
-            self.db.delete(enfermera)
-            self.db.commit()
-            return True
-        return False
+        try:
+            enfermera = self.obtener_enfermera(enfermera_id)
+            if enfermera:
+                # Verificar si hay hospitalizaciones que referencian a esta enfermera
+                from entities.hospitalizacion import Hospitalizacion
+
+                hospitalizaciones = (
+                    self.db.query(Hospitalizacion)
+                    .filter(Hospitalizacion.enfermera_asignada_id == enfermera_id)
+                    .count()
+                )
+
+                if hospitalizaciones > 0:
+                    raise ValueError(
+                        f"No se puede eliminar la enfermera porque tiene {hospitalizaciones} hospitalización(es) asignada(s)"
+                    )
+
+                self.db.delete(enfermera)
+                self.db.commit()
+                return True
+            return False
+        except Exception as e:
+            self.db.rollback()
+            raise e

@@ -1,16 +1,15 @@
 """Menú principal del sistema hospitalario."""
 
-import os
-from uuid import UUID
-from database.config import SessionLocal
 from auth.auth_service import AuthService
-from menu.paciente_menu import PacienteMenu
-from menu.medico_menu import MedicoMenu
-from menu.enfermera_menu import EnfermeraMenu
+from database.config import SessionLocal
+
 from menu.cita_menu import CitaMenu
-from menu.hospitalizacion_menu import HospitalizacionMenu
+from menu.enfermera_menu import EnfermeraMenu
 from menu.factura_menu import FacturaMenu
 from menu.historial_menu import HistorialMenu
+from menu.hospitalizacion_menu import HospitalizacionMenu
+from menu.medico_menu import MedicoMenu
+from menu.paciente_menu import PacienteMenu
 from menu.usuario_menu import UsuarioMenu
 
 
@@ -164,13 +163,3 @@ class MainMenu:
             print(f"ERROR CRITICO: {e}")
         finally:
             self.db.close()
-
-
-def main():
-    """Función principal para ejecutar el sistema."""
-    sistema = MainMenu()
-    sistema.ejecutar()
-
-
-if __name__ == "__main__":
-    main()

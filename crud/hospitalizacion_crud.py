@@ -4,10 +4,10 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from entities.hospitalizacion import Hospitalizacion
-from entities.paciente import Paciente
-from entities.medico import Medico
 from entities.enfermera import Enfermera
+from entities.hospitalizacion import Hospitalizacion
+from entities.medico import Medico
+from entities.paciente import Paciente
 from sqlalchemy.orm import Session
 
 
@@ -69,19 +69,16 @@ class HospitalizacionCRUD:
         Raises:
             ValueError: Si los datos no son válidos
         """
-        # Validar que el paciente existe
         paciente = self.db.query(Paciente).filter(Paciente.id == paciente_id).first()
         if not paciente:
             raise ValueError("El paciente especificado no existe")
 
-        # Validar que el médico existe
         medico = (
             self.db.query(Medico).filter(Medico.id == medico_responsable_id).first()
         )
         if not medico:
             raise ValueError("El médico especificado no existe")
 
-        # Validar que la enfermera existe (si se proporciona)
         if enfermera_asignada_id:
             enfermera = (
                 self.db.query(Enfermera)
@@ -122,7 +119,6 @@ class HospitalizacionCRUD:
         if estado not in estados_validos:
             raise ValueError(f"El estado debe ser uno de: {', '.join(estados_validos)}")
 
-        # Verificar disponibilidad de la habitación
         hospitalizacion_existente = (
             self.db.query(Hospitalizacion)
             .filter(

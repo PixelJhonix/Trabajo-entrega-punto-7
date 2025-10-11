@@ -142,7 +142,6 @@ async def actualizar_entrada(
     try:
         entrada_crud = HistorialEntradaCRUD(db)
 
-        # Verificar que la entrada existe
         entrada_existente = entrada_crud.obtener_entrada(entrada_id)
         if not entrada_existente:
             raise HTTPException(
@@ -150,7 +149,6 @@ async def actualizar_entrada(
                 detail="Entrada del historial no encontrada",
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in entrada_data.dict().items() if v is not None
         }
@@ -179,7 +177,6 @@ async def eliminar_entrada(entrada_id: UUID, db: Session = Depends(get_db)):
     try:
         entrada_crud = HistorialEntradaCRUD(db)
 
-        # Verificar que la entrada existe
         entrada_existente = entrada_crud.obtener_entrada(entrada_id)
         if not entrada_existente:
             raise HTTPException(

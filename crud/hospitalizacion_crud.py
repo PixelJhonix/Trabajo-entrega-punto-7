@@ -69,19 +69,16 @@ class HospitalizacionCRUD:
         Raises:
             ValueError: Si los datos no son válidos
         """
-        # Validar que el paciente existe
         paciente = self.db.query(Paciente).filter(Paciente.id == paciente_id).first()
         if not paciente:
             raise ValueError("El paciente especificado no existe")
 
-        # Validar que el médico existe
         medico = (
             self.db.query(Medico).filter(Medico.id == medico_responsable_id).first()
         )
         if not medico:
             raise ValueError("El médico especificado no existe")
 
-        # Validar que la enfermera existe (si se proporciona)
         if enfermera_asignada_id:
             enfermera = (
                 self.db.query(Enfermera)
@@ -122,7 +119,6 @@ class HospitalizacionCRUD:
         if estado not in estados_validos:
             raise ValueError(f"El estado debe ser uno de: {', '.join(estados_validos)}")
 
-        # Verificar disponibilidad de la habitación
         hospitalizacion_existente = (
             self.db.query(Hospitalizacion)
             .filter(

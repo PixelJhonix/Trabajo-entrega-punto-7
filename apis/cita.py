@@ -136,14 +136,12 @@ async def actualizar_cita(
     try:
         cita_crud = CitaCRUD(db)
 
-        # Verificar que la cita existe
         cita_existente = cita_crud.obtener_cita(cita_id)
         if not cita_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in cita_data.dict().items() if v is not None
         }
@@ -216,7 +214,6 @@ async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
     try:
         cita_crud = CitaCRUD(db)
 
-        # Verificar que la cita existe
         cita_existente = cita_crud.obtener_cita(cita_id)
         if not cita_existente:
             raise HTTPException(

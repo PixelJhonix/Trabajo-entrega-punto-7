@@ -107,7 +107,6 @@ async def actualizar_detalle(
     try:
         detalle_crud = FacturaDetalleCRUD(db)
 
-        # Verificar que el detalle existe
         detalle_existente = detalle_crud.obtener_detalle(detalle_id)
         if not detalle_existente:
             raise HTTPException(
@@ -115,7 +114,6 @@ async def actualizar_detalle(
                 detail="Detalle de factura no encontrado",
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in detalle_data.dict().items() if v is not None
         }
@@ -144,7 +142,6 @@ async def eliminar_detalle(detalle_id: UUID, db: Session = Depends(get_db)):
     try:
         detalle_crud = FacturaDetalleCRUD(db)
 
-        # Verificar que el detalle existe
         detalle_existente = detalle_crud.obtener_detalle(detalle_id)
         if not detalle_existente:
             raise HTTPException(

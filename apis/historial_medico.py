@@ -165,7 +165,6 @@ async def actualizar_historial(
     try:
         historial_crud = HistorialMedicoCRUD(db)
 
-        # Verificar que el historial existe
         historial_existente = historial_crud.obtener_historial(historial_id)
         if not historial_existente:
             raise HTTPException(
@@ -173,7 +172,6 @@ async def actualizar_historial(
                 detail="Historial médico no encontrado",
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in historial_data.dict().items() if v is not None
         }
@@ -248,7 +246,6 @@ async def eliminar_historial(historial_id: UUID, db: Session = Depends(get_db)):
     try:
         historial_crud = HistorialMedicoCRUD(db)
 
-        # Verificar que el historial existe
         historial_existente = historial_crud.obtener_historial(historial_id)
         if not historial_existente:
             raise HTTPException(

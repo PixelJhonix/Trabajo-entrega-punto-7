@@ -9,7 +9,6 @@ from crud.usuario_crud import UsuarioCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import (
-    CambioContraseña,
     RespuestaAPI,
     UsuarioCreate,
     UsuarioResponse,
@@ -144,12 +143,10 @@ async def actualizar_usuario(
     try:
         usuario_crud = UsuarioCRUD(db)
 
-        # Verificar que el usuario existe
         usuario_existente = usuario_crud.obtener_usuario(usuario_id)
         if not usuario_existente:
             raise APIErrorHandler.not_found_error("Usuario", str(usuario_id))
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in usuario_data.dict().items() if v is not None
         }
@@ -185,7 +182,6 @@ async def eliminar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
     try:
         usuario_crud = UsuarioCRUD(db)
 
-        # Verificar que el usuario existe
         usuario_existente = usuario_crud.obtener_usuario(usuario_id)
         if not usuario_existente:
             raise HTTPException(

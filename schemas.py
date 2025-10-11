@@ -1,34 +1,3 @@
-<<<<<<< Updated upstream
-from datetime import datetime
-from enum import Enum
-from pydantic import BaseModel, Field, field_validator
-
-class Turno(str, Enum):
-    manana = "Mañana"
-    tarde = "Tarde"
-    noche = "Noche"
-
-class PersonaIn(BaseModel):
-    nombre: str = Field(min_length=1)
-    fecha_nac: str  # Formato dd/mm/yyyy
-    telefono: str = Field(pattern=r"^[0-9+\-\s]{7,15}$")
-    direccion: str = Field(min_length=3)
-
-    @field_validator("fecha_nac")
-    @classmethod
-    def validar_fecha(cls, v: str) -> str:
-        datetime.strptime(v, "%d/%m/%Y")
-        return v
-
-class PacienteIn(PersonaIn):
-    pass
-
-class MedicoIn(PersonaIn):
-    especialidad: str = Field(min_length=2)
-
-class EnfermeraIn(PersonaIn):
-    turno: Turno
-=======
 """
 Modelos Pydantic para las respuestas de la API
 """
@@ -40,7 +9,6 @@ from uuid import UUID
 from pydantic import BaseModel, EmailStr
 
 
-# Modelos base para Usuario
 class UsuarioBase(BaseModel):
     nombre: str
     nombre_usuario: str
@@ -83,15 +51,13 @@ class CambioContraseña(BaseModel):
     nueva_contraseña: str
 
 
-# Modelos base para Paciente
 class PacienteBase(BaseModel):
-    primer_nombre: str
-    segundo_nombre: Optional[str] = None
+    nombre: str
     apellido: str
+    email: EmailStr
+    telefono: Optional[str] = None
     fecha_nacimiento: date
-    telefono: str
-    email: Optional[str] = None
-    direccion: str
+    direccion: Optional[str] = None
 
 
 class PacienteCreate(PacienteBase):
@@ -99,18 +65,19 @@ class PacienteCreate(PacienteBase):
 
 
 class PacienteUpdate(BaseModel):
-    primer_nombre: Optional[str] = None
-    segundo_nombre: Optional[str] = None
+    nombre: Optional[str] = None
     apellido: Optional[str] = None
-    fecha_nacimiento: Optional[date] = None
+    email: Optional[EmailStr] = None
     telefono: Optional[str] = None
-    email: Optional[str] = None
+    fecha_nacimiento: Optional[date] = None
     direccion: Optional[str] = None
+    activo: Optional[bool] = None
     id_usuario_edicion: Optional[UUID] = None
 
 
 class PacienteResponse(PacienteBase):
     id: UUID
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -118,18 +85,13 @@ class PacienteResponse(PacienteBase):
         from_attributes = True
 
 
-# Modelos base para Medico
 class MedicoBase(BaseModel):
-    primer_nombre: str
-    segundo_nombre: Optional[str] = None
+    nombre: str
     apellido: str
-    fecha_nacimiento: date
+    email: EmailStr
+    telefono: Optional[str] = None
     especialidad: str
     numero_licencia: str
-    consultorio: Optional[str] = None
-    telefono: str
-    email: Optional[str] = None
-    direccion: str
 
 
 class MedicoCreate(MedicoBase):
@@ -137,21 +99,19 @@ class MedicoCreate(MedicoBase):
 
 
 class MedicoUpdate(BaseModel):
-    primer_nombre: Optional[str] = None
-    segundo_nombre: Optional[str] = None
+    nombre: Optional[str] = None
     apellido: Optional[str] = None
-    fecha_nacimiento: Optional[date] = None
+    email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
     especialidad: Optional[str] = None
     numero_licencia: Optional[str] = None
-    consultorio: Optional[str] = None
-    telefono: Optional[str] = None
-    email: Optional[str] = None
-    direccion: Optional[str] = None
+    activo: Optional[bool] = None
     id_usuario_edicion: Optional[UUID] = None
 
 
 class MedicoResponse(MedicoBase):
     id: UUID
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -159,18 +119,13 @@ class MedicoResponse(MedicoBase):
         from_attributes = True
 
 
-# Modelos base para Enfermera
 class EnfermeraBase(BaseModel):
-    primer_nombre: str
-    segundo_nombre: Optional[str] = None
+    nombre: str
     apellido: str
-    fecha_nacimiento: date
-    especialidad: Optional[str] = None
+    email: EmailStr
+    telefono: Optional[str] = None
     numero_licencia: str
     turno: str
-    telefono: str
-    email: Optional[str] = None
-    direccion: str
 
 
 class EnfermeraCreate(EnfermeraBase):
@@ -178,21 +133,19 @@ class EnfermeraCreate(EnfermeraBase):
 
 
 class EnfermeraUpdate(BaseModel):
-    primer_nombre: Optional[str] = None
-    segundo_nombre: Optional[str] = None
+    nombre: Optional[str] = None
     apellido: Optional[str] = None
-    fecha_nacimiento: Optional[date] = None
-    especialidad: Optional[str] = None
+    email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
     numero_licencia: Optional[str] = None
     turno: Optional[str] = None
-    telefono: Optional[str] = None
-    email: Optional[str] = None
-    direccion: Optional[str] = None
+    activo: Optional[bool] = None
     id_usuario_edicion: Optional[UUID] = None
 
 
 class EnfermeraResponse(EnfermeraBase):
     id: UUID
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -200,14 +153,12 @@ class EnfermeraResponse(EnfermeraBase):
         from_attributes = True
 
 
-# Modelos base para Cita
 class CitaBase(BaseModel):
+    fecha_cita: datetime
+    motivo: str
+    notas: Optional[str] = None
     paciente_id: UUID
     medico_id: UUID
-    fecha: date
-    hora: time
-    motivo: str
-    observaciones: Optional[str] = None
 
 
 class CitaCreate(CitaBase):
@@ -215,19 +166,17 @@ class CitaCreate(CitaBase):
 
 
 class CitaUpdate(BaseModel):
-    paciente_id: Optional[UUID] = None
-    medico_id: Optional[UUID] = None
-    fecha: Optional[date] = None
-    hora: Optional[time] = None
+    fecha_cita: Optional[datetime] = None
     motivo: Optional[str] = None
+    notas: Optional[str] = None
     estado: Optional[str] = None
-    observaciones: Optional[str] = None
     id_usuario_edicion: Optional[UUID] = None
 
 
 class CitaResponse(CitaBase):
     id: UUID
     estado: str
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -235,17 +184,15 @@ class CitaResponse(CitaBase):
         from_attributes = True
 
 
-# Modelos base para Hospitalizacion
 class HospitalizacionBase(BaseModel):
-    paciente_id: UUID
-    medico_responsable_id: UUID
-    enfermera_asignada_id: Optional[UUID] = None
-    tipo_cuidado: str
-    descripcion: str
+    fecha_ingreso: datetime
+    fecha_salida: Optional[datetime] = None
+    motivo: str
     numero_habitacion: str
-    tipo_habitacion: str
-    fecha_inicio: date
-    fecha_fin: Optional[date] = None
+    notas: Optional[str] = None
+    paciente_id: UUID
+    medico_id: UUID
+    enfermera_id: Optional[UUID] = None
 
 
 class HospitalizacionCreate(HospitalizacionBase):
@@ -253,15 +200,11 @@ class HospitalizacionCreate(HospitalizacionBase):
 
 
 class HospitalizacionUpdate(BaseModel):
-    paciente_id: Optional[UUID] = None
-    medico_responsable_id: Optional[UUID] = None
-    enfermera_asignada_id: Optional[UUID] = None
-    tipo_cuidado: Optional[str] = None
-    descripcion: Optional[str] = None
+    fecha_ingreso: Optional[datetime] = None
+    fecha_salida: Optional[datetime] = None
+    motivo: Optional[str] = None
     numero_habitacion: Optional[str] = None
-    tipo_habitacion: Optional[str] = None
-    fecha_inicio: Optional[date] = None
-    fecha_fin: Optional[date] = None
+    notas: Optional[str] = None
     estado: Optional[str] = None
     id_usuario_edicion: Optional[UUID] = None
 
@@ -269,6 +212,7 @@ class HospitalizacionUpdate(BaseModel):
 class HospitalizacionResponse(HospitalizacionBase):
     id: UUID
     estado: str
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -276,80 +220,10 @@ class HospitalizacionResponse(HospitalizacionBase):
         from_attributes = True
 
 
-# Modelos base para Factura
-class FacturaBase(BaseModel):
-    paciente_id: UUID
-    numero_factura: str
-    fecha_emision: date
-    fecha_limite_pago: date
-    total: float
-    metodo_pago: Optional[str] = None
-
-
-class FacturaCreate(FacturaBase):
-    id_usuario_creacion: UUID
-
-
-class FacturaUpdate(BaseModel):
-    paciente_id: Optional[UUID] = None
-    numero_factura: Optional[str] = None
-    fecha_emision: Optional[date] = None
-    fecha_limite_pago: Optional[date] = None
-    total: Optional[float] = None
-    estado: Optional[str] = None
-    metodo_pago: Optional[str] = None
-    id_usuario_edicion: Optional[UUID] = None
-
-
-class FacturaResponse(FacturaBase):
-    id: UUID
-    estado: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
-# Modelos base para FacturaDetalle
-class FacturaDetalleBase(BaseModel):
-    factura_id: UUID
-    cita_id: Optional[UUID] = None
-    hospitalizacion_id: Optional[UUID] = None
-    descripcion: str
-    cantidad: int
-    precio_unitario: float
-    subtotal: float
-
-
-class FacturaDetalleCreate(FacturaDetalleBase):
-    id_usuario_creacion: UUID
-
-
-class FacturaDetalleUpdate(BaseModel):
-    factura_id: Optional[UUID] = None
-    cita_id: Optional[UUID] = None
-    hospitalizacion_id: Optional[UUID] = None
-    descripcion: Optional[str] = None
-    cantidad: Optional[int] = None
-    precio_unitario: Optional[float] = None
-    subtotal: Optional[float] = None
-    id_usuario_edicion: Optional[UUID] = None
-
-
-class FacturaDetalleResponse(FacturaDetalleBase):
-    id: UUID
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# Modelos base para HistorialMedico
 class HistorialMedicoBase(BaseModel):
-    paciente_id: UUID
     numero_historial: str
-    fecha_apertura: date
+    notas_generales: Optional[str] = None
+    paciente_id: UUID
 
 
 class HistorialMedicoCreate(HistorialMedicoBase):
@@ -357,9 +231,8 @@ class HistorialMedicoCreate(HistorialMedicoBase):
 
 
 class HistorialMedicoUpdate(BaseModel):
-    paciente_id: Optional[UUID] = None
     numero_historial: Optional[str] = None
-    fecha_apertura: Optional[date] = None
+    notas_generales: Optional[str] = None
     estado: Optional[str] = None
     id_usuario_edicion: Optional[UUID] = None
 
@@ -367,6 +240,7 @@ class HistorialMedicoUpdate(BaseModel):
 class HistorialMedicoResponse(HistorialMedicoBase):
     id: UUID
     estado: str
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -374,16 +248,13 @@ class HistorialMedicoResponse(HistorialMedicoBase):
         from_attributes = True
 
 
-# Modelos base para HistorialEntrada
 class HistorialEntradaBase(BaseModel):
-    historial_id: UUID
-    medico_id: UUID
-    cita_id: Optional[UUID] = None
+    fecha_consulta: datetime
     diagnostico: str
-    tratamiento: str
-    notas: Optional[str] = None
-    fecha_registro: date
-    firma_digital: Optional[str] = None
+    tratamiento: Optional[str] = None
+    observaciones: Optional[str] = None
+    historial_medico_id: UUID
+    medico_id: UUID
 
 
 class HistorialEntradaCreate(HistorialEntradaBase):
@@ -391,19 +262,16 @@ class HistorialEntradaCreate(HistorialEntradaBase):
 
 
 class HistorialEntradaUpdate(BaseModel):
-    historial_id: Optional[UUID] = None
-    medico_id: Optional[UUID] = None
-    cita_id: Optional[UUID] = None
+    fecha_consulta: Optional[datetime] = None
     diagnostico: Optional[str] = None
     tratamiento: Optional[str] = None
-    notas: Optional[str] = None
-    fecha_registro: Optional[date] = None
-    firma_digital: Optional[str] = None
+    observaciones: Optional[str] = None
     id_usuario_edicion: Optional[UUID] = None
 
 
 class HistorialEntradaResponse(HistorialEntradaBase):
     id: UUID
+    activo: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -411,16 +279,81 @@ class HistorialEntradaResponse(HistorialEntradaBase):
         from_attributes = True
 
 
-# Modelos de respuesta para la API
+class FacturaBase(BaseModel):
+    numero_factura: str
+    fecha_emision: datetime
+    fecha_vencimiento: datetime
+    subtotal: float
+    impuestos: float = 0
+    total: float
+    notas: Optional[str] = None
+    paciente_id: UUID
+
+
+class FacturaCreate(FacturaBase):
+    id_usuario_creacion: UUID
+
+
+class FacturaUpdate(BaseModel):
+    numero_factura: Optional[str] = None
+    fecha_emision: Optional[datetime] = None
+    fecha_vencimiento: Optional[datetime] = None
+    subtotal: Optional[float] = None
+    impuestos: Optional[float] = None
+    total: Optional[float] = None
+    notas: Optional[str] = None
+    estado: Optional[str] = None
+    id_usuario_edicion: Optional[UUID] = None
+
+
+class FacturaResponse(FacturaBase):
+    id: UUID
+    estado: str
+    activo: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class FacturaDetalleBase(BaseModel):
+    descripcion: str
+    cantidad: float
+    precio_unitario: float
+    subtotal: float
+    factura_id: UUID
+
+
+class FacturaDetalleCreate(FacturaDetalleBase):
+    id_usuario_creacion: UUID
+
+
+class FacturaDetalleUpdate(BaseModel):
+    descripcion: Optional[str] = None
+    cantidad: Optional[float] = None
+    precio_unitario: Optional[float] = None
+    subtotal: Optional[float] = None
+    id_usuario_edicion: Optional[UUID] = None
+
+
+class FacturaDetalleResponse(FacturaDetalleBase):
+    id: UUID
+    activo: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
 class RespuestaAPI(BaseModel):
     mensaje: str
-    exito: bool = True
-    datos: Optional[dict] = None
+    success: bool = True
 
 
 class RespuestaError(BaseModel):
-    mensaje: str
-    exito: bool = False
-    error: str
-    codigo: int
->>>>>>> Stashed changes
+    error_type: str
+    message: str
+    success: bool = False
+    details: Optional[dict] = None

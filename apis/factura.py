@@ -162,14 +162,12 @@ async def actualizar_factura(
     try:
         factura_crud = FacturaCRUD(db)
 
-        # Verificar que la factura existe
         factura_existente = factura_crud.obtener_factura(factura_id)
         if not factura_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in factura_data.dict().items() if v is not None
         }
@@ -265,7 +263,6 @@ async def eliminar_factura(factura_id: UUID, db: Session = Depends(get_db)):
     try:
         factura_crud = FacturaCRUD(db)
 
-        # Verificar que la factura existe
         factura_existente = factura_crud.obtener_factura(factura_id)
         if not factura_existente:
             raise HTTPException(

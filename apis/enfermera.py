@@ -158,14 +158,12 @@ async def actualizar_enfermera(
     try:
         enfermera_crud = EnfermeraCRUD(db)
 
-        # Verificar que la enfermera existe
         enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
         if not enfermera_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in enfermera_data.dict().items() if v is not None
         }
@@ -194,7 +192,6 @@ async def eliminar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
     try:
         enfermera_crud = EnfermeraCRUD(db)
 
-        # Verificar que la enfermera existe
         enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
         if not enfermera_existente:
             raise HTTPException(

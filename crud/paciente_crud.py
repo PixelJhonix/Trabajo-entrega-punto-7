@@ -244,7 +244,6 @@ class PacienteCRUD:
         try:
             paciente = self.obtener_paciente(paciente_id)
             if paciente:
-                # Verificar si hay referencias a este paciente
                 from entities.cita import Cita
                 from entities.factura import Factura
                 from entities.historial_medico import HistorialMedico

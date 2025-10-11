@@ -319,7 +319,6 @@ class MedicoCRUD:
         try:
             medico = self.obtener_medico(medico_id)
             if medico:
-                # Verificar si hay citas que referencian a este médico
                 from entities.cita import Cita
                 from entities.historial_entrada import HistorialEntrada
                 from entities.hospitalizacion import Hospitalizacion

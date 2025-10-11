@@ -158,14 +158,12 @@ async def actualizar_medico(
     try:
         medico_crud = MedicoCRUD(db)
 
-        # Verificar que el médico existe
         medico_existente = medico_crud.obtener_medico(medico_id)
         if not medico_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Médico no encontrado"
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in medico_data.dict().items() if v is not None
         }
@@ -194,7 +192,6 @@ async def eliminar_medico(medico_id: UUID, db: Session = Depends(get_db)):
     try:
         medico_crud = MedicoCRUD(db)
 
-        # Verificar que el médico existe
         medico_existente = medico_crud.obtener_medico(medico_id)
         if not medico_existente:
             raise HTTPException(

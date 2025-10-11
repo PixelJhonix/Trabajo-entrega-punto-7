@@ -60,20 +60,16 @@ class UsuarioCRUD:
         if not contraseña or len(contraseña.strip()) == 0:
             raise ValueError("La contraseña es obligatoria")
 
-        # Validar fortaleza de contraseña
         es_valida, mensaje = PasswordManager.validate_password_strength(contraseña)
         if not es_valida:
             raise ValueError(mensaje)
 
-        # Verificar unicidad de nombre_usuario
         if self.obtener_usuario_por_nombre_usuario(nombre_usuario):
             raise ValueError("El nombre de usuario ya está registrado")
 
-        # Verificar unicidad de email
         if self.obtener_usuario_por_email(email):
             raise ValueError("El email ya está registrado")
 
-        # Hash de la contraseña
         contraseña_hash = PasswordManager.hash_password(contraseña)
 
         usuario = Usuario(
@@ -197,7 +193,6 @@ class UsuarioCRUD:
                 raise ValueError("El nombre de usuario es obligatorio")
             if len(nombre_usuario) > 50:
                 raise ValueError("El nombre de usuario no puede exceder 50 caracteres")
-            # Verificar unicidad del nombre_usuario, excluyendo al propio usuario
             existing_usuario = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
             if existing_usuario and existing_usuario.id != usuario_id:
                 raise ValueError(
@@ -211,7 +206,6 @@ class UsuarioCRUD:
                 raise ValueError("El email es obligatorio")
             if len(email) > 150:
                 raise ValueError("El email no puede exceder 150 caracteres")
-            # Verificar unicidad del email, excluyendo al propio usuario
             existing_usuario = self.obtener_usuario_por_email(email)
             if existing_usuario and existing_usuario.id != usuario_id:
                 raise ValueError("El email ya está registrado por otro usuario")
@@ -221,11 +215,9 @@ class UsuarioCRUD:
             contraseña = kwargs["contraseña"]
             if not contraseña or len(contraseña.strip()) == 0:
                 raise ValueError("La contraseña es obligatoria")
-            # Validar fortaleza de contraseña
             es_valida, mensaje = PasswordManager.validate_password_strength(contraseña)
             if not es_valida:
                 raise ValueError(mensaje)
-            # Hash de la contraseña
             kwargs["contraseña_hash"] = PasswordManager.hash_password(contraseña)
             del kwargs["contraseña"]  # Eliminar la contraseña en texto plano
 
@@ -298,7 +290,6 @@ class UsuarioCRUD:
         Returns:
             Usuario autenticado o None
         """
-        # Buscar por nombre de usuario o email
         usuario = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
         if not usuario:
             usuario = self.obtener_usuario_por_email(nombre_usuario)
@@ -306,7 +297,6 @@ class UsuarioCRUD:
         if not usuario or not usuario.activo:
             return None
 
-        # Verificar contraseña
         if PasswordManager.verify_password(contraseña, usuario.contraseña_hash):
             return usuario
 
@@ -324,7 +314,7 @@ class UsuarioCRUD:
             .filter(
                 Usuario.nombre_usuario == "admin",
                 Usuario.email == "admin@system.com",
-                Usuario.es_admin == True,
+                Usuario.es_admin,
             )
             .first()
         )
@@ -336,11 +326,7 @@ class UsuarioCRUD:
         Returns:
             Lista de usuarios administradores
         """
-        return (
-            self.db.query(Usuario)
-            .filter(Usuario.es_admin == True, Usuario.activo == True)
-            .all()
-        )
+        return self.db.query(Usuario).filter(Usuario.es_admin, Usuario.activo).all()
 
     def es_admin(self, usuario_id: UUID) -> bool:
         """

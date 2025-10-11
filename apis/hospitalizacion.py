@@ -179,7 +179,6 @@ async def actualizar_hospitalizacion(
     try:
         hospitalizacion_crud = HospitalizacionCRUD(db)
 
-        # Verificar que la hospitalización existe
         hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(
             hospitalizacion_id
         )
@@ -189,7 +188,6 @@ async def actualizar_hospitalizacion(
                 detail="Hospitalización no encontrada",
             )
 
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in hospitalizacion_data.dict().items() if v is not None
         }
@@ -272,7 +270,6 @@ async def eliminar_hospitalizacion(
     try:
         hospitalizacion_crud = HospitalizacionCRUD(db)
 
-        # Verificar que la hospitalización existe
         hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(
             hospitalizacion_id
         )

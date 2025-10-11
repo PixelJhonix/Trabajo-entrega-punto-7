@@ -1,0 +1,240 @@
+"""
+API de Citas - Endpoints para gestión de citas médicas
+"""
+
+from typing import List
+from uuid import UUID
+
+from crud.cita_crud import CitaCRUD
+from database.config import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from schemas import CitaCreate, CitaResponse, CitaUpdate, RespuestaAPI
+from sqlalchemy.orm import Session
+
+router = APIRouter(prefix="/citas", tags=["citas"])
+
+
+@router.get("/", response_model=List[CitaResponse])
+async def obtener_citas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Obtener todas las citas con paginación."""
+    try:
+        cita_crud = CitaCRUD(db)
+        citas = cita_crud.obtener_citas(skip=skip, limit=limit)
+        return citas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener citas: {str(e)}",
+        )
+
+
+@router.get("/{cita_id}", response_model=CitaResponse)
+async def obtener_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Obtener una cita por ID."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita = cita_crud.obtener_cita(cita_id)
+        if not cita:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        return cita
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener cita: {str(e)}",
+        )
+
+
+@router.get("/paciente/{paciente_id}", response_model=List[CitaResponse])
+async def obtener_citas_por_paciente(paciente_id: UUID, db: Session = Depends(get_db)):
+    """Obtener citas por paciente."""
+    try:
+        cita_crud = CitaCRUD(db)
+        citas = cita_crud.obtener_citas_por_paciente(paciente_id)
+        return citas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener citas por paciente: {str(e)}",
+        )
+
+
+@router.get("/medico/{medico_id}", response_model=List[CitaResponse])
+async def obtener_citas_por_medico(medico_id: UUID, db: Session = Depends(get_db)):
+    """Obtener citas por médico."""
+    try:
+        cita_crud = CitaCRUD(db)
+        citas = cita_crud.obtener_citas_por_medico(medico_id)
+        return citas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener citas por médico: {str(e)}",
+        )
+
+
+@router.get("/fecha/{fecha}", response_model=List[CitaResponse])
+async def obtener_citas_por_fecha(fecha: str, db: Session = Depends(get_db)):
+    """Obtener citas por fecha."""
+    try:
+        cita_crud = CitaCRUD(db)
+        citas = cita_crud.obtener_citas_por_fecha(fecha)
+        return citas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener citas por fecha: {str(e)}",
+        )
+
+
+@router.get("/estado/{estado}", response_model=List[CitaResponse])
+async def obtener_citas_por_estado(estado: str, db: Session = Depends(get_db)):
+    """Obtener citas por estado."""
+    try:
+        cita_crud = CitaCRUD(db)
+        citas = cita_crud.obtener_citas_por_estado(estado)
+        return citas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener citas por estado: {str(e)}",
+        )
+
+
+@router.post("/", response_model=CitaResponse, status_code=status.HTTP_201_CREATED)
+async def crear_cita(cita_data: CitaCreate, db: Session = Depends(get_db)):
+    """Crear una nueva cita."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita = cita_crud.crear_cita(
+            paciente_id=cita_data.paciente_id,
+            medico_id=cita_data.medico_id,
+            fecha=cita_data.fecha,
+            hora=cita_data.hora,
+            motivo=cita_data.motivo,
+            id_usuario_creacion=cita_data.id_usuario_creacion,
+            observaciones=cita_data.observaciones,
+        )
+        return cita
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear cita: {str(e)}",
+        )
+
+
+@router.put("/{cita_id}", response_model=CitaResponse)
+async def actualizar_cita(
+    cita_id: UUID, cita_data: CitaUpdate, db: Session = Depends(get_db)
+):
+    """Actualizar una cita existente."""
+    try:
+        cita_crud = CitaCRUD(db)
+
+        # Verificar que la cita existe
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+
+        # Filtrar campos None para actualización
+        campos_actualizacion = {
+            k: v for k, v in cita_data.dict().items() if v is not None
+        }
+
+        if not campos_actualizacion:
+            return cita_existente
+
+        cita_actualizada = cita_crud.actualizar_cita(
+            cita_id, cita_data.id_usuario_edicion, **campos_actualizacion
+        )
+        return cita_actualizada
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar cita: {str(e)}",
+        )
+
+
+@router.patch("/{cita_id}/cancelar", response_model=CitaResponse)
+async def cancelar_cita(
+    cita_id: UUID, id_usuario_edicion: UUID, db: Session = Depends(get_db)
+):
+    """Cancelar una cita."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita = cita_crud.cancelar_cita(cita_id, id_usuario_edicion)
+        if not cita:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        return cita
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al cancelar cita: {str(e)}",
+        )
+
+
+@router.patch("/{cita_id}/completar", response_model=CitaResponse)
+async def completar_cita(
+    cita_id: UUID, id_usuario_edicion: UUID, db: Session = Depends(get_db)
+):
+    """Completar una cita."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita = cita_crud.completar_cita(cita_id, id_usuario_edicion)
+        if not cita:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        return cita
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al completar cita: {str(e)}",
+        )
+
+
+@router.delete("/{cita_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una cita."""
+    try:
+        cita_crud = CitaCRUD(db)
+
+        # Verificar que la cita existe
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+
+        eliminada = cita_crud.eliminar_cita(cita_id)
+        if eliminada:
+            return RespuestaAPI(mensaje="Cita eliminada exitosamente", exito=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al eliminar cita",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar cita: {str(e)}",
+        )

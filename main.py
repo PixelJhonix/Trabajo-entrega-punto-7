@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 """ 7. Hospital / Clínica
  Pacientes, médicos, enfermeras. 
  Operaciones: agendar cita, registrar diagnóstico, emitir factura. """
@@ -6,95 +5,6 @@
 from paciente import Paciente
 from medico import Medico
 from enfermera import Enfermera
-=======
-"""
-Sistema de gestión hospitalaria con ORM SQLAlchemy y Neon PostgreSQL
-API REST con FastAPI - Sin interfaz de consola
-"""
-
-import uvicorn
-from apis import (
-    auth,
-    cita,
-    enfermera,
-    factura,
-    factura_detalle,
-    historial_entrada,
-    historial_medico,
-    hospitalizacion,
-    medico,
-    paciente,
-    usuario,
-)
-from database.config import create_tables
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-# Crear la aplicación FastAPI
-app = FastAPI(
-    title="Sistema de Gestión Hospitalaria",
-    description="API REST para gestión de pacientes, médicos, citas, hospitalizaciones, facturas y historiales médicos con autenticación",
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-)
-
-# Configurar CORS para permitir peticiones desde el frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios específicos
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Incluir los routers de las APIs
-app.include_router(auth.router)
-app.include_router(usuario.router)
-app.include_router(paciente.router)
-app.include_router(medico.router)
-app.include_router(enfermera.router)
-app.include_router(cita.router)
-app.include_router(hospitalizacion.router)
-app.include_router(historial_medico.router)
-app.include_router(historial_entrada.router)
-app.include_router(factura.router)
-app.include_router(factura_detalle.router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Evento de inicio de la aplicación"""
-    print("Iniciando Sistema de Gestión Hospitalaria...")
-    print("Configurando base de datos...")
-    create_tables()
-    print("Sistema listo para usar.")
-    print("Documentación disponible en: http://localhost:8000/docs")
-
-
-@app.get("/", tags=["raíz"])
-async def root():
-    """Endpoint raíz que devuelve información básica de la API."""
-    return {
-        "mensaje": "Bienvenido al Sistema de Gestión Hospitalaria",
-        "version": "1.0.0",
-        "documentacion": "/docs",
-        "redoc": "/redoc",
-        "endpoints": {
-            "autenticacion": "/auth",
-            "usuarios": "/usuarios",
-            "pacientes": "/pacientes",
-            "medicos": "/medicos",
-            "enfermeras": "/enfermeras",
-            "citas": "/citas",
-            "hospitalizaciones": "/hospitalizaciones",
-            "historiales_medicos": "/historiales-medicos",
-            "historial_entradas": "/historial-entradas",
-            "facturas": "/facturas",
-            "factura_detalles": "/factura-detalles",
-        },
-    }
->>>>>>> Stashed changes
 
 print("---------------BIENVENIDOS A HOSPITAL LOS ENANOS---------------")
 
@@ -573,7 +483,6 @@ def agendar_cita_sistema(pacientes, medicos):
         print(f"❌ Error al agendar cita: {e}")
 
 def main():
-<<<<<<< Updated upstream
     """Función principal del sistema"""
     print("¡Bienvenido al Sistema de Registro Hospitalario!")
     
@@ -608,18 +517,6 @@ def main():
             break
         else:
             print("❌ Opción no válida. Intente de nuevo.")
-=======
-    """Función principal para ejecutar el servidor"""
-    print("Iniciando servidor FastAPI...")
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,  # Recargar automáticamente en desarrollo
-        log_level="info",
-    )
-
->>>>>>> Stashed changes
 
 if __name__ == "__main__":
     main()

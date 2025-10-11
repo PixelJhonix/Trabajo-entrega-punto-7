@@ -309,4 +309,3 @@ python main.py
 
 ---
 
-**Desarrollado para el examen de Programacion de Software - Arquitectura en Capas**

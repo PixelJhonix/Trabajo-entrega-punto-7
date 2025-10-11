@@ -2,6 +2,7 @@
 
 import os
 from uuid import UUID
+
 from crud.paciente_crud import PacienteCRUD
 
 
@@ -28,14 +29,14 @@ class PacienteMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("\nLICENCIA OPCIONES DISPONIBLES")
+                print("\nOPCIONES DISPONIBLES")
                 print("-" * 25)
-                print("1. + Registrar Nuevo Paciente")
-                print("2. DIAGNOSTICO Buscar Paciente")
-                print("3. LICENCIA Listar Pacientes")
-                print("4. EDITAR Actualizar Paciente")
-                print("5. ELIMINAR Eliminar Paciente")
-                print("0. VOLVER Volver al Menú Principal")
+                print("1. Registrar Nuevo Paciente")
+                print("2. Buscar Paciente")
+                print("3. Listar Pacientes")
+                print("4. Actualizar Paciente")
+                print("5. Eliminar Paciente")
+                print("0. Volver al Menú Principal")
 
                 opcion = input("\n-> Seleccione una opción: ").strip()
 
@@ -52,64 +53,64 @@ class PacienteMenu:
                 elif opcion == "5":
                     self.eliminar_paciente()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print(" Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f" Error: {e}")
                 input("Presione Enter para continuar...")
 
     def registrar_paciente(self):
         """Registrar un nuevo paciente."""
         self.limpiar_pantalla()
-        print("+ REGISTRAR NUEVO PACIENTE")
+        print("REGISTRAR NUEVO PACIENTE")
         print("-" * 35)
 
         try:
-            primer_nombre = input("USUARIO Primer nombre: ").strip()
+            primer_nombre = input("Primer nombre: ").strip()
             if not primer_nombre:
-                print("ERROR El primer nombre es obligatorio")
+                print(" El primer nombre es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            segundo_nombre = input("USUARIO Segundo nombre (opcional): ").strip()
+            segundo_nombre = input("Segundo nombre (opcional): ").strip()
             if not segundo_nombre:
                 segundo_nombre = None
 
-            apellido = input("USUARIO Apellido: ").strip()
+            apellido = input("Apellido: ").strip()
             if not apellido:
-                print("ERROR El apellido es obligatorio")
+                print(" El apellido es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            fecha_nacimiento = input("FECHA Fecha de nacimiento (YYYY-MM-DD): ").strip()
+            fecha_nacimiento = input("Fecha de nacimiento (YYYY-MM-DD): ").strip()
             if not fecha_nacimiento:
-                print("ERROR La fecha de nacimiento es obligatoria")
+                print(" La fecha de nacimiento es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            telefono = input("TELEFONO Teléfono: ").strip()
+            telefono = input("Teléfono: ").strip()
             if not telefono:
-                print("ERROR El teléfono es obligatorio")
+                print(" El teléfono es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
-            email = input("EMAIL Email (opcional): ").strip()
+            email = input("Email (opcional): ").strip()
             if not email:
                 email = None
 
-            direccion = input("DIRECCION Dirección: ").strip()
+            direccion = input("Dirección: ").strip()
             if not direccion:
-                print("ERROR La dirección es obligatoria")
+                print(" La dirección es obligatoria")
                 input("Presione Enter para continuar...")
                 return
 
-            # Obtener ID del usuario actual
+            # Obtener del usuario actual
             usuario_actual = self.auth_service.usuario_actual
             if not usuario_actual:
-                print("ERROR No hay usuario autenticado")
+                print(" No hay usuario autenticado")
                 input("Presione Enter para continuar...")
                 return
 
@@ -124,21 +125,21 @@ class PacienteMenu:
                 email=email,
             )
 
-            print(f"\nOK Paciente registrado exitosamente!")
-            print(f"ID ID: {paciente.id}")
-            print(f"USUARIO Nombre: {paciente.primer_nombre} {paciente.apellido}")
+            print(f"\nPaciente registrado exitosamente!")
+            print(f"ID: {paciente.id}")
+            print(f"Nombre: {paciente.primer_nombre} {paciente.apellido}")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def buscar_paciente(self):
         """Buscar un paciente."""
         self.limpiar_pantalla()
-        print("DIAGNOSTICO BUSCAR PACIENTE")
+        print("BUSCAR PACIENTE")
         print("-" * 25)
 
         try:
@@ -150,9 +151,9 @@ class PacienteMenu:
             opcion = input("\n-> Seleccione una opción: ").strip()
 
             if opcion == "1":
-                paciente_id = input("ID ID del paciente: ").strip()
+                paciente_id = input("del paciente: ").strip()
                 if not paciente_id:
-                    print("ERROR El ID es obligatorio")
+                    print(" El es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -161,14 +162,14 @@ class PacienteMenu:
                     if paciente:
                         self.mostrar_paciente(paciente)
                     else:
-                        print("ERROR Paciente no encontrado")
+                        print(" Paciente no encontrado")
                 except ValueError:
-                    print("ERROR ID inválido")
+                    print(" inválido")
 
             elif opcion == "2":
-                email = input("EMAIL Email del paciente: ").strip()
+                email = input("Email del paciente: ").strip()
                 if not email:
-                    print("ERROR El email es obligatorio")
+                    print(" El email es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
@@ -176,106 +177,104 @@ class PacienteMenu:
                 if paciente:
                     self.mostrar_paciente(paciente)
                 else:
-                    print("ERROR Paciente no encontrado")
+                    print(" Paciente no encontrado")
 
             elif opcion == "3":
-                nombre = input("USUARIO Nombre a buscar: ").strip()
+                nombre = input("Nombre a buscar: ").strip()
                 if not nombre:
-                    print("ERROR El nombre es obligatorio")
+                    print(" El nombre es obligatorio")
                     input("Presione Enter para continuar...")
                     return
 
                 pacientes = self.paciente_crud.buscar_pacientes_por_nombre(nombre)
                 if pacientes:
-                    print(f"\nLICENCIA Se encontraron {len(pacientes)} paciente(s):")
+                    print(f"\nSe encontraron {len(pacientes)} paciente(s):")
                     for i, paciente in enumerate(pacientes, 1):
                         print(
                             f"{i}. {paciente.primer_nombre} {paciente.apellido} (ID: {paciente.id})"
                         )
                 else:
-                    print("ERROR No se encontraron pacientes")
+                    print(" No se encontraron pacientes")
 
             else:
-                print("ERROR Opción inválida")
+                print(" Opción inválida")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def listar_pacientes(self):
         """Listar todos los pacientes."""
         self.limpiar_pantalla()
-        print("LICENCIA LISTA DE PACIENTES")
+        print("LISTA DE PACIENTES")
         print("-" * 25)
 
         try:
             pacientes = self.paciente_crud.obtener_pacientes()
             if pacientes:
-                print(f"\nESTADO Total de pacientes: {len(pacientes)}")
+                print(f"\nTotal de pacientes: {len(pacientes)}")
                 print("-" * 60)
                 for i, paciente in enumerate(pacientes, 1):
                     print(f"{i:2d}. {paciente.primer_nombre} {paciente.apellido}")
-                    print(f"     EMAIL Email: {paciente.email or 'No especificado'}")
-                    print(f"     TELEFONO Teléfono: {paciente.telefono}")
-                    print(f"     ID ID: {paciente.id}")
+                    print(f"     Email: {paciente.email or 'No especificado'}")
+                    print(f"     Teléfono: {paciente.telefono}")
+                    print(f"     ID: {paciente.id}")
                     print("-" * 60)
             else:
-                print("📭 No hay pacientes registrados")
+                print(" No hay pacientes registrados")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def actualizar_paciente(self):
         """Actualizar un paciente."""
         self.limpiar_pantalla()
-        print("EDITAR ACTUALIZAR PACIENTE")
+        print("ACTUALIZAR PACIENTE")
         print("-" * 30)
 
         try:
-            paciente_id = input("ID ID del paciente: ").strip()
+            paciente_id = input("del paciente: ").strip()
             if not paciente_id:
-                print("ERROR El ID es obligatorio")
+                print(" El es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             paciente = self.paciente_crud.obtener_paciente(UUID(paciente_id))
             if not paciente:
-                print("ERROR Paciente no encontrado")
+                print(" Paciente no encontrado")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\nUSUARIO Paciente: {paciente.primer_nombre} {paciente.apellido}")
+            print(f"\nPaciente: {paciente.primer_nombre} {paciente.apellido}")
             print("Deje en blanco para mantener el valor actual\n")
 
             # Campos a actualizar
             campos = {}
 
             nuevo_primer_nombre = input(
-                f"USUARIO Primer nombre [{paciente.primer_nombre}]: "
+                f"Primer nombre [{paciente.primer_nombre}]: "
             ).strip()
             if nuevo_primer_nombre:
                 campos["primer_nombre"] = nuevo_primer_nombre
 
-            nuevo_apellido = input(f"USUARIO Apellido [{paciente.apellido}]: ").strip()
+            nuevo_apellido = input(f"Apellido [{paciente.apellido}]: ").strip()
             if nuevo_apellido:
                 campos["apellido"] = nuevo_apellido
 
-            nuevo_telefono = input(f"TELEFONO Teléfono [{paciente.telefono}]: ").strip()
+            nuevo_telefono = input(f"Teléfono [{paciente.telefono}]: ").strip()
             if nuevo_telefono:
                 campos["telefono"] = nuevo_telefono
 
             nuevo_email = input(
-                f"EMAIL Email [{paciente.email or 'No especificado'}]: "
+                f"Email [{paciente.email or 'No especificado'}]: "
             ).strip()
             if nuevo_email:
                 campos["email"] = nuevo_email
 
-            nueva_direccion = input(
-                f"DIRECCION Dirección [{paciente.direccion}]: "
-            ).strip()
+            nueva_direccion = input(f"Dirección [{paciente.direccion}]: ").strip()
             if nueva_direccion:
                 campos["direccion"] = nueva_direccion
 
@@ -284,38 +283,38 @@ class PacienteMenu:
                 paciente_actualizado = self.paciente_crud.actualizar_paciente(
                     UUID(paciente_id), usuario_actual.id, **campos
                 )
-                print(f"\nOK Paciente actualizado exitosamente!")
+                print(f"\nPaciente actualizado exitosamente!")
             else:
-                print("ℹ️ No se realizaron cambios")
+                print(" No se realizaron cambios")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def eliminar_paciente(self):
         """Eliminar un paciente."""
         self.limpiar_pantalla()
-        print("ELIMINAR ELIMINAR PACIENTE")
+        print("PACIENTE")
         print("-" * 25)
 
         try:
-            paciente_id = input("ID ID del paciente: ").strip()
+            paciente_id = input("del paciente: ").strip()
             if not paciente_id:
-                print("ERROR El ID es obligatorio")
+                print(" El es obligatorio")
                 input("Presione Enter para continuar...")
                 return
 
             paciente = self.paciente_crud.obtener_paciente(UUID(paciente_id))
             if not paciente:
-                print("ERROR Paciente no encontrado")
+                print(" Paciente no encontrado")
                 input("Presione Enter para continuar...")
                 return
 
-            print(f"\nADVERTENCIA ADVERTENCIA: Esta acción no se puede deshacer")
-            print(f"USUARIO Paciente: {paciente.primer_nombre} {paciente.apellido}")
+            print(f"\nADVERTENCIA: Esta acción no se puede deshacer")
+            print(f"Paciente: {paciente.primer_nombre} {paciente.apellido}")
 
             confirmar = (
                 input("\n¿Está seguro de eliminar este paciente? (s/N): ")
@@ -324,29 +323,29 @@ class PacienteMenu:
             )
             if confirmar in ["s", "si", "sí", "y", "yes"]:
                 if self.paciente_crud.eliminar_paciente(UUID(paciente_id)):
-                    print("OK Paciente eliminado exitosamente")
+                    print("Paciente eliminado exitosamente")
                 else:
-                    print("ERROR Error al eliminar el paciente")
+                    print(" Error al eliminar el paciente")
             else:
-                print("ℹ️ Operación cancelada")
+                print(" Operación cancelada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
 
         input("\nPresione Enter para continuar...")
 
     def mostrar_paciente(self, paciente):
         """Mostrar información de un paciente."""
-        print(f"\nUSUARIO INFORMACIÓN DEL PACIENTE")
+        print(f"\nINFORMACIÓN DEL PACIENTE")
         print("-" * 35)
-        print(f"ID ID: {paciente.id}")
-        print(f"USUARIO Nombre: {paciente.primer_nombre} {paciente.apellido}")
+        print(f"ID: {paciente.id}")
+        print(f"Nombre: {paciente.primer_nombre} {paciente.apellido}")
         if paciente.segundo_nombre:
-            print(f"USUARIO Segundo nombre: {paciente.segundo_nombre}")
-        print(f"FECHA Fecha de nacimiento: {paciente.fecha_nacimiento}")
-        print(f"TELEFONO Teléfono: {paciente.telefono}")
-        print(f"EMAIL Email: {paciente.email or 'No especificado'}")
-        print(f"DIRECCION Dirección: {paciente.direccion}")
-        print(f"FECHA Registrado: {paciente.created_at}")
+            print(f"Segundo nombre: {paciente.segundo_nombre}")
+        print(f"Fecha de nacimiento: {paciente.fecha_nacimiento}")
+        print(f"Teléfono: {paciente.telefono}")
+        print(f"Email: {paciente.email or 'No especificado'}")
+        print(f"Dirección: {paciente.direccion}")
+        print(f"Registrado: {paciente.created_at}")

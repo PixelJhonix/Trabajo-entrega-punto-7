@@ -19,7 +19,13 @@ engine = create_engine(
     echo=False,
     pool_pre_ping=True,
     pool_recycle=300,
-    connect_args={"sslmode": "require"},
+    pool_timeout=30,
+    max_overflow=0,
+    connect_args={
+        "sslmode": "require",
+        "connect_timeout": 10,
+        "application_name": "hospital_system",
+    },
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -31,6 +37,9 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        db.rollback()
+        raise e
     finally:
         db.close()
 

@@ -2,9 +2,10 @@
 
 import os
 from uuid import UUID
-from sqlalchemy.orm import Session
-from crud.enfermera_crud import EnfermeraCRUD
+
 from auth.auth_service import AuthService
+from crud.enfermera_crud import EnfermeraCRUD
+from sqlalchemy.orm import Session
 
 
 class EnfermeraMenu:
@@ -21,8 +22,8 @@ class EnfermeraMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del menú."""
-        print("ENFERMERA GESTIÓN DE ENFERMERAS")
-        print("-" * 40)
+        print("GESTIÓN DE ENFERMERAS")
+        print("-" * 25)
 
     def mostrar_menu(self):
         """Mostrar menú principal de enfermeras."""
@@ -30,12 +31,12 @@ class EnfermeraMenu:
             try:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
-                print("1. + Registrar Enfermera")
-                print("2. DIAGNOSTICO Buscar Enfermera")
-                print("3. LICENCIA Listar Enfermeras")
-                print("4. EDITAR Actualizar Enfermera")
-                print("5. ELIMINAR Eliminar Enfermera")
-                print("0. VOLVER Volver al Menú Principal")
+                print("1. Registrar Enfermera")
+                print("2. Buscar Enfermera")
+                print("3. Listar Enfermeras")
+                print("4. Actualizar Enfermera")
+                print("5. Eliminar Enfermera")
+                print("0. Volver al Menú Principal")
 
                 opcion = input("\n-> Seleccione una opción: ").strip()
 
@@ -52,35 +53,33 @@ class EnfermeraMenu:
                 elif opcion == "5":
                     self.eliminar_enfermera()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print("Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\nADIOS Regresando al menú principal...")
+                print("\n\nRegresando al menú principal...")
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f"Error: {e}")
                 input("Presione Enter para continuar...")
 
     def registrar_enfermera(self):
         """Registrar una nueva enfermera."""
         try:
             self.limpiar_pantalla()
-            print("ENFERMERA REGISTRAR ENFERMERA")
-            print("-" * 30)
+            print("REGISTRAR ENFERMERA")
+            print("-" * 20)
 
-            primer_nombre = input("USUARIO Primer nombre: ").strip()
-            segundo_nombre = (
-                input("USUARIO Segundo nombre (opcional): ").strip() or None
-            )
-            apellido = input("USUARIO Apellido: ").strip()
-            fecha_nacimiento = input("FECHA Fecha de nacimiento (YYYY-MM-DD): ").strip()
-            especialidad = input("SISTEMA Especialidad (opcional): ").strip() or None
-            numero_licencia = input("LICENCIA Número de licencia: ").strip()
-            turno = input("HORA Turno (Mañana/Tarde/Noche): ").strip()
-            telefono = input("TELEFONO Teléfono: ").strip()
-            email = input("EMAIL Email (opcional): ").strip() or None
-            direccion = input("DIRECCION Dirección: ").strip()
+            primer_nombre = input("Primer nombre: ").strip()
+            segundo_nombre = input("Segundo nombre (opcional): ").strip() or None
+            apellido = input("Apellido: ").strip()
+            fecha_nacimiento = input("Fecha de nacimiento (YYYY-MM-DD): ").strip()
+            especialidad = input("Especialidad (opcional): ").strip() or None
+            numero_licencia = input("Número de licencia: ").strip()
+            turno = input("Turno (Mañana/Tarde/Noche): ").strip()
+            telefono = input("Teléfono: ").strip()
+            email = input("Email (opcional): ").strip() or None
+            direccion = input("Dirección: ").strip()
 
             enfermera = self.enfermera_crud.crear_enfermera(
                 primer_nombre=primer_nombre,
@@ -96,16 +95,16 @@ class EnfermeraMenu:
                 id_usuario_creacion=self.auth_service.get_current_user().id,
             )
 
-            print(f"\nOK Enfermera registrada exitosamente!")
-            print(f"ID ID: {enfermera.id}")
-            print(f"USUARIO Nombre: {enfermera.primer_nombre} {enfermera.apellido}")
-            print(f"SISTEMA Especialidad: {enfermera.especialidad}")
-            print(f"HORA Turno: {enfermera.turno}")
+            print("\nEnfermera registrada exitosamente!")
+            print(f"ID: {enfermera.id}")
+            print(f"Nombre: {enfermera.primer_nombre} {enfermera.apellido}")
+            print(f"Especialidad: {enfermera.especialidad}")
+            print(f"Turno: {enfermera.turno}")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -124,7 +123,7 @@ class EnfermeraMenu:
             opcion = input("\n-> Seleccione tipo de búsqueda: ").strip()
 
             if opcion == "1":
-                enfermera_id = input("ID Ingrese ID de la enfermera: ").strip()
+                enfermera_id = input("Ingrese ID de la enfermera: ").strip()
                 try:
                     enfermera = self.enfermera_crud.obtener_enfermera(
                         UUID(enfermera_id)
@@ -168,7 +167,7 @@ class EnfermeraMenu:
                 print("ERROR Opción inválida")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -188,7 +187,7 @@ class EnfermeraMenu:
                 print("ERROR No hay enfermeras registradas")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -199,13 +198,13 @@ class EnfermeraMenu:
             print("EDITAR ACTUALIZAR ENFERMERA")
             print("-" * 30)
 
-            enfermera_id = input("ID Ingrese ID de la enfermera: ").strip()
+            enfermera_id = input("Ingrese ID de la enfermera: ").strip()
             enfermera = self.enfermera_crud.obtener_enfermera(UUID(enfermera_id))
             if not enfermera:
                 print("ERROR Enfermera no encontrada")
                 return
 
-            print(f"\nLICENCIA Enfermera actual:")
+            print("\nLICENCIA Enfermera actual:")
             self.mostrar_enfermera(enfermera)
 
             print(
@@ -254,15 +253,15 @@ class EnfermeraMenu:
                 enfermera_actualizada = self.enfermera_crud.actualizar_enfermera(
                     enfermera.id, self.auth_service.get_current_user().id, **kwargs
                 )
-                print(f"\nOK Enfermera actualizada exitosamente!")
+                print("\nOK Enfermera actualizada exitosamente!")
                 self.mostrar_enfermera(enfermera_actualizada)
             else:
-                print("ℹ️ No se realizaron cambios")
+                print("ℹ No se realizaron cambios")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -273,13 +272,13 @@ class EnfermeraMenu:
             print("ELIMINAR ELIMINAR ENFERMERA")
             print("-" * 25)
 
-            enfermera_id = input("ID Ingrese ID de la enfermera: ").strip()
+            enfermera_id = input("Ingrese ID de la enfermera: ").strip()
             enfermera = self.enfermera_crud.obtener_enfermera(UUID(enfermera_id))
             if not enfermera:
                 print("ERROR Enfermera no encontrada")
                 return
 
-            print(f"\nLICENCIA Enfermera a eliminar:")
+            print("\nLICENCIA Enfermera a eliminar:")
             self.mostrar_enfermera(enfermera)
 
             confirmacion = (
@@ -293,18 +292,18 @@ class EnfermeraMenu:
                 else:
                     print("ERROR Error al eliminar la enfermera")
             else:
-                print("ℹ️ Operación cancelada")
+                print("ℹOperación cancelada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f"Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f"Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
     def mostrar_enfermera(self, enfermera):
         """Mostrar información completa de una enfermera."""
-        print(f"\nENFERMERA INFORMACIÓN DE LA ENFERMERA")
+        print("\nENFERMERA INFORMACIÓN DE LA ENFERMERA")
         print("-" * 35)
         print(f"ID ID: {enfermera.id}")
         print(

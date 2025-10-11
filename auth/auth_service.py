@@ -14,6 +14,7 @@ class AuthService:
 
     def __init__(self, db: Session):
         self.db = db
+        self.usuario_actual: Optional[Usuario] = None
 
     def _validar_email(self, email: str) -> bool:
         """Validar formato de email."""
@@ -268,3 +269,47 @@ class AuthService:
         self.db.commit()
         self.db.refresh(admin)
         return admin
+
+    def autenticar_usuario(
+        self, identificador: str, contraseña: str
+    ) -> Optional[Usuario]:
+        """
+        Autentica un usuario usando nombre de usuario o email y contraseña.
+
+        Args:
+            identificador: Nombre de usuario o email.
+            contraseña: Contraseña en texto plano.
+
+        Returns:
+            El objeto Usuario si la autenticación es exitosa, None en caso contrario.
+        """
+        usuario = self.obtener_usuario_por_nombre_usuario(identificador)
+        if not usuario:
+            usuario = self.obtener_usuario_por_email(identificador)
+
+        if (
+            usuario
+            and usuario.activo
+            and PasswordManager.verify_password(contraseña, usuario.contraseña_hash)
+        ):
+            self.usuario_actual = usuario
+            return usuario
+        return None
+
+    def logout(self):
+        """
+        Cierra la sesión del usuario actual.
+        """
+        self.usuario_actual = None
+
+    def get_current_user(self) -> Optional[Usuario]:
+        """
+        Obtiene el usuario actualmente autenticado.
+        """
+        return self.usuario_actual
+
+    def is_admin(self) -> bool:
+        """
+        Verifica si el usuario actual es administrador.
+        """
+        return self.usuario_actual and self.usuario_actual.es_admin

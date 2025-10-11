@@ -2,9 +2,10 @@
 
 import os
 from uuid import UUID
-from sqlalchemy.orm import Session
-from crud.usuario_crud import UsuarioCRUD
+
 from auth.auth_service import AuthService
+from crud.usuario_crud import UsuarioCRUD
+from sqlalchemy.orm import Session
 
 
 class UsuarioMenu:
@@ -21,7 +22,7 @@ class UsuarioMenu:
 
     def mostrar_titulo(self):
         """Mostrar título del menú."""
-        print("GESTION GESTIÓN DE USUARIOS")
+        print("GESTIÓN DE USUARIOS")
         print("-" * 30)
 
     def mostrar_menu(self):
@@ -31,12 +32,12 @@ class UsuarioMenu:
                 self.limpiar_pantalla()
                 self.mostrar_titulo()
                 print("1. + Crear Usuario")
-                print("2. DIAGNOSTICO Buscar Usuario")
-                print("3. LICENCIA Listar Usuarios")
-                print("4. EDITAR Actualizar Usuario")
-                print("5. ELIMINAR Eliminar Usuario")
-                print("6. CAMBIAR Cambiar Estado Usuario")
-                print("0. VOLVER Volver al Menú Principal")
+                print("2. Buscar Usuario")
+                print("3. Listar Usuarios")
+                print("4. Actualizar Usuario")
+                print("5. Eliminar Usuario")
+                print("6. Cambiar Estado Usuario")
+                print("0. Volver al Menú Principal")
 
                 opcion = input("\n-> Seleccione una opción: ").strip()
 
@@ -55,29 +56,29 @@ class UsuarioMenu:
                 elif opcion == "6":
                     self.cambiar_estado_usuario()
                 else:
-                    print("ERROR Opción inválida. Presione Enter para continuar...")
+                    print(" Opción inválida. Presione Enter para continuar...")
                     input()
 
             except KeyboardInterrupt:
-                print("\n\nADIOS Regresando al menú principal...")
+                print("\n\nRegresando al menú principal...")
                 break
             except Exception as e:
-                print(f"ERROR Error: {e}")
+                print(f" Error: {e}")
                 input("Presione Enter para continuar...")
 
     def crear_usuario(self):
         """Crear un nuevo usuario."""
         try:
             self.limpiar_pantalla()
-            print("GESTION CREAR USUARIO")
+            print("CREAR USUARIO")
             print("-" * 25)
 
-            nombre = input("USUARIO Nombre completo: ").strip()
-            nombre_usuario = input("USUARIO Nombre de usuario: ").strip()
-            email = input("EMAIL Email: ").strip()
-            contraseña = input("PASSWORD Contraseña: ").strip()
-            telefono = input("TELEFONO Teléfono (opcional): ").strip() or None
-            es_admin = input("ADMIN ¿Es administrador? (s/N): ").strip().lower() == "s"
+            nombre = input("Nombre completo: ").strip()
+            nombre_usuario = input("Nombre de usuario: ").strip()
+            email = input("Email: ").strip()
+            contraseña = input("Contraseña: ").strip()
+            telefono = input("Teléfono (opcional): ").strip() or None
+            es_admin = input("¿Es administrador? (s/N): ").strip().lower() == "s"
 
             usuario = self.usuario_crud.crear_usuario(
                 nombre=nombre,
@@ -89,17 +90,17 @@ class UsuarioMenu:
                 id_usuario_creacion=self.auth_service.get_current_user().id,
             )
 
-            print(f"\nOK Usuario creado exitosamente!")
-            print(f"ID ID: {usuario.id}")
-            print(f"USUARIO Nombre: {usuario.nombre}")
-            print(f"USUARIO Usuario: {usuario.nombre_usuario}")
-            print(f"EMAIL Email: {usuario.email}")
-            print(f"ADMIN Admin: {'Sí' if usuario.es_admin else 'No'}")
+            print(f"\nUsuario creado exitosamente!")
+            print(f"ID: {usuario.id}")
+            print(f"Nombre: {usuario.nombre}")
+            print(f"Usuario: {usuario.nombre_usuario}")
+            print(f"Email: {usuario.email}")
+            print(f"Admin: {'Sí' if usuario.es_admin else 'No'}")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -107,60 +108,60 @@ class UsuarioMenu:
         """Buscar un usuario."""
         try:
             self.limpiar_pantalla()
-            print("DIAGNOSTICO BUSCAR USUARIO")
+            print("BUSCAR USUARIO")
             print("-" * 25)
 
-            print("1. DIAGNOSTICO Por ID")
-            print("2. EMAIL Por Email")
-            print("3. USUARIO Por Nombre de Usuario")
-            print("4. USUARIO Por Nombre")
+            print("1. Por ID")
+            print("2. Por Email")
+            print("3. Por Nombre de Usuario")
+            print("4. Por Nombre")
 
             opcion = input("\n-> Seleccione tipo de búsqueda: ").strip()
 
             if opcion == "1":
-                usuario_id = input("ID Ingrese ID del usuario: ").strip()
+                usuario_id = input("Ingrese del usuario: ").strip()
                 try:
                     usuario = self.usuario_crud.obtener_usuario(UUID(usuario_id))
                     if usuario:
                         self.mostrar_usuario(usuario)
                     else:
-                        print("ERROR Usuario no encontrado")
+                        print(" Usuario no encontrado")
                 except ValueError:
-                    print("ERROR ID inválido")
+                    print(" inválido")
 
             elif opcion == "2":
-                email = input("EMAIL Ingrese email: ").strip()
+                email = input("Ingrese email: ").strip()
                 usuario = self.usuario_crud.obtener_usuario_por_email(email)
                 if usuario:
                     self.mostrar_usuario(usuario)
                 else:
-                    print("ERROR Usuario no encontrado")
+                    print(" Usuario no encontrado")
 
             elif opcion == "3":
-                nombre_usuario = input("USUARIO Ingrese nombre de usuario: ").strip()
+                nombre_usuario = input("Ingrese nombre de usuario: ").strip()
                 usuario = self.usuario_crud.obtener_usuario_por_nombre_usuario(
                     nombre_usuario
                 )
                 if usuario:
                     self.mostrar_usuario(usuario)
                 else:
-                    print("ERROR Usuario no encontrado")
+                    print(" Usuario no encontrado")
 
             elif opcion == "4":
-                nombre = input("USUARIO Ingrese nombre a buscar: ").strip()
+                nombre = input("Ingrese nombre a buscar: ").strip()
                 usuarios = self.usuario_crud.buscar_usuarios_por_nombre(nombre)
                 if usuarios:
-                    print(f"\nLICENCIA Encontrados {len(usuarios)} usuario(s):")
+                    print(f"\nEncontrados {len(usuarios)} usuario(s):")
                     for usuario in usuarios:
                         self.mostrar_usuario_resumen(usuario)
                 else:
-                    print("ERROR No se encontraron usuarios")
+                    print(" No se encontraron usuarios")
 
             else:
-                print("ERROR Opción inválida")
+                print(" Opción inválida")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -168,19 +169,19 @@ class UsuarioMenu:
         """Listar todos los usuarios."""
         try:
             self.limpiar_pantalla()
-            print("LICENCIA LISTAR USUARIOS")
+            print("LISTAR USUARIOS")
             print("-" * 25)
 
             usuarios = self.usuario_crud.obtener_usuarios()
             if usuarios:
-                print(f"\nLICENCIA Total de usuarios: {len(usuarios)}")
+                print(f"\nTotal de usuarios: {len(usuarios)}")
                 for usuario in usuarios:
                     self.mostrar_usuario_resumen(usuario)
             else:
-                print("ERROR No hay usuarios registrados")
+                print(" No hay usuarios registrados")
 
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -188,29 +189,29 @@ class UsuarioMenu:
         """Actualizar un usuario."""
         try:
             self.limpiar_pantalla()
-            print("EDITAR ACTUALIZAR USUARIO")
+            print("ACTUALIZAR USUARIO")
             print("-" * 30)
 
-            usuario_id = input("ID Ingrese ID del usuario: ").strip()
+            usuario_id = input("Ingrese del usuario: ").strip()
             usuario = self.usuario_crud.obtener_usuario(UUID(usuario_id))
             if not usuario:
-                print("ERROR Usuario no encontrado")
+                print(" Usuario no encontrado")
                 return
 
-            print(f"\nUSUARIO Usuario actual:")
+            print(f"\nUsuario actual:")
             self.mostrar_usuario(usuario)
 
-            print("\nEDITAR Ingrese nuevos datos (deje en blanco para mantener el actual):")
+            print("\nIngrese nuevos datos (deje en blanco para mantener el actual):")
 
-            nombre = input(f"USUARIO Nombre completo [{usuario.nombre}]: ").strip()
+            nombre = input(f"Nombre completo [{usuario.nombre}]: ").strip()
             nombre_usuario = input(
-                f"USUARIO Nombre de usuario [{usuario.nombre_usuario}]: "
+                f"Nombre de usuario [{usuario.nombre_usuario}]: "
             ).strip()
-            email = input(f"EMAIL Email [{usuario.email}]: ").strip()
-            telefono = input(f"TELEFONO Teléfono [{usuario.telefono or 'N/A'}]: ").strip()
+            email = input(f"Email [{usuario.email}]: ").strip()
+            telefono = input(f"Teléfono [{usuario.telefono or 'N/A'}]: ").strip()
             es_admin = (
                 input(
-                    f"ADMIN ¿Es administrador? (s/N) [{'Sí' if usuario.es_admin else 'No'}]: "
+                    f"¿Es administrador? (s/N) [{'Sí' if usuario.es_admin else 'No'}]: "
                 )
                 .strip()
                 .lower()
@@ -232,15 +233,15 @@ class UsuarioMenu:
                 usuario_actualizado = self.usuario_crud.actualizar_usuario(
                     usuario.id, self.auth_service.get_current_user().id, **kwargs
                 )
-                print(f"\nOK Usuario actualizado exitosamente!")
+                print(f"\nUsuario actualizado exitosamente!")
                 self.mostrar_usuario(usuario_actualizado)
             else:
-                print("ℹ️ No se realizaron cambios")
+                print(" No se realizaron cambios")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -248,35 +249,35 @@ class UsuarioMenu:
         """Eliminar un usuario."""
         try:
             self.limpiar_pantalla()
-            print("ELIMINAR ELIMINAR USUARIO")
+            print("USUARIO")
             print("-" * 25)
 
-            usuario_id = input("ID Ingrese ID del usuario: ").strip()
+            usuario_id = input("Ingrese del usuario: ").strip()
             usuario = self.usuario_crud.obtener_usuario(UUID(usuario_id))
             if not usuario:
-                print("ERROR Usuario no encontrado")
+                print(" Usuario no encontrado")
                 return
 
-            print(f"\nUSUARIO Usuario a eliminar:")
+            print(f"\nUsuario a eliminar:")
             self.mostrar_usuario(usuario)
 
             confirmacion = (
-                input("\nADVERTENCIA ¿Está seguro de eliminar este usuario? (s/N): ")
+                input("\n¿Está seguro de eliminar este usuario? (s/N): ")
                 .strip()
                 .lower()
             )
             if confirmacion == "s":
                 if self.usuario_crud.eliminar_usuario(usuario.id):
-                    print("OK Usuario eliminado exitosamente!")
+                    print("Usuario eliminado exitosamente!")
                 else:
-                    print("ERROR Error al eliminar el usuario")
+                    print(" Error al eliminar el usuario")
             else:
-                print("ℹ️ Operación cancelada")
+                print(" Operación cancelada")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
@@ -284,21 +285,21 @@ class UsuarioMenu:
         """Cambiar el estado activo/inactivo de un usuario."""
         try:
             self.limpiar_pantalla()
-            print("CAMBIAR CAMBIAR ESTADO DE USUARIO")
+            print("DE USUARIO")
             print("-" * 35)
 
-            usuario_id = input("ID Ingrese ID del usuario: ").strip()
+            usuario_id = input("Ingrese del usuario: ").strip()
             usuario = self.usuario_crud.obtener_usuario(UUID(usuario_id))
             if not usuario:
-                print("ERROR Usuario no encontrado")
+                print(" Usuario no encontrado")
                 return
 
-            print(f"\nUSUARIO Usuario actual:")
+            print(f"\nUsuario actual:")
             self.mostrar_usuario(usuario)
 
             nuevo_estado = (
                 input(
-                    f"\nCAMBIAR Nuevo estado (activo/inactivo) [{'activo' if usuario.activo else 'inactivo'}]: "
+                    f"\nNuevo estado (activo/inactivo) [{'activo' if usuario.activo else 'inactivo'}]: "
                 )
                 .strip()
                 .lower()
@@ -308,31 +309,31 @@ class UsuarioMenu:
                 usuario_actualizado = self.usuario_crud.cambiar_estado_usuario(
                     usuario.id, activo, self.auth_service.get_current_user().id
                 )
-                print(f"\nOK Estado del usuario actualizado exitosamente!")
+                print(f"\nEstado del usuario actualizado exitosamente!")
                 print(
-                    f"ESTADO Nuevo estado: {'Activo' if usuario_actualizado.activo else 'Inactivo'}"
+                    f"Nuevo estado: {'Activo' if usuario_actualizado.activo else 'Inactivo'}"
                 )
             else:
-                print("ERROR Estado inválido. Use 'activo' o 'inactivo'")
+                print(" Estado inválido. Use 'activo' o 'inactivo'")
 
         except ValueError as e:
-            print(f"ERROR Error de validación: {e}")
+            print(f" Error de validación: {e}")
         except Exception as e:
-            print(f"ERROR Error: {e}")
+            print(f" Error: {e}")
         finally:
             input("\nPresione Enter para continuar...")
 
     def mostrar_usuario(self, usuario):
         """Mostrar información completa de un usuario."""
-        print(f"\nUSUARIO INFORMACIÓN DEL USUARIO")
+        print(f"\nINFORMACIÓN DEL USUARIO")
         print("-" * 35)
-        print(f"ID ID: {usuario.id}")
-        print(f"USUARIO Nombre: {usuario.nombre}")
-        print(f"USUARIO Usuario: {usuario.nombre_usuario}")
-        print(f"EMAIL Email: {usuario.email}")
-        print(f"TELEFONO Teléfono: {usuario.telefono or 'N/A'}")
-        print(f"ADMIN Administrador: {'Sí' if usuario.es_admin else 'No'}")
-        print(f"ESTADO Estado: {'Activo' if usuario.activo else 'Inactivo'}")
+        print(f"ID: {usuario.id}")
+        print(f"Nombre: {usuario.nombre}")
+        print(f"Usuario: {usuario.nombre_usuario}")
+        print(f"Email: {usuario.email}")
+        print(f"Teléfono: {usuario.telefono or 'N/A'}")
+        print(f"Administrador: {'Sí' if usuario.es_admin else 'No'}")
+        print(f"Estado: {'Activo' if usuario.activo else 'Inactivo'}")
         print(f"FECHA Creado: {usuario.created_at}")
 
     def mostrar_usuario_resumen(self, usuario):

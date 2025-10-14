@@ -244,25 +244,36 @@ class PacienteCRUD:
         try:
             paciente = self.obtener_paciente(paciente_id)
             if paciente:
-                # Verificar si hay referencias a este paciente
                 from entities.cita import Cita
-                from entities.hospitalizacion import Hospitalizacion
                 from entities.factura import Factura
                 from entities.historial_medico import HistorialMedico
-                
-                citas = self.db.query(Cita).filter(Cita.paciente_id == paciente_id).count()
-                hospitalizaciones = self.db.query(Hospitalizacion).filter(
-                    Hospitalizacion.paciente_id == paciente_id
-                ).count()
-                facturas = self.db.query(Factura).filter(Factura.paciente_id == paciente_id).count()
-                historiales = self.db.query(HistorialMedico).filter(
-                    HistorialMedico.paciente_id == paciente_id
-                ).count()
-                
+                from entities.hospitalizacion import Hospitalizacion
+
+                citas = (
+                    self.db.query(Cita).filter(Cita.paciente_id == paciente_id).count()
+                )
+                hospitalizaciones = (
+                    self.db.query(Hospitalizacion)
+                    .filter(Hospitalizacion.paciente_id == paciente_id)
+                    .count()
+                )
+                facturas = (
+                    self.db.query(Factura)
+                    .filter(Factura.paciente_id == paciente_id)
+                    .count()
+                )
+                historiales = (
+                    self.db.query(HistorialMedico)
+                    .filter(HistorialMedico.paciente_id == paciente_id)
+                    .count()
+                )
+
                 total_referencias = citas + hospitalizaciones + facturas + historiales
                 if total_referencias > 0:
-                    raise ValueError(f"No se puede eliminar el paciente porque tiene {total_referencias} referencia(s) en citas, hospitalizaciones, facturas o historiales")
-                
+                    raise ValueError(
+                        f"No se puede eliminar el paciente porque tiene {total_referencias} referencia(s) en citas, hospitalizaciones, facturas o historiales"
+                    )
+
                 self.db.delete(paciente)
                 self.db.commit()
                 return True

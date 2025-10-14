@@ -1,38 +1,38 @@
+"""
+Entidad Paciente - Sistema de gestión hospitalaria
+"""
+
 import uuid
-from sqlalchemy import Column, DateTime, String, Date
+
+from database.config import Base
+from sqlalchemy import Boolean, Column, Date, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from database.config import Base
-
 
 class Paciente(Base):
-    __tablename__ = "pacientes"
+    """Modelo de Paciente para el sistema hospitalario"""
+
+    __tablename__ = "tbl_pacientes"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    primer_nombre = Column(String(100), nullable=False)
-    segundo_nombre = Column(String(100), nullable=True)
+    nombre = Column(String(100), nullable=False)
     apellido = Column(String(100), nullable=False)
+    email = Column(String(150), unique=True, index=True, nullable=False)
+    telefono = Column(String(20), nullable=True)
     fecha_nacimiento = Column(Date, nullable=False)
-    telefono = Column(String(20), nullable=False)
-    email = Column(String(150), nullable=True)
-    direccion = Column(String(500), nullable=False)
-    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
+    direccion = Column(String(255), nullable=True)
+    activo = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
     citas = relationship("Cita", back_populates="paciente")
     hospitalizaciones = relationship("Hospitalizacion", back_populates="paciente")
     facturas = relationship("Factura", back_populates="paciente")
-    historial = relationship(
-        "HistorialMedico", back_populates="paciente", uselist=False
-    )
+    historiales_medicos = relationship("HistorialMedico", back_populates="paciente")
 
     def __repr__(self):
-        return (
-            f"<Paciente(id={self.id}, nombre='{self.primer_nombre} {self.apellido}')>"
-        )
+        return f"<Paciente(id={self.id}, nombre='{self.nombre} {self.apellido}', email='{self.email}')>"

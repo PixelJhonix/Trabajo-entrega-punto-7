@@ -1,1 +1,3 @@
-# Módulo de configuración de base de datos
+"""
+Configuración de base de datos
+"""

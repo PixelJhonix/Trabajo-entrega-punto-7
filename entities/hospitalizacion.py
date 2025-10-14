@@ -1,54 +1,45 @@
-"""Entidad Hospitalizacion: modelo ORM para hospitalizaciones."""
+"""
+Entidad Hospitalizacion - Sistema de gestión hospitalaria
+"""
 
 import uuid
-from sqlalchemy import Column, DateTime, String, Date, ForeignKey, Text
+
+from database.config import Base
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from database.config import Base
-
 
 class Hospitalizacion(Base):
-    """Modelo ORM de hospitalización."""
+    """Modelo de Hospitalizacion para el sistema hospitalario"""
 
-    __tablename__ = "hospitalizaciones"
+    __tablename__ = "tbl_hospitalizaciones"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    fecha_ingreso = Column(DateTime, nullable=False)
+    fecha_salida = Column(DateTime, nullable=True)
+    motivo = Column(String(255), nullable=False)
+    numero_habitacion = Column(String(10), nullable=False)
+    estado = Column(String(20), default="activa")  # activa, completada, cancelada
+    notas = Column(String(500), nullable=True)
+    activo = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
+    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 
     paciente_id = Column(
-        UUID(as_uuid=True), ForeignKey("pacientes.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("tbl_pacientes.id"), nullable=False
     )
-    medico_responsable_id = Column(
-        UUID(as_uuid=True), ForeignKey("medicos.id"), nullable=False, index=True
+    medico_id = Column(UUID(as_uuid=True), ForeignKey("tbl_medicos.id"), nullable=False)
+    enfermera_id = Column(
+        UUID(as_uuid=True), ForeignKey("tbl_enfermeras.id"), nullable=True
     )
-    enfermera_asignada_id = Column(
-        UUID(as_uuid=True), ForeignKey("enfermeras.id"), nullable=True, index=True
-    )
-
-    tipo_cuidado = Column(String(50), nullable=False)
-    descripcion = Column(Text, nullable=False)
-    numero_habitacion = Column(String(10), nullable=False)
-    tipo_habitacion = Column(String(20), nullable=False)
-    fecha_inicio = Column(Date, nullable=False)
-    fecha_fin = Column(Date, nullable=True)
-    estado = Column(String(20), nullable=False, default="Activa", index=True)
-
-    id_usuario_creacion = Column(UUID(as_uuid=True), nullable=False)
-    id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
     paciente = relationship("Paciente", back_populates="hospitalizaciones")
-    medico_responsable = relationship(
-        "Medico", back_populates="hospitalizaciones_responsable"
-    )
-    enfermera_asignada = relationship(
-        "Enfermera", back_populates="hospitalizaciones_asignadas"
-    )
-    factura_detalles = relationship("FacturaDetalle", back_populates="hospitalizacion")
+    medico = relationship("Medico", back_populates="hospitalizaciones")
+    enfermera = relationship("Enfermera", back_populates="hospitalizaciones")
 
     def __repr__(self):
-        return f"<Hospitalizacion(id={self.id}, paciente_id={self.paciente_id}, habitacion='{self.numero_habitacion}', estado='{self.estado}')>"
+        return f"<Hospitalizacion(id={self.id}, habitacion='{self.numero_habitacion}', estado='{self.estado}')>"

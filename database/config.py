@@ -1,4 +1,6 @@
-"""Configuración de conexión a PostgreSQL (Neon) con SQLAlchemy."""
+"""
+Configuración de la base de datos PostgreSQL con Neon
+"""
 
 import os
 
@@ -16,18 +18,21 @@ if not DATABASE_URL:
 
 engine = create_engine(
     DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    connect_args={"sslmode": "require"},
+    echo=False,  # Cambiar a True para ver consultas SQL
+    pool_pre_ping=True,  # Verificar conexión antes de usar
+    pool_recycle=300,  # Reciclar conexiones cada 5 minutos
+    connect_args={"sslmode": "require"},  # Requerir SSL para Neon
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
 
 def get_db():
-    """Generador de sesiones de base de datos."""
+    """
+    Generador de sesiones de base de datos
+    """
     db = SessionLocal()
     try:
         yield db
@@ -36,5 +41,7 @@ def get_db():
 
 
 def create_tables():
-    """Crear todas las tablas definidas en los modelos."""
+    """
+    Crear todas las tablas definidas en los modelos
+    """
     Base.metadata.create_all(bind=engine)

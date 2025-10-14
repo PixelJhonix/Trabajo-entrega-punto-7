@@ -316,9 +316,35 @@ class MedicoCRUD:
         Returns:
             True si se eliminó, False si no existe
         """
-        medico = self.obtener_medico(medico_id)
-        if medico:
-            self.db.delete(medico)
-            self.db.commit()
-            return True
-        return False
+        try:
+            medico = self.obtener_medico(medico_id)
+            if medico:
+                from entities.cita import Cita
+                from entities.historial_entrada import HistorialEntrada
+                from entities.hospitalizacion import Hospitalizacion
+
+                citas = self.db.query(Cita).filter(Cita.medico_id == medico_id).count()
+                hospitalizaciones = (
+                    self.db.query(Hospitalizacion)
+                    .filter(Hospitalizacion.medico_responsable_id == medico_id)
+                    .count()
+                )
+                historiales = (
+                    self.db.query(HistorialEntrada)
+                    .filter(HistorialEntrada.medico_id == medico_id)
+                    .count()
+                )
+
+                total_referencias = citas + hospitalizaciones + historiales
+                if total_referencias > 0:
+                    raise ValueError(
+                        f"No se puede eliminar el médico porque tiene {total_referencias} referencia(s) en citas, hospitalizaciones o historiales"
+                    )
+
+                self.db.delete(medico)
+                self.db.commit()
+                return True
+            return False
+        except Exception as e:
+            self.db.rollback()
+            raise e

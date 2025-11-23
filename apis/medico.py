@@ -1,13 +1,9 @@
-"""
-API de Médicos - Endpoints para gestión de médicos
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.medico_crud import MedicoCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import MedicoCreate, MedicoResponse, MedicoUpdate, RespuestaAPI
 from sqlalchemy.orm import Session
 
@@ -16,17 +12,32 @@ router = APIRouter(prefix="/medicos", tags=["medicos"])
 
 @router.get("/", response_model=List[MedicoResponse])
 async def obtener_medicos(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir médicos inactivos"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todos los médicos con paginación."""
+    """Obtener todos los médicos con paginación y opción de incluir inactivos."""
     try:
         medico_crud = MedicoCRUD(db)
-        medicos = medico_crud.obtener_medicos(skip=skip, limit=limit)
+        medicos = medico_crud.obtener_medicos(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not medicos:
+            return []
         return medicos
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
     except Exception as e:
+        import traceback
+
+        error_detail = f"Error al obtener médicos: {str(e)}\n{traceback.format_exc()}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener médicos: {str(e)}",
+            detail=error_detail,
         )
 
 
@@ -128,8 +139,7 @@ async def crear_medico(medico_data: MedicoCreate, db: Session = Depends(get_db))
     try:
         medico_crud = MedicoCRUD(db)
         medico = medico_crud.crear_medico(
-            primer_nombre=medico_data.primer_nombre,
-            segundo_nombre=medico_data.segundo_nombre,
+            nombre=medico_data.nombre,
             apellido=medico_data.apellido,
             fecha_nacimiento=medico_data.fecha_nacimiento,
             especialidad=medico_data.especialidad,
@@ -137,7 +147,11 @@ async def crear_medico(medico_data: MedicoCreate, db: Session = Depends(get_db))
             consultorio=medico_data.consultorio,
             telefono=medico_data.telefono,
             direccion=medico_data.direccion,
-            id_usuario_creacion=medico_data.id_usuario_creacion,
+            id_usuario_creacion=(
+                medico_data.id_usuario_creacion
+                if medico_data.id_usuario_creacion
+                else None
+            ),
             email=medico_data.email,
         )
         return medico
@@ -165,14 +179,18 @@ async def actualizar_medico(
             )
 
         campos_actualizacion = {
-            k: v for k, v in medico_data.dict().items() if v is not None
+            k: v
+            for k, v in medico_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not medico_data.id_usuario_edicion:
             return medico_existente
 
         medico_actualizado = medico_crud.actualizar_medico(
-            medico_id, medico_data.id_usuario_edicion, **campos_actualizacion
+            medico_id,
+            medico_data.id_usuario_edicion if medico_data.id_usuario_edicion else None,
+            **campos_actualizacion,
         )
         return medico_actualizado
     except HTTPException:
@@ -186,7 +204,9 @@ async def actualizar_medico(
         )
 
 
-@router.delete("/{medico_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{medico_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_medico(medico_id: UUID, db: Session = Depends(get_db)):
     """Eliminar un médico."""
     try:
@@ -200,7 +220,7 @@ async def eliminar_medico(medico_id: UUID, db: Session = Depends(get_db)):
 
         eliminado = medico_crud.eliminar_medico(medico_id)
         if eliminado:
-            return RespuestaAPI(mensaje="Médico eliminado exitosamente", exito=True)
+            return RespuestaAPI(mensaje="Médico eliminado exitosamente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

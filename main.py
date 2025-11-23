@@ -1,8 +1,10 @@
 """
-Sistema de gestión hospitalaria con ORM SQLAlchemy y Neon PostgreSQL
-API REST con FastAPI - Sin interfaz de consola
+Sistema de gestión hospitalaria
+API REST con FastAPI
 """
 
+import os
+import socket
 import uvicorn
 from apis import (
     auth,
@@ -18,8 +20,10 @@ from apis import (
     usuario,
 )
 from database.config import create_tables
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 app = FastAPI(
     title="Sistema de Gestión Hospitalaria",
@@ -37,32 +41,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(usuario.router)
-app.include_router(paciente.router)
-app.include_router(medico.router)
-app.include_router(enfermera.router)
-app.include_router(cita.router)
-app.include_router(hospitalizacion.router)
-app.include_router(historial_medico.router)
-app.include_router(historial_entrada.router)
-app.include_router(factura.router)
-app.include_router(factura_detalle.router)
+app.include_router(auth.router, prefix="/api")
+app.include_router(usuario.router, prefix="/api")
+app.include_router(paciente.router, prefix="/api")
+app.include_router(medico.router, prefix="/api")
+app.include_router(enfermera.router, prefix="/api")
+app.include_router(cita.router, prefix="/api")
+app.include_router(hospitalizacion.router, prefix="/api")
+app.include_router(historial_medico.router, prefix="/api")
+app.include_router(historial_entrada.router, prefix="/api")
+app.include_router(factura.router, prefix="/api")
+app.include_router(factura_detalle.router, prefix="/api")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Manejador personalizado para errores de validación de Pydantic."""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": exc.body},
+    )
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Evento de inicio de la aplicación."""
-    print("Iniciando Sistema de Gestión Hospitalaria...")
+    """Inicio de la aplicación"""
+    print("Iniciando sistema...")
     print("Configurando base de datos...")
     create_tables()
-    print("Sistema listo para usar.")
-    print("Documentación disponible en: http://localhost:8000/docs")
+    print("Sistema listo.")
+    print("Documentación: http://localhost:8000/docs")
 
 
 @app.get("/", tags=["raíz"])
 async def root():
-    """Endpoint raíz con información de la API."""
+    """Endpoint raíz"""
     return {
         "mensaje": "Bienvenido al Sistema de Gestión Hospitalaria",
         "version": "1.0.0",
@@ -77,23 +90,63 @@ async def root():
             "citas": "/citas",
             "hospitalizaciones": "/hospitalizaciones",
             "historiales_medicos": "/historiales-medicos",
-            "historiales_entrada": "/historiales-entrada",
+            "historiales_entrada": "/historial-entradas",
             "facturas": "/facturas",
-            "facturas_detalle": "/facturas-detalle",
+            "facturas_detalle": "/factura-detalles",
         },
     }
 
 
+def is_port_available(host: str, port: int) -> bool:
+    """Verifica si un puerto está disponible"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+            return True
+        except OSError:
+            return False
+
+
 def main():
-    """Función principal para ejecutar el servidor."""
-    print("Iniciando servidor FastAPI...")
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info",
-    )
+    """Obtener puerto de variable de entorno o usar 8000 por defecto"""
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
+
+    if not isinstance(port, int) or port < 1 or port > 65535:
+        print(f"ERROR: Puerto inválido: {port}")
+        print("El puerto debe ser un número entre 1 y 65535")
+        return
+
+    if not is_port_available(host, port):
+        print(f"ERROR: El puerto {port} ya está en uso")
+        print(
+            f"Por favor, detén el proceso que está usando el puerto {port} o usa otro puerto"
+        )
+        print(f"Para usar otro puerto, establece la variable de entorno PORT:")
+        print(f"  Windows: $env:PORT=8001")
+        print(f"  Linux/Mac: export PORT=8001")
+        return
+
+    print(f"Iniciando servidor en {host}:{port}...")
+    try:
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=False,
+            log_level="info",
+        )
+    except OSError as e:
+        if e.errno == 10048:
+            print(f"ERROR: No se puede iniciar el servidor en el puerto {port}")
+            print(f"El puerto {port} está siendo usado por otro proceso")
+            print(f"Para solucionarlo:")
+            print(f"  1. Detén el proceso que está usando el puerto {port}")
+            print(
+                f"  2. O usa otro puerto estableciendo PORT=8001 (o el que prefieras)"
+            )
+        else:
+            print(f"ERROR al iniciar el servidor: {e}")
 
 
 if __name__ == "__main__":

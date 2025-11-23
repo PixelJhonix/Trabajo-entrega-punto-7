@@ -1,13 +1,9 @@
-"""
-API de Hospitalizaciones - Endpoints para gestión de hospitalizaciones
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.hospitalizacion_crud import HospitalizacionCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import (
     HospitalizacionCreate,
     HospitalizacionResponse,
@@ -21,14 +17,19 @@ router = APIRouter(prefix="/hospitalizaciones", tags=["hospitalizaciones"])
 
 @router.get("/", response_model=List[HospitalizacionResponse])
 async def obtener_hospitalizaciones(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir hospitalizaciones inactivas"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todas las hospitalizaciones con paginación."""
+    """Obtener todas las hospitalizaciones con paginación y opción de incluir inactivas."""
     try:
         hospitalizacion_crud = HospitalizacionCRUD(db)
         hospitalizaciones = hospitalizacion_crud.obtener_hospitalizaciones(
-            skip=skip, limit=limit
+            skip=skip, limit=limit, include_inactive=include_inactive
         )
+        if not hospitalizaciones:
+            return []
         return hospitalizaciones
     except Exception as e:
         raise HTTPException(
@@ -149,15 +150,18 @@ async def crear_hospitalizacion(
         hospitalizacion_crud = HospitalizacionCRUD(db)
         hospitalizacion = hospitalizacion_crud.crear_hospitalizacion(
             paciente_id=hospitalizacion_data.paciente_id,
-            medico_responsable_id=hospitalizacion_data.medico_responsable_id,
-            enfermera_asignada_id=hospitalizacion_data.enfermera_asignada_id,
-            tipo_cuidado=hospitalizacion_data.tipo_cuidado,
-            descripcion=hospitalizacion_data.descripcion,
+            medico_id=hospitalizacion_data.medico_id,
+            fecha_ingreso=hospitalizacion_data.fecha_ingreso,
+            motivo=hospitalizacion_data.motivo,
             numero_habitacion=hospitalizacion_data.numero_habitacion,
-            tipo_habitacion=hospitalizacion_data.tipo_habitacion,
-            fecha_inicio=hospitalizacion_data.fecha_inicio,
-            fecha_fin=hospitalizacion_data.fecha_fin,
-            id_usuario_creacion=hospitalizacion_data.id_usuario_creacion,
+            id_usuario_creacion=(
+                hospitalizacion_data.id_usuario_creacion
+                if hospitalizacion_data.id_usuario_creacion
+                else None
+            ),
+            enfermera_id=hospitalizacion_data.enfermera_id,
+            fecha_salida=hospitalizacion_data.fecha_salida,
+            notas=hospitalizacion_data.notas,
         )
         return hospitalizacion
     except ValueError as e:
@@ -189,15 +193,23 @@ async def actualizar_hospitalizacion(
             )
 
         campos_actualizacion = {
-            k: v for k, v in hospitalizacion_data.dict().items() if v is not None
+            k: v
+            for k, v in hospitalizacion_data.dict(
+                exclude={"id_usuario_edicion"}
+            ).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not hospitalizacion_data.id_usuario_edicion:
             return hospitalizacion_existente
 
         hospitalizacion_actualizada = hospitalizacion_crud.actualizar_hospitalizacion(
             hospitalizacion_id,
-            hospitalizacion_data.id_usuario_edicion,
+            (
+                hospitalizacion_data.id_usuario_edicion
+                if hospitalizacion_data.id_usuario_edicion
+                else None
+            ),
             **campos_actualizacion,
         )
         return hospitalizacion_actualizada
@@ -262,11 +274,13 @@ async def cancelar_hospitalizacion(
         )
 
 
-@router.delete("/{hospitalizacion_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{hospitalizacion_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_hospitalizacion(
     hospitalizacion_id: UUID, db: Session = Depends(get_db)
 ):
-    """Eliminar una hospitalización."""
+    """Eliminar una hospitalización (soft delete)."""
     try:
         hospitalizacion_crud = HospitalizacionCRUD(db)
 
@@ -282,7 +296,7 @@ async def eliminar_hospitalizacion(
         eliminada = hospitalizacion_crud.eliminar_hospitalizacion(hospitalizacion_id)
         if eliminada:
             return RespuestaAPI(
-                mensaje="Hospitalización eliminada exitosamente", exito=True
+                mensaje="Hospitalización eliminada exitosamente", success=True
             )
         else:
             raise HTTPException(

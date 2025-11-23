@@ -1,7 +1,3 @@
-"""
-Operaciones CRUD para Cita
-"""
-
 from typing import List, Optional
 from uuid import UUID
 
@@ -10,8 +6,6 @@ from sqlalchemy.orm import Session
 
 
 class CitaCRUD:
-    """CRUD para gestión de citas."""
-
     def __init__(self, db: Session):
         self.db = db
 
@@ -21,16 +15,32 @@ class CitaCRUD:
         motivo: str,
         paciente_id: UUID,
         medico_id: UUID,
-        id_usuario_creacion: UUID,
+        id_usuario_creacion: Optional[UUID] = None,
         notas: str = None,
     ) -> Cita:
         """Crear una nueva cita."""
+        from entities.medico import Medico
+        from entities.paciente import Paciente
+
+        paciente = self.db.query(Paciente).filter(Paciente.id == paciente_id).first()
+        if not paciente:
+            raise ValueError("El paciente especificado no existe")
+
+        medico = self.db.query(Medico).filter(Medico.id == medico_id).first()
+        if not medico:
+            raise ValueError("El médico especificado no existe")
+
+        if not motivo or len(motivo.strip()) == 0:
+            raise ValueError("El motivo es obligatorio")
+        if len(motivo) > 255:
+            raise ValueError("El motivo no puede exceder 255 caracteres")
+
         cita = Cita(
             fecha_cita=fecha_cita,
-            motivo=motivo,
+            motivo=motivo.strip(),
             paciente_id=paciente_id,
             medico_id=medico_id,
-            notas=notas,
+            notas=notas.strip() if notas else None,
             id_usuario_creacion=id_usuario_creacion,
         )
         self.db.add(cita)
@@ -38,9 +48,14 @@ class CitaCRUD:
         self.db.refresh(cita)
         return cita
 
-    def obtener_citas(self, skip: int = 0, limit: int = 100) -> List[Cita]:
-        """Obtener todas las citas."""
-        return self.db.query(Cita).filter(Cita.activo).offset(skip).limit(limit).all()
+    def obtener_citas(
+        self, skip: int = 0, limit: int = 1000, include_inactive: bool = False
+    ) -> List[Cita]:
+        """Obtener todas las citas con opción de incluir inactivas."""
+        query = self.db.query(Cita)
+        if not include_inactive:
+            query = query.filter(Cita.activo == True)
+        return query.offset(skip).limit(limit).all()
 
     def obtener_cita(self, cita_id: UUID) -> Optional[Cita]:
         """Obtener una cita por ID."""
@@ -50,30 +65,34 @@ class CitaCRUD:
         """Obtener citas por paciente."""
         return (
             self.db.query(Cita)
-            .filter(Cita.paciente_id == paciente_id, Cita.activo)
+            .filter(Cita.paciente_id == paciente_id, Cita.activo == True)
             .all()
         )
 
     def obtener_citas_por_medico(self, medico_id: UUID) -> List[Cita]:
         """Obtener citas por médico."""
         return (
-            self.db.query(Cita).filter(Cita.medico_id == medico_id, Cita.activo).all()
+            self.db.query(Cita)
+            .filter(Cita.medico_id == medico_id, Cita.activo == True)
+            .all()
         )
 
     def obtener_citas_por_fecha(self, fecha) -> List[Cita]:
         """Obtener citas por fecha."""
         return (
             self.db.query(Cita)
-            .filter(Cita.fecha_cita.date() == fecha, Cita.activo)
+            .filter(Cita.fecha_cita.date() == fecha, Cita.activo == True)
             .all()
         )
 
     def obtener_citas_por_estado(self, estado: str) -> List[Cita]:
         """Obtener citas por estado."""
-        return self.db.query(Cita).filter(Cita.estado == estado, Cita.activo).all()
+        return (
+            self.db.query(Cita).filter(Cita.estado == estado, Cita.activo == True).all()
+        )
 
     def actualizar_cita(
-        self, cita_id: UUID, id_usuario_edicion: UUID, **kwargs
+        self, cita_id: UUID, id_usuario_edicion: Optional[UUID] = None, **kwargs
     ) -> Optional[Cita]:
         """Actualizar una cita."""
         cita = self.obtener_cita(cita_id)
@@ -81,7 +100,8 @@ class CitaCRUD:
             for key, value in kwargs.items():
                 if hasattr(cita, key):
                     setattr(cita, key, value)
-            cita.id_usuario_edicion = id_usuario_edicion
+            if id_usuario_edicion:
+                cita.id_usuario_edicion = id_usuario_edicion
             self.db.commit()
             self.db.refresh(cita)
         return cita

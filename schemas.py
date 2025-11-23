@@ -19,6 +19,7 @@ class UsuarioBase(BaseModel):
 
 class UsuarioCreate(UsuarioBase):
     contraseña: str
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class UsuarioUpdate(BaseModel):
@@ -34,8 +35,8 @@ class UsuarioUpdate(BaseModel):
 class UsuarioResponse(UsuarioBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -44,6 +45,12 @@ class UsuarioResponse(UsuarioBase):
 class UsuarioLogin(BaseModel):
     nombre_usuario: str
     contraseña: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: dict
 
 
 class CambioContraseña(BaseModel):
@@ -61,7 +68,7 @@ class PacienteBase(BaseModel):
 
 
 class PacienteCreate(PacienteBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class PacienteUpdate(BaseModel):
@@ -78,8 +85,10 @@ class PacienteUpdate(BaseModel):
 class PacienteResponse(PacienteBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -92,10 +101,25 @@ class MedicoBase(BaseModel):
     telefono: Optional[str] = None
     especialidad: str
     numero_licencia: str
+    fecha_nacimiento: Optional[date] = None
+    consultorio: Optional[str] = None
+    direccion: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
-class MedicoCreate(MedicoBase):
-    id_usuario_creacion: UUID
+class MedicoCreate(BaseModel):
+    nombre: str
+    apellido: str
+    email: EmailStr
+    telefono: Optional[str] = None
+    especialidad: str
+    numero_licencia: str
+    fecha_nacimiento: date
+    consultorio: Optional[str] = None
+    direccion: Optional[str] = None
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class MedicoUpdate(BaseModel):
@@ -105,6 +129,9 @@ class MedicoUpdate(BaseModel):
     telefono: Optional[str] = None
     especialidad: Optional[str] = None
     numero_licencia: Optional[str] = None
+    fecha_nacimiento: Optional[date] = None
+    consultorio: Optional[str] = None
+    direccion: Optional[str] = None
     activo: Optional[bool] = None
     id_usuario_edicion: Optional[UUID] = None
 
@@ -112,8 +139,10 @@ class MedicoUpdate(BaseModel):
 class MedicoResponse(MedicoBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -129,7 +158,7 @@ class EnfermeraBase(BaseModel):
 
 
 class EnfermeraCreate(EnfermeraBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class EnfermeraUpdate(BaseModel):
@@ -146,8 +175,10 @@ class EnfermeraUpdate(BaseModel):
 class EnfermeraResponse(EnfermeraBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -162,7 +193,7 @@ class CitaBase(BaseModel):
 
 
 class CitaCreate(CitaBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class CitaUpdate(BaseModel):
@@ -177,8 +208,10 @@ class CitaResponse(CitaBase):
     id: UUID
     estado: str
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -196,7 +229,7 @@ class HospitalizacionBase(BaseModel):
 
 
 class HospitalizacionCreate(HospitalizacionBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class HospitalizacionUpdate(BaseModel):
@@ -213,8 +246,10 @@ class HospitalizacionResponse(HospitalizacionBase):
     id: UUID
     estado: str
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -227,7 +262,7 @@ class HistorialMedicoBase(BaseModel):
 
 
 class HistorialMedicoCreate(HistorialMedicoBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class HistorialMedicoUpdate(BaseModel):
@@ -241,8 +276,10 @@ class HistorialMedicoResponse(HistorialMedicoBase):
     id: UUID
     estado: str
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -258,7 +295,7 @@ class HistorialEntradaBase(BaseModel):
 
 
 class HistorialEntradaCreate(HistorialEntradaBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class HistorialEntradaUpdate(BaseModel):
@@ -272,8 +309,10 @@ class HistorialEntradaUpdate(BaseModel):
 class HistorialEntradaResponse(HistorialEntradaBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -291,7 +330,7 @@ class FacturaBase(BaseModel):
 
 
 class FacturaCreate(FacturaBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class FacturaUpdate(BaseModel):
@@ -310,8 +349,10 @@ class FacturaResponse(FacturaBase):
     id: UUID
     estado: str
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True
@@ -326,7 +367,7 @@ class FacturaDetalleBase(BaseModel):
 
 
 class FacturaDetalleCreate(FacturaDetalleBase):
-    id_usuario_creacion: UUID
+    id_usuario_creacion: Optional[UUID] = None
 
 
 class FacturaDetalleUpdate(BaseModel):
@@ -340,8 +381,10 @@ class FacturaDetalleUpdate(BaseModel):
 class FacturaDetalleResponse(FacturaDetalleBase):
     id: UUID
     activo: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    fecha_creacion: datetime
+    fecha_actualizacion: Optional[datetime] = None
+    id_usuario_creacion: Optional[UUID] = None
+    id_usuario_edicion: Optional[UUID] = None
 
     class Config:
         from_attributes = True

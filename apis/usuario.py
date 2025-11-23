@@ -1,13 +1,9 @@
-"""
-API de Usuarios - Endpoints para gestión de usuarios
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.usuario_crud import UsuarioCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import (
     RespuestaAPI,
     UsuarioCreate,
@@ -22,12 +18,19 @@ router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
 @router.get("/", response_model=List[UsuarioResponse])
 async def obtener_usuarios(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir usuarios inactivos"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todos los usuarios con paginación."""
+    """Obtener todos los usuarios con paginación y opción de incluir inactivos."""
     try:
         usuario_crud = UsuarioCRUD(db)
-        usuarios = usuario_crud.obtener_usuarios(skip=skip, limit=limit)
+        usuarios = usuario_crud.obtener_usuarios(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not usuarios:
+            return []
         return usuarios
     except Exception as e:
         raise HTTPException(
@@ -108,7 +111,11 @@ async def crear_usuario(usuario_data: UsuarioCreate, db: Session = Depends(get_d
             nombre_usuario=usuario_data.nombre_usuario,
             email=usuario_data.email,
             contraseña=usuario_data.contraseña,
-            id_usuario_creacion=usuario_data.id_usuario_creacion,
+            id_usuario_creacion=(
+                usuario_data.id_usuario_creacion
+                if usuario_data.id_usuario_creacion
+                else None
+            ),
             telefono=usuario_data.telefono,
             es_admin=usuario_data.es_admin,
         )
@@ -148,14 +155,22 @@ async def actualizar_usuario(
             raise APIErrorHandler.not_found_error("Usuario", str(usuario_id))
 
         campos_actualizacion = {
-            k: v for k, v in usuario_data.dict().items() if v is not None
+            k: v
+            for k, v in usuario_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not usuario_data.id_usuario_edicion:
             return usuario_existente
 
         usuario_actualizado = usuario_crud.actualizar_usuario(
-            usuario_id, usuario_data.id_usuario_edicion, **campos_actualizacion
+            usuario_id,
+            (
+                usuario_data.id_usuario_edicion
+                if usuario_data.id_usuario_edicion
+                else None
+            ),
+            **campos_actualizacion,
         )
         return usuario_actualizado
     except HTTPException:
@@ -176,9 +191,11 @@ async def actualizar_usuario(
         raise APIErrorHandler.server_error("actualizar usuario", str(e))
 
 
-@router.delete("/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{usuario_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar un usuario."""
+    """Eliminar un usuario (soft delete)."""
     try:
         usuario_crud = UsuarioCRUD(db)
 
@@ -190,7 +207,7 @@ async def eliminar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
 
         eliminado = usuario_crud.eliminar_usuario(usuario_id)
         if eliminado:
-            return RespuestaAPI(mensaje="Usuario eliminado exitosamente", exito=True)
+            return RespuestaAPI(mensaje="Usuario eliminado exitosamente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -247,7 +264,7 @@ async def verificar_es_admin(usuario_id: UUID, db: Session = Depends(get_db)):
         es_admin = usuario_crud.es_admin(usuario_id)
         return RespuestaAPI(
             mensaje=f"El usuario {'es' if es_admin else 'no es'} administrador",
-            exito=True,
+            success=True,
             datos={"es_admin": es_admin},
         )
     except Exception as e:

@@ -1,211 +1,414 @@
-# Sistema de Gestión Hospitalaria - API FastAPI
+Backend - Sistema Hospitalario
 
-## Descripción
+API REST desarrollada con FastAPI para gestión hospitalaria.
 
-Sistema de gestión hospitalaria desarrollado con FastAPI, SQLAlchemy y PostgreSQL. Proporciona una API REST completa para la gestión de usuarios, pacientes, médicos, enfermeras, citas, hospitalizaciones, facturas e historiales médicos.
+## Requisitos
 
-## Características Principales
-
-- **API REST completa** con FastAPI
-- **Base de datos PostgreSQL** con SQLAlchemy ORM
-- **Autenticación JWT** para seguridad
-- **Documentación automática** con Swagger UI
-- **Validación de datos** con Pydantic
-- **Manejo de errores** estructurado
-- **Códigos de estado HTTP** correctos
-- **Soft delete** para preservar datos
-- **Relaciones entre entidades** bien definidas
+- Python 3.8+
+- PostgreSQL (Neon Cloud)
 
 ## Instalación
-
-### Prerrequisitos
-
-- Python 3.11+
-- PostgreSQL (o usar Neon como servicio en la nube)
-- Git
-
-### 1. Clonar el repositorio
-
-```bash
-git clone <url-del-repositorio>
-cd Trabajo-entrega-punto-7
-```
-
-### 2. Crear entorno virtual
-
-```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-```
-
-### 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configurar variables de entorno
+## Configuración
 
-Crear archivo `.env` en la raíz del proyecto:
+Crear archivo `.env`:
 
 ```env
 DATABASE_URL=postgresql://usuario:contraseña@host:puerto/nombre_db
 ```
 
-### 5. Ejecutar migraciones (opcional)
+## Ejecución
 
 ```bash
-alembic upgrade head
+python main.py
 ```
 
-## Ejecutar el Proyecto
+La API estará disponible en `http://localhost:8000`
 
-```bash
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+Documentación: `http://localhost:8000/docs`
 
-La API estará disponible en:
-- **API**: http://localhost:8000
-- **Documentación**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-## Estructura del Proyecto
+## Estructura
 
 ```
-Trabajo-entrega-punto-7/
-├── apis/                    # Endpoints de la API
-│   ├── auth.py             # Autenticación
-│   ├── usuario.py          # Gestión de usuarios
-│   ├── paciente.py         # Gestión de pacientes
-│   ├── medico.py           # Gestión de médicos
-│   ├── enfermera.py        # Gestión de enfermeras
-│   ├── cita.py             # Gestión de citas
-│   ├── hospitalizacion.py  # Gestión de hospitalizaciones
-│   ├── factura.py          # Gestión de facturas
-│   ├── factura_detalle.py  # Detalles de facturas
-│   ├── historial_medico.py # Historiales médicos
-│   └── historial_entrada.py # Entradas del historial
-├── crud/                   # Operaciones de base de datos
-├── entities/               # Modelos SQLAlchemy
-├── schemas/                # Modelos Pydantic
-├── database/               # Configuración de BD
-├── auth/                   # Sistema de autenticación
-├── utils/                  # Utilidades
-├── main.py                 # Aplicación principal
-└── requirements.txt        # Dependencias
+BACK/
+├── apis/          Endpoints de la API
+├── crud/          Operaciones de base de datos
+├── entities/       Modelos SQLAlchemy
+├── schemas.py     Esquemas Pydantic
+├── database/       Configuración de BD
+└── main.py         Aplicación principal
 ```
 
-## Entidades del Sistema
+## Entidades y Relaciones
 
 ### Usuario
-- Gestión de usuarios del sistema
-- Autenticación y autorización
-- Roles de administrador
+Entidad que representa un usuario del sistema con permisos de administración.
+- **Relaciones**: No tiene relaciones directas con otras entidades
+- **Campos clave**: nombre_usuario (único), email (único), es_admin
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
 ### Paciente
-- Información personal y médica
-- Historial médico asociado
+Entidad que representa un paciente del hospital.
+- **Relaciones**: 
+  - Uno a muchos con Cita
+  - Uno a muchos con Hospitalizacion
+  - Uno a muchos con Factura
+  - Uno a muchos con HistorialMedico
+- **Campos clave**: email (único), fecha_nacimiento
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
-### Médico
-- Especialidades médicas
-- Número de licencia
-- Citas y hospitalizaciones
+### Medico
+Entidad que representa un médico del hospital.
+- **Relaciones**:
+  - Uno a muchos con Cita
+  - Uno a muchos con Hospitalizacion
+  - Uno a muchos con HistorialEntrada
+- **Campos clave**: email (único), numero_licencia (único), especialidad
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
 ### Enfermera
-- Turnos de trabajo
-- Número de licencia
-- Asignación a hospitalizaciones
+Entidad que representa una enfermera del hospital.
+- **Relaciones**:
+  - Uno a muchos con Hospitalizacion
+- **Campos clave**: email (único), numero_licencia (único), turno
+- **Estados de turno**: mañana, tarde, noche
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
 ### Cita
-- Programación de consultas
-- Estados: programada, completada, cancelada
-- Relación con paciente y médico
+Entidad que representa una cita médica.
+- **Relaciones**:
+  - Muchos a uno con Paciente
+  - Muchos a uno con Medico
+- **Campos clave**: fecha_cita, motivo, estado
+- **Estados**: programada, completada, cancelada
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
-### Hospitalización
-- Ingreso y egreso de pacientes
-- Habitaciones asignadas
-- Estados: activa, completada, cancelada
+### Hospitalizacion
+Entidad que representa una hospitalización de un paciente.
+- **Relaciones**:
+  - Muchos a uno con Paciente
+  - Muchos a uno con Medico
+  - Muchos a uno con Enfermera (opcional)
+- **Campos clave**: fecha_ingreso, numero_habitacion, estado
+- **Estados**: activa, completada, cancelada
+- **Reglas de negocio**: 
+  - Una habitación no puede estar ocupada por múltiples hospitalizaciones activas simultáneamente
+  - La fecha_salida es opcional y se establece cuando la hospitalización se completa
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
+
+### HistorialMedico
+Entidad que representa el historial médico de un paciente.
+- **Relaciones**:
+  - Muchos a uno con Paciente
+  - Uno a muchos con HistorialEntrada
+- **Campos clave**: numero_historial (único), estado
+- **Estados**: abierto, cerrado, archivado
+- **Reglas de negocio**: 
+  - Un paciente solo puede tener un historial médico activo a la vez
+  - El número de historial debe ser único
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
+
+### HistorialEntrada
+Entidad que representa una entrada en el historial médico.
+- **Relaciones**:
+  - Muchos a uno con HistorialMedico
+  - Muchos a uno con Medico
+- **Campos clave**: fecha_consulta, diagnostico, tratamiento, observaciones
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
 ### Factura
-- Facturación de servicios
-- Estados: pendiente, pagada, vencida, cancelada
-- Detalles de servicios
+Entidad que representa una factura de servicios médicos.
+- **Relaciones**:
+  - Muchos a uno con Paciente
+  - Uno a muchos con FacturaDetalle
+- **Campos clave**: numero_factura (único), fecha_emision, fecha_vencimiento, estado
+- **Estados**: pendiente, pagada, vencida, cancelada
+- **Reglas de negocio**:
+  - El número de factura debe ser único
+  - Los montos (subtotal, impuestos, total) no pueden ser negativos
+  - El total debe ser igual a subtotal + impuestos
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
-### Historial Médico
-- Registro médico del paciente
-- Entradas de consultas
-- Estados: abierto, cerrado, archivado
+### FacturaDetalle
+Entidad que representa un detalle de línea en una factura.
+- **Relaciones**:
+  - Muchos a uno con Factura
+- **Campos clave**: descripcion, cantidad, precio_unitario, subtotal
+- **Reglas de negocio**:
+  - La cantidad debe ser mayor a cero
+  - Los precios no pueden ser negativos
+  - El subtotal debe ser igual a cantidad * precio_unitario
+- **Auditoría**: fecha_creacion, fecha_actualizacion, id_usuario_creacion, id_usuario_edicion
 
-## Endpoints Principales
+## Lógica de Negocio
+
+### Validaciones Comunes
+
+1. **Email**: Debe tener formato válido y ser único por entidad
+2. **Teléfono**: Opcional, máximo 20 caracteres, formato flexible
+3. **Campos de texto**: No pueden estar vacíos (solo espacios), tienen límites de longitud
+4. **Soft Delete**: Todas las entidades usan soft delete (campo `activo`), no se eliminan físicamente
+5. **Auditoría**: Todas las entidades registran quién y cuándo las creó/modificó
+
+### Reglas de Negocio Específicas
+
+#### Citas
+- El paciente y médico deben existir antes de crear la cita
+- El motivo es obligatorio y no puede exceder 255 caracteres
+- Las citas pueden tener notas opcionales
+
+#### Hospitalizaciones
+- El paciente y médico deben existir
+- La enfermera es opcional pero si se proporciona debe existir
+- El número de habitación no puede estar ocupado por otra hospitalización activa
+- El motivo es obligatorio y no puede exceder 255 caracteres
+
+#### Historiales Médicos
+- Un paciente solo puede tener un historial médico activo
+- El número de historial debe ser único en el sistema
+- El número de historial es obligatorio
+
+#### Facturas
+- El número de factura debe ser único
+- Los montos no pueden ser negativos
+- El total debe calcularse correctamente (subtotal + impuestos)
+- Una factura puede tener múltiples detalles
+
+#### FacturaDetalle
+- La factura padre debe existir
+- La descripción es obligatoria
+- La cantidad debe ser mayor a cero
+- Los precios no pueden ser negativos
+
+## Ejemplos de Uso de la API
 
 ### Autenticación
-- `POST /auth/login` - Iniciar sesión
-- `POST /auth/crear-admin` - Crear administrador
-- `GET /auth/estado` - Estado del sistema
 
-### Usuarios
-- `GET /usuarios/` - Listar usuarios
-- `POST /usuarios/` - Crear usuario
-- `GET /usuarios/{id}` - Obtener usuario
-- `PUT /usuarios/{id}` - Actualizar usuario
-- `DELETE /usuarios/{id}` - Eliminar usuario
+```bash
+# Login
+POST /api/auth/login
+{
+  "nombre_usuario": "admin",
+  "contraseña": "password123"
+}
 
-### Pacientes
-- `GET /pacientes/` - Listar pacientes
-- `POST /pacientes/` - Crear paciente
-- `GET /pacientes/{id}` - Obtener paciente
-- `PUT /pacientes/{id}` - Actualizar paciente
-- `DELETE /pacientes/{id}` - Eliminar paciente
+# Respuesta
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer"
+}
+```
 
-### Y más endpoints para cada entidad...
+### Crear un Paciente
 
-## Tecnologías Utilizadas
+```bash
+POST /api/pacientes
+Authorization: Bearer {token}
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan.perez@email.com",
+  "telefono": "+1234567890",
+  "fecha_nacimiento": "1990-01-15",
+  "direccion": "Calle Principal 123"
+}
 
-- **FastAPI**: Framework web moderno y rápido
-- **SQLAlchemy**: ORM para Python
-- **PostgreSQL**: Base de datos relacional
-- **Pydantic**: Validación de datos
-- **Uvicorn**: Servidor ASGI
-- **Alembic**: Migraciones de base de datos
-- **JWT**: Autenticación basada en tokens
+# Respuesta
+{
+  "id": "uuid-del-paciente",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan.perez@email.com",
+  "activo": true,
+  "fecha_creacion": "2024-01-15T10:30:00Z",
+  ...
+}
+```
 
-## Desarrollo
+### Crear una Cita
 
-### Estándares de código
+```bash
+POST /api/citas
+Authorization: Bearer {token}
+{
+  "fecha_cita": "2024-02-01T10:00:00Z",
+  "motivo": "Consulta general",
+  "paciente_id": "uuid-del-paciente",
+  "medico_id": "uuid-del-medico",
+  "notas": "Primera consulta"
+}
 
-- **Docstrings** para documentación
-- **Type hints** para tipado
-- **Black** para formateo de código
-- **Pydantic** para validación
-- **HTTP status codes** correctos
+# Respuesta
+{
+  "id": "uuid-de-la-cita",
+  "fecha_cita": "2024-02-01T10:00:00Z",
+  "estado": "programada",
+  "activo": true,
+  ...
+}
+```
 
-### Flujo de trabajo
+### Listar Pacientes con Paginación
 
-1. Crear rama para nueva funcionalidad
-2. Implementar cambios
-3. Probar endpoints
-4. Hacer commit
-5. Crear Pull Request
+```bash
+GET /api/pacientes?skip=0&limit=1000
+Authorization: Bearer {token}
 
-## Contribuir
+# Respuesta
+[
+  {
+    "id": "uuid-1",
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    ...
+  },
+  {
+    "id": "uuid-2",
+    "nombre": "María",
+    "apellido": "González",
+    ...
+  }
+]
+```
 
-1. Fork el proyecto
-2. Crear rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abrir Pull Request
+### Actualizar un Médico
 
-## Licencia
+```bash
+PUT /api/medicos/{medico_id}
+Authorization: Bearer {token}
+{
+  "especialidad": "Cardiología",
+  "consultorio": "101",
+  "id_usuario_edicion": "uuid-del-usuario"
+}
 
-Este proyecto está bajo la Licencia MIT.
+# Respuesta
+{
+  "id": "uuid-del-medico",
+  "nombre": "Dr. Carlos",
+  "apellido": "Rodríguez",
+  "especialidad": "Cardiología",
+  "consultorio": "101",
+  ...
+}
+```
 
-## Autores
+### Eliminar (Soft Delete) una Cita
 
-- [Tu nombre] - Desarrollo inicial
+```bash
+DELETE /api/citas/{cita_id}
+Authorization: Bearer {token}
 
-## Contacto
+# Respuesta
+{
+  "mensaje": "Cita eliminada exitosamente",
+  "success": true
+}
+```
 
-Para preguntas o sugerencias, contacta a [tu-email@ejemplo.com]
+### Crear una Hospitalización
+
+```bash
+POST /api/hospitalizaciones
+Authorization: Bearer {token}
+{
+  "fecha_ingreso": "2024-01-20T08:00:00Z",
+  "motivo": "Cirugía programada",
+  "numero_habitacion": "201",
+  "paciente_id": "uuid-del-paciente",
+  "medico_id": "uuid-del-medico",
+  "enfermera_id": "uuid-de-enfermera",
+  "notas": "Paciente estable"
+}
+
+# Respuesta
+{
+  "id": "uuid-de-hospitalizacion",
+  "estado": "activa",
+  "numero_habitacion": "201",
+  ...
+}
+```
+
+### Crear una Factura con Detalles
+
+```bash
+# Primero crear la factura
+POST /api/facturas
+Authorization: Bearer {token}
+{
+  "numero_factura": "FAC-2024-001",
+  "fecha_emision": "2024-01-15T00:00:00Z",
+  "fecha_vencimiento": "2024-02-15T00:00:00Z",
+  "subtotal": 500.00,
+  "impuestos": 50.00,
+  "total": 550.00,
+  "paciente_id": "uuid-del-paciente"
+}
+
+# Luego crear los detalles
+POST /api/factura-detalles
+Authorization: Bearer {token}
+{
+  "descripcion": "Consulta médica",
+  "cantidad": 1,
+  "precio_unitario": 300.00,
+  "subtotal": 300.00,
+  "factura_id": "uuid-de-factura"
+}
+
+POST /api/factura-detalles
+Authorization: Bearer {token}
+{
+  "descripcion": "Análisis de laboratorio",
+  "cantidad": 2,
+  "precio_unitario": 100.00,
+  "subtotal": 200.00,
+  "factura_id": "uuid-de-factura"
+}
+```
+
+## Estados y Transiciones
+
+### Estados de Cita
+- **programada**: Cita creada y pendiente
+- **completada**: Cita realizada exitosamente
+- **cancelada**: Cita cancelada
+
+### Estados de Hospitalización
+- **activa**: Paciente actualmente hospitalizado
+- **completada**: Paciente dado de alta
+- **cancelada**: Hospitalización cancelada
+
+### Estados de Factura
+- **pendiente**: Factura emitida, pendiente de pago
+- **pagada**: Factura pagada completamente
+- **vencida**: Factura con fecha de vencimiento pasada
+- **cancelada**: Factura cancelada
+
+### Estados de Historial Médico
+- **abierto**: Historial activo y en uso
+- **cerrado**: Historial cerrado pero disponible
+- **archivado**: Historial archivado
+
+## Endpoints Disponibles
+
+- `/api/auth/*` - Autenticación y autorización
+- `/api/usuarios/*` - Gestión de usuarios
+- `/api/pacientes/*` - Gestión de pacientes
+- `/api/medicos/*` - Gestión de médicos
+- `/api/enfermeras/*` - Gestión de enfermeras
+- `/api/citas/*` - Gestión de citas
+- `/api/hospitalizaciones/*` - Gestión de hospitalizaciones
+- `/api/historiales-medicos/*` - Gestión de historiales médicos
+- `/api/historial-entradas/*` - Gestión de entradas de historial
+- `/api/facturas/*` - Gestión de facturas
+- `/api/factura-detalles/*` - Gestión de detalles de factura
+
+Todos los endpoints DELETE devuelven `HTTP 200 OK` con un objeto `RespuestaAPI`.
+
+Todos los endpoints GET de listado soportan paginación con parámetros `skip` (default: 0) y `limit` (default: 1000).

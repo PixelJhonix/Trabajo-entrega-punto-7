@@ -1,20 +1,25 @@
-"""
-API de Autenticación - Endpoints para login y autenticación
-"""
-
+import os
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from crud.usuario_crud import UsuarioCRUD
 from database.config import get_db
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse
+from jose import jwt
+from schemas import LoginResponse, RespuestaAPI, UsuarioLogin, UsuarioResponse
 from sqlalchemy.orm import Session
 from utils.error_handler import APIErrorHandler
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "tu-secret-key-super-segura-cambiar-en-produccion")
+ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 
 
-@router.post("/login", response_model=UsuarioResponse)
+@router.post("/login", response_model=LoginResponse)
 async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
     """Autenticar un usuario con nombre de usuario/email y contraseña."""
     try:
@@ -28,7 +33,27 @@ async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
                 "Credenciales incorrectas o usuario inactivo"
             )
 
-        return usuario
+        expire = datetime.utcnow() + timedelta(hours=24)
+        token_data = {
+            "sub": str(usuario.id),
+            "email": usuario.email,
+            "es_admin": usuario.es_admin,
+            "exp": expire,
+        }
+        access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+
+        return LoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user={
+                "id": str(usuario.id),
+                "email": usuario.email,
+                "nombre": usuario.nombre,
+                "nombre_usuario": usuario.nombre_usuario,
+                "es_admin": usuario.es_admin,
+                "activo": usuario.activo,
+            },
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -41,16 +66,14 @@ async def crear_usuario_admin(db: Session = Depends(get_db)):
     try:
         usuario_crud = UsuarioCRUD(db)
 
-        # Verificar si ya existe un admin por defecto
         admin_existente = usuario_crud.obtener_admin_por_defecto()
         if admin_existente:
             return RespuestaAPI(
                 mensaje="Ya existe un usuario administrador por defecto",
-                exito=True,
+                success=True,
                 datos={"admin_id": str(admin_existente.id)},
             )
 
-        # Crear admin por defecto
         from auth.security import PasswordManager
 
         contraseña_admin = PasswordManager.generate_secure_password(12)
@@ -65,7 +88,7 @@ async def crear_usuario_admin(db: Session = Depends(get_db)):
 
         return RespuestaAPI(
             mensaje="Usuario administrador creado exitosamente",
-            exito=True,
+            success=True,
             datos={
                 "admin_id": str(admin.id),
                 "contraseña_temporal": contraseña_admin,
@@ -95,7 +118,7 @@ async def verificar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
 
         return RespuestaAPI(
             mensaje="Usuario verificado exitosamente",
-            exito=True,
+            success=True,
             datos={
                 "usuario_id": str(usuario.id),
                 "nombre": usuario.nombre,

@@ -1,82 +1,153 @@
-""" 7. Hospital / Clínica
- Pacientes, médicos, enfermeras. 
- Operaciones: agendar cita, registrar diagnóstico, emitir factura. """
+"""
+Sistema de gestión hospitalaria
+API REST con FastAPI
+"""
 
-from paciente import Paciente
-from medico import Medico
-from enfermera import Enfermera
+import os
+import socket
+import uvicorn
+from apis import (
+    auth,
+    cita,
+    enfermera,
+    factura,
+    factura_detalle,
+    historial_entrada,
+    historial_medico,
+    hospitalizacion,
+    medico,
+    paciente,
+    usuario,
+)
+from database.config import create_tables
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-print("---------------BIENVENIDOS A HOSPITAL LOS ENANOS---------------")
+app = FastAPI(
+    title="Sistema de Gestión Hospitalaria",
+    description="API REST para gestión de hospital con pacientes, médicos, enfermeras, citas, hospitalizaciones, facturas e historiales médicos",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
-def mostrar_todos(pacientes, medicos, enfermeras):
-    """Función para mostrar todas las personas registradas"""
-    print("\n--- LISTADO COMPLETO ---")
-    
-    if pacientes:
-        print(f"\n📋 PACIENTES ({len(pacientes)}):")
-        for paciente in pacientes:
-            paciente.mostrardatos()
-            print("-" * 30)
-    
-    if medicos:
-        print(f"\n👨‍⚕️ MÉDICOS ({len(medicos)}):")
-        for medico in medicos:
-            medico.mostrardatos()
-            print("-" * 30)
-    
-    if enfermeras:
-        print(f"\n👩‍⚕️ ENFERMERAS ({len(enfermeras)}):")
-        for enfermera in enfermeras:
-            enfermera.mostrardatos()
-            print("-" * 30)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/api")
+app.include_router(usuario.router, prefix="/api")
+app.include_router(paciente.router, prefix="/api")
+app.include_router(medico.router, prefix="/api")
+app.include_router(enfermera.router, prefix="/api")
+app.include_router(cita.router, prefix="/api")
+app.include_router(hospitalizacion.router, prefix="/api")
+app.include_router(historial_medico.router, prefix="/api")
+app.include_router(historial_entrada.router, prefix="/api")
+app.include_router(factura.router, prefix="/api")
+app.include_router(factura_detalle.router, prefix="/api")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Manejador personalizado para errores de validación de Pydantic."""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": exc.body},
+    )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicio de la aplicación"""
+    print("Iniciando sistema...")
+    print("Configurando base de datos...")
+    create_tables()
+    print("Sistema listo.")
+    print("Documentación: http://localhost:8000/docs")
+
+
+@app.get("/", tags=["raíz"])
+async def root():
+    """Endpoint raíz"""
+    return {
+        "mensaje": "Bienvenido al Sistema de Gestión Hospitalaria",
+        "version": "1.0.0",
+        "documentacion": "/docs",
+        "redoc": "/redoc",
+        "endpoints": {
+            "autenticacion": "/auth",
+            "usuarios": "/usuarios",
+            "pacientes": "/pacientes",
+            "medicos": "/medicos",
+            "enfermeras": "/enfermeras",
+            "citas": "/citas",
+            "hospitalizaciones": "/hospitalizaciones",
+            "historiales_medicos": "/historiales-medicos",
+            "historiales_entrada": "/historial-entradas",
+            "facturas": "/facturas",
+            "facturas_detalle": "/factura-detalles",
+        },
+    }
+
+
+def is_port_available(host: str, port: int) -> bool:
+    """Verifica si un puerto está disponible"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+            return True
+        except OSError:
+            return False
+
 
 def main():
-    """Función principal del sistema"""
-    print("¡Bienvenido al Sistema de Registro Hospitalario!")
-    
-    # Listas para almacenar los registros
-    pacientes = []
-    medicos = []
-    enfermeras = []
-    
-    while True:
-        print("\n" + "="*40)
-        print("        MENÚ PRINCIPAL")
-        print("="*40)
-        print("1. Registrar Paciente")
-        print("2. Registrar Médico")
-        print("3. Registrar Enfermera")
-        print("4. Mostrar Todos los Registros")
-        print("0. Salir")
-        print("="*40)
-        
-        opcion = input("Seleccione una opción: ")
-        
-        if opcion == "1":
-            paciente = Paciente.registrar()  # ← Usar método de clase
-            pacientes.append(paciente)
-            print("✅ Paciente registrado exitosamente!")
-        elif opcion == "2":
-            medico = Medico.registrar()      # ← Usar método de clase
-            medicos.append(medico)
-            print("✅ Médico registrado exitosamente!")
-        elif opcion == "3":
-            enfermera = Enfermera.registrar() # ← Usar método de clase
-            enfermeras.append(enfermera)
-            print("✅ Enfermera registrada exitosamente!")
-        elif opcion == "4":
-            mostrar_todos(pacientes, medicos, enfermeras)
-        elif opcion == "0":
-            print("¡Gracias por usar el sistema!")
-            break
+    """Obtener puerto de variable de entorno o usar 8000 por defecto"""
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
+
+    if not isinstance(port, int) or port < 1 or port > 65535:
+        print(f"ERROR: Puerto inválido: {port}")
+        print("El puerto debe ser un número entre 1 y 65535")
+        return
+
+    if not is_port_available(host, port):
+        print(f"ERROR: El puerto {port} ya está en uso")
+        print(
+            f"Por favor, detén el proceso que está usando el puerto {port} o usa otro puerto"
+        )
+        print(f"Para usar otro puerto, establece la variable de entorno PORT:")
+        print(f"  Windows: $env:PORT=8001")
+        print(f"  Linux/Mac: export PORT=8001")
+        return
+
+    print(f"Iniciando servidor en {host}:{port}...")
+    try:
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=False,
+            log_level="info",
+        )
+    except OSError as e:
+        if e.errno == 10048:
+            print(f"ERROR: No se puede iniciar el servidor en el puerto {port}")
+            print(f"El puerto {port} está siendo usado por otro proceso")
+            print(f"Para solucionarlo:")
+            print(f"  1. Detén el proceso que está usando el puerto {port}")
+            print(
+                f"  2. O usa otro puerto estableciendo PORT=8001 (o el que prefieras)"
+            )
         else:
-            print("❌ Opción no válida. Intente de nuevo.")
-        
-        input("\nPresione Enter para continuar...")
+            print(f"ERROR al iniciar el servidor: {e}")
+
 
 if __name__ == "__main__":
     main()
-
-
-
-

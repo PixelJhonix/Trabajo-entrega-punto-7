@@ -1,7 +1,3 @@
-"""
-Entidad Factura - Sistema de gestión hospitalaria
-"""
-
 import uuid
 
 from database.config import Base
@@ -12,7 +8,12 @@ from sqlalchemy.sql import func
 
 
 class Factura(Base):
-    """Modelo de Factura para el sistema hospitalario"""
+    """
+    Entidad que representa una factura.
+    
+    Atributos:
+        estado: Estado de la factura. Valores posibles: pendiente, pagada, vencida, cancelada
+    """
 
     __tablename__ = "tbl_facturas"
 
@@ -23,13 +24,11 @@ class Factura(Base):
     subtotal = Column(Numeric(10, 2), nullable=False)
     impuestos = Column(Numeric(10, 2), default=0)
     total = Column(Numeric(10, 2), nullable=False)
-    estado = Column(
-        String(20), default="pendiente"
-    )  # pendiente, pagada, vencida, cancelada
+    estado = Column(String(20), default="pendiente")
     notas = Column(String(500), nullable=True)
     activo = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

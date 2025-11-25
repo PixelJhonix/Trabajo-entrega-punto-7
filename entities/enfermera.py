@@ -1,7 +1,3 @@
-"""
-Entidad Enfermera - Sistema de gestión hospitalaria
-"""
-
 import uuid
 
 from database.config import Base
@@ -12,7 +8,12 @@ from sqlalchemy.sql import func
 
 
 class Enfermera(Base):
-    """Modelo de Enfermera para el sistema hospitalario"""
+    """
+    Entidad que representa una enfermera.
+    
+    Atributos:
+        turno: Turno de trabajo. Valores posibles: mañana, tarde, noche
+    """
 
     __tablename__ = "tbl_enfermeras"
 
@@ -22,10 +23,10 @@ class Enfermera(Base):
     email = Column(String(150), unique=True, index=True, nullable=False)
     telefono = Column(String(20), nullable=True)
     numero_licencia = Column(String(50), unique=True, index=True, nullable=False)
-    turno = Column(String(20), nullable=False)  # mañana, tarde, noche
+    turno = Column(String(20), nullable=False)
     activo = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

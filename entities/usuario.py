@@ -1,7 +1,3 @@
-"""
-Entidad Usuario - Sistema de gestión hospitalaria
-"""
-
 import uuid
 
 from database.config import Base
@@ -11,7 +7,7 @@ from sqlalchemy.sql import func
 
 
 class Usuario(Base):
-    """Modelo de Usuario para el sistema hospitalario"""
+    """Entidad que representa un usuario del sistema."""
 
     __tablename__ = "tbl_usuarios"
 
@@ -23,8 +19,8 @@ class Usuario(Base):
     telefono = Column(String(20), nullable=True)
     activo = Column(Boolean, default=True)
     es_admin = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

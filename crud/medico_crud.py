@@ -1,5 +1,3 @@
-"""Operaciones CRUD para Medico."""
-
 import re
 from typing import List, Optional
 from uuid import UUID
@@ -9,66 +7,42 @@ from sqlalchemy.orm import Session
 
 
 class MedicoCRUD:
-    """CRUD para gestión de médicos."""
-
     def __init__(self, db: Session):
         self.db = db
 
     def _validar_email(self, email: str) -> bool:
         """Validar formato de email."""
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        return re.match(pattern, email) is not None
+        return bool(re.match(pattern, email))
 
     def _validar_telefono(self, telefono: str) -> bool:
         """Validar formato de teléfono."""
-        pattern = r"^\+?[\d\s\-\(\)]{7,15}$"
-        return re.match(pattern, telefono) is not None
+        if not telefono:
+            return True
+        pattern = r"^[0-9+\-\s()]+$"
+        return bool(re.match(pattern, telefono)) and len(telefono) <= 20
 
     def crear_medico(
         self,
-        primer_nombre: str,
+        nombre: str,
         apellido: str,
-        fecha_nacimiento: str,
+        email: str,
         especialidad: str,
         numero_licencia: str,
-        telefono: str,
-        direccion: str,
-        id_usuario_creacion: UUID,
-        segundo_nombre: str = None,
-        consultorio: str = None,
-        email: str = None,
+        fecha_nacimiento,
+        id_usuario_creacion: Optional[UUID] = None,
+        telefono: Optional[str] = None,
+        consultorio: Optional[str] = None,
+        direccion: Optional[str] = None,
     ) -> Medico:
-        """
-        Crear un nuevo médico con validaciones.
-
-        Args:
-            primer_nombre: Primer nombre del médico
-            apellido: Apellido del médico
-            fecha_nacimiento: Fecha de nacimiento (YYYY-MM-DD)
-            especialidad: Especialidad médica
-            numero_licencia: Número de licencia médica
-            telefono: Número de teléfono
-            direccion: Dirección de residencia
-            id_usuario_creacion: UUID del usuario que crea
-            segundo_nombre: Segundo nombre opcional
-            consultorio: Número de consultorio opcional
-            email: Email opcional
-
-        Returns:
-            Medico creado
-
-        Raises:
-            ValueError: Si los datos no son válidos
-        """
-        if not primer_nombre or len(primer_nombre.strip()) == 0:
-            raise ValueError("El primer nombre es obligatorio")
-
-        if len(primer_nombre) > 100:
-            raise ValueError("El primer nombre no puede exceder 100 caracteres")
+        """Crear un nuevo médico."""
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("El nombre es obligatorio")
+        if len(nombre) > 100:
+            raise ValueError("El nombre no puede exceder 100 caracteres")
 
         if not apellido or len(apellido.strip()) == 0:
             raise ValueError("El apellido es obligatorio")
-
         if len(apellido) > 100:
             raise ValueError("El apellido no puede exceder 100 caracteres")
 
@@ -77,45 +51,41 @@ class MedicoCRUD:
 
         if not especialidad or len(especialidad.strip()) == 0:
             raise ValueError("La especialidad es obligatoria")
-
         if len(especialidad) > 100:
             raise ValueError("La especialidad no puede exceder 100 caracteres")
 
         if not numero_licencia or len(numero_licencia.strip()) == 0:
             raise ValueError("El número de licencia es obligatorio")
-
         if len(numero_licencia) > 50:
             raise ValueError("El número de licencia no puede exceder 50 caracteres")
 
         if self.obtener_medico_por_licencia(numero_licencia):
             raise ValueError("El número de licencia ya está registrado")
 
-        if not telefono or not self._validar_telefono(telefono):
+        if telefono and not self._validar_telefono(telefono):
             raise ValueError("Formato de teléfono inválido")
 
-        if not direccion or len(direccion.strip()) < 3:
+        if direccion and len(direccion.strip()) < 3:
             raise ValueError("La dirección debe tener al menos 3 caracteres")
+        if direccion and len(direccion) > 255:
+            raise ValueError("La dirección no puede exceder 255 caracteres")
 
-        if len(direccion) > 500:
-            raise ValueError("La dirección no puede exceder 500 caracteres")
-
-        if email and not self._validar_email(email):
+        if not email or not self._validar_email(email):
             raise ValueError("Email inválido")
 
-        if email and self.obtener_medico_por_email(email):
+        if self.obtener_medico_por_email(email):
             raise ValueError("El email ya está registrado")
 
         medico = Medico(
-            primer_nombre=primer_nombre.strip(),
-            segundo_nombre=segundo_nombre.strip() if segundo_nombre else None,
+            nombre=nombre.strip(),
             apellido=apellido.strip(),
             fecha_nacimiento=fecha_nacimiento,
             especialidad=especialidad.strip(),
             numero_licencia=numero_licencia.strip(),
             consultorio=consultorio.strip() if consultorio else None,
-            telefono=telefono.strip(),
-            email=email.lower().strip() if email else None,
-            direccion=direccion.strip(),
+            telefono=telefono.strip() if telefono else None,
+            email=email.lower().strip(),
+            direccion=direccion.strip() if direccion else None,
             id_usuario_creacion=id_usuario_creacion,
         )
         self.db.add(medico)
@@ -123,125 +93,92 @@ class MedicoCRUD:
         self.db.refresh(medico)
         return medico
 
+    def obtener_medicos(
+        self, 
+        skip: int = 0, 
+        limit: int = 1000, 
+        include_inactive: bool = False,
+        nombre: Optional[str] = None,
+        especialidad: Optional[str] = None,
+        activo: Optional[bool] = None
+    ) -> List[Medico]:
+        """Obtener todos los médicos con opción de incluir inactivos y filtros de búsqueda."""
+        try:
+            query = self.db.query(Medico)
+            if not include_inactive:
+                query = query.filter(Medico.activo == True)
+            
+            if activo is not None:
+                query = query.filter(Medico.activo == activo)
+            
+            if nombre:
+                query = query.filter(
+                    (Medico.nombre.ilike(f"%{nombre}%")) | 
+                    (Medico.apellido.ilike(f"%{nombre}%"))
+                )
+            
+            if especialidad:
+                query = query.filter(Medico.especialidad.ilike(f"%{especialidad}%"))
+            
+            medicos = query.offset(skip).limit(limit).all()
+            return medicos if medicos else []
+        except Exception as e:
+            self.db.rollback()
+            import logging
+
+            logging.error(f"Error al obtener médicos: {str(e)}")
+            raise ValueError(f"Error al obtener médicos: {str(e)}")
+
     def obtener_medico(self, medico_id: UUID) -> Optional[Medico]:
-        """
-        Obtener un médico por ID.
-
-        Args:
-            medico_id: UUID del médico
-
-        Returns:
-            Medico encontrado o None
-        """
+        """Obtener un médico por ID."""
         return self.db.query(Medico).filter(Medico.id == medico_id).first()
 
     def obtener_medico_por_email(self, email: str) -> Optional[Medico]:
-        """
-        Obtener un médico por email.
-
-        Args:
-            email: Email del médico
-
-        Returns:
-            Medico encontrado o None
-        """
-        return (
-            self.db.query(Medico).filter(Medico.email == email.lower().strip()).first()
-        )
+        """Obtener un médico por email."""
+        return self.db.query(Medico).filter(Medico.email == email.lower()).first()
 
     def obtener_medico_por_licencia(self, numero_licencia: str) -> Optional[Medico]:
-        """
-        Obtener un médico por número de licencia.
-
-        Args:
-            numero_licencia: Número de licencia
-
-        Returns:
-            Medico encontrado o None
-        """
+        """Obtener un médico por número de licencia."""
         return (
             self.db.query(Medico)
-            .filter(Medico.numero_licencia == numero_licencia.strip())
+            .filter(Medico.numero_licencia == numero_licencia)
             .first()
         )
 
-    def obtener_medicos(self, skip: int = 0, limit: int = 100) -> List[Medico]:
-        """
-        Obtener lista de médicos con paginación.
-
-        Args:
-            skip: Número de registros a omitir
-            limit: Límite de registros a retornar
-
-        Returns:
-            Lista de médicos
-        """
-        return self.db.query(Medico).offset(skip).limit(limit).all()
-
     def obtener_medicos_por_especialidad(self, especialidad: str) -> List[Medico]:
-        """
-        Obtener médicos por especialidad.
-
-        Args:
-            especialidad: Especialidad médica
-
-        Returns:
-            Lista de médicos de la especialidad
-        """
+        """Obtener médicos por especialidad."""
         return (
             self.db.query(Medico)
-            .filter(Medico.especialidad.contains(especialidad))
+            .filter(Medico.especialidad == especialidad, Medico.activo)
             .all()
         )
 
     def buscar_medicos_por_nombre(self, nombre: str) -> List[Medico]:
-        """
-        Buscar médicos por nombre.
-
-        Args:
-            nombre: Texto a buscar en el nombre
-
-        Returns:
-            Lista de médicos que coinciden
-        """
+        """Buscar médicos por nombre."""
         return (
             self.db.query(Medico)
             .filter(
-                Medico.primer_nombre.contains(nombre)
-                | Medico.segundo_nombre.contains(nombre)
-                | Medico.apellido.contains(nombre)
+                Medico.nombre.ilike(f"%{nombre}%"),
+                Medico.activo == True,
             )
             .all()
         )
 
     def actualizar_medico(
-        self, medico_id: UUID, id_usuario_edicion: UUID, **kwargs
+        self, medico_id: UUID, id_usuario_edicion: Optional[UUID] = None, **kwargs
     ) -> Optional[Medico]:
-        """
-        Actualizar un médico con validaciones.
-
-        Args:
-            medico_id: UUID del médico
-            id_usuario_edicion: UUID del usuario que edita
-            **kwargs: Campos a actualizar
-
-        Returns:
-            Medico actualizado o None
-
-        Raises:
-            ValueError: Si los datos no son válidos
-        """
+        """Actualizar un médico."""
         medico = self.obtener_medico(medico_id)
         if not medico:
             return None
 
-        if "primer_nombre" in kwargs:
-            nombre = kwargs["primer_nombre"]
+        if "nombre" in kwargs:
+            nombre = kwargs["nombre"]
             if not nombre or len(nombre.strip()) == 0:
-                raise ValueError("El primer nombre es obligatorio")
+                raise ValueError("El nombre es obligatorio")
             if len(nombre) > 100:
-                raise ValueError("El primer nombre no puede exceder 100 caracteres")
-            kwargs["primer_nombre"] = nombre.strip()
+                raise ValueError("El nombre no puede exceder 100 caracteres")
+            kwargs["nombre"] = nombre.strip()
 
         if "apellido" in kwargs:
             apellido = kwargs["apellido"]
@@ -272,18 +209,18 @@ class MedicoCRUD:
                 raise ValueError("El número de licencia ya está registrado")
             kwargs["numero_licencia"] = licencia.strip()
 
-        if "telefono" in kwargs:
+        if "telefono" in kwargs and kwargs["telefono"]:
             telefono = kwargs["telefono"]
-            if not telefono or not self._validar_telefono(telefono):
+            if not self._validar_telefono(telefono):
                 raise ValueError("Formato de teléfono inválido")
             kwargs["telefono"] = telefono.strip()
 
-        if "direccion" in kwargs:
+        if "direccion" in kwargs and kwargs["direccion"]:
             direccion = kwargs["direccion"]
-            if not direccion or len(direccion.strip()) < 3:
+            if len(direccion.strip()) < 3:
                 raise ValueError("La dirección debe tener al menos 3 caracteres")
-            if len(direccion) > 500:
-                raise ValueError("La dirección no puede exceder 500 caracteres")
+            if len(direccion) > 255:
+                raise ValueError("La dirección no puede exceder 255 caracteres")
             kwargs["direccion"] = direccion.strip()
 
         if "email" in kwargs and kwargs["email"]:
@@ -297,7 +234,8 @@ class MedicoCRUD:
                 raise ValueError("El email ya está registrado")
             kwargs["email"] = email.lower().strip()
 
-        medico.id_usuario_edicion = id_usuario_edicion
+        if id_usuario_edicion:
+            medico.id_usuario_edicion = id_usuario_edicion
 
         for key, value in kwargs.items():
             if hasattr(medico, key):
@@ -306,45 +244,91 @@ class MedicoCRUD:
         self.db.refresh(medico)
         return medico
 
-    def eliminar_medico(self, medico_id: UUID) -> bool:
-        """
-        Eliminar un médico.
+    def inactivar_medico(self, medico_id: UUID) -> bool:
+        """Inactivar un médico (soft delete)."""
+        medico = self.obtener_medico(medico_id)
+        if not medico:
+            return False
+        if not medico.activo:
+            return True
+        medico.activo = False
+        self.db.commit()
+        return True
 
-        Args:
-            medico_id: UUID del médico
+    def reactivar_medico(self, medico_id: UUID) -> bool:
+        """Reactivar un médico inactivo."""
+        medico = self.obtener_medico(medico_id)
+        if not medico:
+            return False
+        if medico.activo:
+            return True
+        medico.activo = True
+        self.db.commit()
+        return True
 
-        Returns:
-            True si se eliminó, False si no existe
-        """
+    def eliminar_medico_permanente(self, medico_id: UUID) -> bool:
+        """Eliminar un médico permanentemente de la base de datos."""
+        import logging
+        from sqlalchemy import text
         try:
             medico = self.obtener_medico(medico_id)
-            if medico:
-                from entities.cita import Cita
-                from entities.historial_entrada import HistorialEntrada
-                from entities.hospitalizacion import Hospitalizacion
+            if not medico:
+                raise ValueError(f"Médico con ID {medico_id} no encontrado")
 
-                citas = self.db.query(Cita).filter(Cita.medico_id == medico_id).count()
-                hospitalizaciones = (
-                    self.db.query(Hospitalizacion)
-                    .filter(Hospitalizacion.medico_responsable_id == medico_id)
-                    .count()
-                )
-                historiales = (
-                    self.db.query(HistorialEntrada)
-                    .filter(HistorialEntrada.medico_id == medico_id)
-                    .count()
-                )
-
-                total_referencias = citas + hospitalizaciones + historiales
-                if total_referencias > 0:
-                    raise ValueError(
-                        f"No se puede eliminar el médico porque tiene {total_referencias} referencia(s) en citas, hospitalizaciones o historiales"
+            # Actualizar referencias de id_usuario_creacion e id_usuario_edicion
+            tablas_usuario = ['tbl_medicos', 'tbl_pacientes', 'tbl_enfermeras', 'tbl_citas', 
+                             'tbl_hospitalizaciones', 'tbl_facturas', 'tbl_historiales_medicos', 
+                             'tbl_historiales_entradas', 'tbl_facturas_detalles']
+            
+            for tabla in tablas_usuario:
+                try:
+                    self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_creacion = NULL WHERE id_usuario_creacion = :medico_id"),
+                        {"medico_id": str(medico_id)}
                     )
+                    self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_edicion = NULL WHERE id_usuario_edicion = :medico_id"),
+                        {"medico_id": str(medico_id)}
+                    )
+                except Exception as e:
+                    logging.warning(f"Error al actualizar referencias de usuario en {tabla}: {str(e)}")
+                    continue
 
-                self.db.delete(medico)
-                self.db.commit()
-                return True
-            return False
+            # Eliminar o inactivar registros relacionados que tienen ForeignKey NOT NULL
+            # Citas: eliminar permanentemente las citas del médico
+            from entities.cita import Cita
+            citas = self.db.query(Cita).filter(Cita.medico_id == medico_id).all()
+            for cita in citas:
+                self.db.delete(cita)
+
+            # Hospitalizaciones: eliminar permanentemente las hospitalizaciones del médico
+            from entities.hospitalizacion import Hospitalizacion
+            hospitalizaciones = self.db.query(Hospitalizacion).filter(Hospitalizacion.medico_id == medico_id).all()
+            for hosp in hospitalizaciones:
+                self.db.delete(hosp)
+
+            # Historiales Entrada: eliminar permanentemente los historiales del médico
+            from entities.historial_entrada import HistorialEntrada
+            historiales = self.db.query(HistorialEntrada).filter(HistorialEntrada.medico_id == medico_id).all()
+            for hist in historiales:
+                self.db.delete(hist)
+
+            # Commit de las eliminaciones relacionadas
+            self.db.commit()
+
+            # Eliminar el médico
+            self.db.delete(medico)
+            self.db.commit()
+            
+            logging.info(f"Médico {medico_id} eliminado permanentemente")
+            return True
         except Exception as e:
             self.db.rollback()
-            raise e
+            logging.error(f"Error al eliminar médico permanentemente {medico_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar médico: {str(e)}")
+
+    def eliminar_medico(self, medico_id: UUID) -> bool:
+        """Eliminar un médico (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_medico(medico_id)

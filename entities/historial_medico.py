@@ -1,7 +1,3 @@
-"""
-Entidad HistorialMedico - Sistema de gestión hospitalaria
-"""
-
 import uuid
 from datetime import datetime
 
@@ -13,17 +9,22 @@ from sqlalchemy.sql import func
 
 
 class HistorialMedico(Base):
-    """Modelo de HistorialMedico para el sistema hospitalario"""
+    """
+    Entidad que representa un historial médico.
+    
+    Atributos:
+        estado: Estado del historial. Valores posibles: abierto, cerrado, archivado
+    """
 
     __tablename__ = "tbl_historiales_medicos"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     numero_historial = Column(String(50), unique=True, index=True, nullable=False)
-    estado = Column(String(20), default="abierto")  # abierto, cerrado, archivado
+    estado = Column(String(20), default="abierto")
     notas_generales = Column(String(1000), nullable=True)
     activo = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

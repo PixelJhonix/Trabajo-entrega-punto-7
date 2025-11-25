@@ -1,13 +1,9 @@
-"""
-API de Historial Entradas - Endpoints para gestión de entradas del historial médico
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.historial_entrada_crud import HistorialEntradaCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import (
     HistorialEntradaCreate,
     HistorialEntradaResponse,
@@ -21,12 +17,19 @@ router = APIRouter(prefix="/historial-entradas", tags=["historial-entradas"])
 
 @router.get("/", response_model=List[HistorialEntradaResponse])
 async def obtener_entradas(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir entradas inactivas"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todas las entradas del historial con paginación."""
+    """Obtener todas las entradas del historial con paginación y opción de incluir inactivas."""
     try:
         entrada_crud = HistorialEntradaCRUD(db)
-        entradas = entrada_crud.obtener_entradas(skip=skip, limit=limit)
+        entradas = entrada_crud.obtener_entradas(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not entradas:
+            return []
         return entradas
     except Exception as e:
         raise HTTPException(
@@ -112,15 +115,17 @@ async def crear_entrada(
     try:
         entrada_crud = HistorialEntradaCRUD(db)
         entrada = entrada_crud.crear_entrada(
-            historial_id=entrada_data.historial_id,
-            medico_id=entrada_data.medico_id,
-            cita_id=entrada_data.cita_id,
+            fecha_consulta=entrada_data.fecha_consulta,
             diagnostico=entrada_data.diagnostico,
+            historial_medico_id=entrada_data.historial_medico_id,
+            medico_id=entrada_data.medico_id,
+            id_usuario_creacion=(
+                entrada_data.id_usuario_creacion
+                if entrada_data.id_usuario_creacion
+                else None
+            ),
             tratamiento=entrada_data.tratamiento,
-            notas=entrada_data.notas,
-            fecha_registro=entrada_data.fecha_registro,
-            firma_digital=entrada_data.firma_digital,
-            id_usuario_creacion=entrada_data.id_usuario_creacion,
+            observaciones=entrada_data.observaciones,
         )
         return entrada
     except ValueError as e:
@@ -150,14 +155,22 @@ async def actualizar_entrada(
             )
 
         campos_actualizacion = {
-            k: v for k, v in entrada_data.dict().items() if v is not None
+            k: v
+            for k, v in entrada_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not entrada_data.id_usuario_edicion:
             return entrada_existente
 
         entrada_actualizada = entrada_crud.actualizar_entrada(
-            entrada_id, entrada_data.id_usuario_edicion, **campos_actualizacion
+            entrada_id,
+            (
+                entrada_data.id_usuario_edicion
+                if entrada_data.id_usuario_edicion
+                else None
+            ),
+            **campos_actualizacion,
         )
         return entrada_actualizada
     except HTTPException:
@@ -171,9 +184,11 @@ async def actualizar_entrada(
         )
 
 
-@router.delete("/{entrada_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{entrada_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_entrada(entrada_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una entrada del historial."""
+    """Eliminar una entrada del historial (soft delete)."""
     try:
         entrada_crud = HistorialEntradaCRUD(db)
 
@@ -187,7 +202,7 @@ async def eliminar_entrada(entrada_id: UUID, db: Session = Depends(get_db)):
         eliminada = entrada_crud.eliminar_entrada(entrada_id)
         if eliminada:
             return RespuestaAPI(
-                mensaje="Entrada del historial eliminada exitosamente", exito=True
+                mensaje="Entrada del historial eliminada exitosamente", success=True
             )
         else:
             raise HTTPException(

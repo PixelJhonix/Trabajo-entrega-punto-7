@@ -1,16 +1,13 @@
-"""Operaciones CRUD para Usuario."""
-
 from typing import List, Optional
 from uuid import UUID
 
 from auth.security import PasswordManager
 from entities.usuario import Usuario
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 
 class UsuarioCRUD:
-    """CRUD para gestión de usuarios."""
-
     def __init__(self, db: Session):
         self.db = db
 
@@ -20,28 +17,11 @@ class UsuarioCRUD:
         nombre_usuario: str,
         email: str,
         contraseña: str,
-        id_usuario_creacion: UUID,
-        telefono: str = None,
+        id_usuario_creacion: Optional[UUID] = None,
+        telefono: Optional[str] = None,
         es_admin: bool = False,
     ) -> Usuario:
-        """
-        Crear un nuevo usuario con validaciones.
-
-        Args:
-            nombre: Nombre completo del usuario
-            nombre_usuario: Nombre de usuario único
-            email: Email único del usuario
-            contraseña: Contraseña en texto plano
-            id_usuario_creacion: UUID del usuario que crea
-            telefono: Teléfono del usuario (opcional)
-            es_admin: Si es administrador
-
-        Returns:
-            Usuario creado
-
-        Raises:
-            ValueError: Si los datos no son válidos
-        """
+        """Crea un nuevo usuario con validaciones."""
         if not nombre or len(nombre.strip()) == 0:
             raise ValueError("El nombre es obligatorio")
         if len(nombre) > 100:
@@ -86,95 +66,54 @@ class UsuarioCRUD:
         self.db.refresh(usuario)
         return usuario
 
+    def obtener_usuarios(
+        self, 
+        skip: int = 0, 
+        limit: int = 1000, 
+        include_inactive: bool = False,
+        email: Optional[str] = None,
+        nombre: Optional[str] = None,
+        activo: Optional[bool] = None
+    ) -> List[Usuario]:
+        """Obtener todos los usuarios con opción de incluir inactivos y filtros de búsqueda."""
+        query = self.db.query(Usuario)
+        
+        if not include_inactive:
+            query = query.filter(Usuario.activo == True)
+        
+        if activo is not None:
+            query = query.filter(Usuario.activo == activo)
+        
+        if email:
+            query = query.filter(Usuario.email.ilike(f"%{email}%"))
+        
+        if nombre:
+            query = query.filter(Usuario.nombre.ilike(f"%{nombre}%"))
+        
+        return query.offset(skip).limit(limit).all()
+
     def obtener_usuario(self, usuario_id: UUID) -> Optional[Usuario]:
-        """
-        Obtener un usuario por ID.
-
-        Args:
-            usuario_id: UUID del usuario
-
-        Returns:
-            Usuario encontrado o None
-        """
+        """Obtener un usuario por ID."""
         return self.db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
+    def obtener_usuario_por_email(self, email: str) -> Optional[Usuario]:
+        """Obtener un usuario por email."""
+        return self.db.query(Usuario).filter(Usuario.email == email.lower()).first()
 
     def obtener_usuario_por_nombre_usuario(
         self, nombre_usuario: str
     ) -> Optional[Usuario]:
-        """
-        Obtener un usuario por nombre de usuario.
-
-        Args:
-            nombre_usuario: Nombre de usuario
-
-        Returns:
-            Usuario encontrado o None
-        """
+        """Obtener un usuario por nombre de usuario."""
         return (
             self.db.query(Usuario)
-            .filter(Usuario.nombre_usuario == nombre_usuario.lower().strip())
+            .filter(Usuario.nombre_usuario == nombre_usuario.lower())
             .first()
         )
-
-    def obtener_usuario_por_email(self, email: str) -> Optional[Usuario]:
-        """
-        Obtener un usuario por email.
-
-        Args:
-            email: Email del usuario
-
-        Returns:
-            Usuario encontrado o None
-        """
-        return (
-            self.db.query(Usuario)
-            .filter(Usuario.email == email.lower().strip())
-            .first()
-        )
-
-    def obtener_usuarios(self, skip: int = 0, limit: int = 100) -> List[Usuario]:
-        """
-        Obtener lista de usuarios con paginación.
-
-        Args:
-            skip: Número de registros a omitir
-            limit: Límite de registros a retornar
-
-        Returns:
-            Lista de usuarios
-        """
-        return self.db.query(Usuario).offset(skip).limit(limit).all()
-
-    def buscar_usuarios_por_nombre(self, nombre: str) -> List[Usuario]:
-        """
-        Buscar usuarios por nombre.
-
-        Args:
-            nombre: Texto a buscar en el nombre
-
-        Returns:
-            Lista de usuarios que coinciden
-        """
-        search_pattern = f"%{nombre.lower()}%"
-        return self.db.query(Usuario).filter(Usuario.nombre.ilike(search_pattern)).all()
 
     def actualizar_usuario(
-        self, usuario_id: UUID, id_usuario_edicion: UUID, **kwargs
+        self, usuario_id: UUID, id_usuario_edicion: Optional[UUID] = None, **kwargs
     ) -> Optional[Usuario]:
-        """
-        Actualizar un usuario con validaciones.
-
-        Args:
-            usuario_id: UUID del usuario
-            id_usuario_edicion: UUID del usuario que edita
-            **kwargs: Campos a actualizar
-
-        Returns:
-            Usuario actualizado o None
-
-        Raises:
-            ValueError: Si los datos no son válidos
-        """
+        """Actualizar un usuario."""
         usuario = self.obtener_usuario(usuario_id)
         if not usuario:
             return None
@@ -219,7 +158,7 @@ class UsuarioCRUD:
             if not es_valida:
                 raise ValueError(mensaje)
             kwargs["contraseña_hash"] = PasswordManager.hash_password(contraseña)
-            del kwargs["contraseña"]  # Eliminar la contraseña en texto plano
+            del kwargs["contraseña"]
 
         if "telefono" in kwargs and kwargs["telefono"]:
             telefono = kwargs["telefono"]
@@ -227,9 +166,10 @@ class UsuarioCRUD:
                 raise ValueError("El teléfono no puede exceder 20 caracteres")
             kwargs["telefono"] = telefono.strip()
         elif "telefono" in kwargs and not kwargs["telefono"]:
-            kwargs["telefono"] = None  # Permitir borrar el teléfono
+            kwargs["telefono"] = None
 
-        usuario.id_usuario_edicion = id_usuario_edicion
+        if id_usuario_edicion:
+            usuario.id_usuario_edicion = id_usuario_edicion
 
         for key, value in kwargs.items():
             if hasattr(usuario, key):
@@ -238,37 +178,108 @@ class UsuarioCRUD:
         self.db.refresh(usuario)
         return usuario
 
-    def eliminar_usuario(self, usuario_id: UUID) -> bool:
-        """
-        Eliminar un usuario.
+    def inactivar_usuario(self, usuario_id: UUID) -> bool:
+        """Inactivar un usuario (soft delete)."""
+        try:
+            usuario = self.obtener_usuario(usuario_id)
+            if not usuario:
+                return False
 
-        Args:
-            usuario_id: UUID del usuario
+            if not usuario.activo:
+                return True
 
-        Returns:
-            True si se eliminó, False si no existe
-        """
-        usuario = self.obtener_usuario(usuario_id)
-        if usuario:
+            usuario.activo = False
+            self.db.commit()
+            self.db.refresh(usuario)
+            return True
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def reactivar_usuario(self, usuario_id: UUID) -> bool:
+        """Reactivar un usuario inactivo."""
+        try:
+            usuario = self.obtener_usuario(usuario_id)
+            if not usuario:
+                return False
+
+            if usuario.activo:
+                return True
+
+            usuario.activo = True
+            self.db.commit()
+            self.db.refresh(usuario)
+            return True
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def eliminar_usuario_permanente(self, usuario_id: UUID) -> bool:
+        """Eliminar un usuario permanentemente de la base de datos."""
+        import logging
+        try:
+            # Obtener usuario sin filtrar por activo para poder eliminar inactivos también
+            usuario = self.db.query(Usuario).filter(Usuario.id == usuario_id).first()
+            if not usuario:
+                raise ValueError(f"Usuario con ID {usuario_id} no encontrado")
+
+            # Verificar si hay referencias a este usuario en otras tablas
+            # Primero, actualizar referencias de id_usuario_creacion e id_usuario_edicion a NULL
+            # Actualizar referencias en otras tablas
+            tablas_con_referencias = [
+                'tbl_usuarios', 'tbl_medicos', 'tbl_pacientes', 'tbl_enfermeras',
+                'tbl_citas', 'tbl_hospitalizaciones', 'tbl_facturas', 
+                'tbl_historiales_medicos', 'tbl_historiales_entradas', 'tbl_facturas_detalles'
+            ]
+            
+            for tabla in tablas_con_referencias:
+                try:
+                    # Actualizar id_usuario_creacion
+                    result_creacion = self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_creacion = NULL WHERE id_usuario_creacion = :usuario_id"),
+                        {"usuario_id": str(usuario_id)}
+                    )
+                    logging.info(f"Actualizadas {result_creacion.rowcount} filas en {tabla} (id_usuario_creacion)")
+                    
+                    # Actualizar id_usuario_edicion
+                    result_edicion = self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_edicion = NULL WHERE id_usuario_edicion = :usuario_id"),
+                        {"usuario_id": str(usuario_id)}
+                    )
+                    logging.info(f"Actualizadas {result_edicion.rowcount} filas en {tabla} (id_usuario_edicion)")
+                except Exception as e:
+                    # Si la tabla no tiene estas columnas o hay otro error, loguear pero continuar
+                    logging.warning(f"Error al actualizar referencias en {tabla}: {str(e)}")
+                    continue
+
+            # Hacer commit de las actualizaciones antes de eliminar
+            self.db.commit()
+            
+            # Refrescar el objeto usuario para asegurarse de que está actualizado
+            self.db.refresh(usuario)
+            
+            # Eliminar el usuario de la base de datos
             self.db.delete(usuario)
             self.db.commit()
+            
+            logging.info(f"Usuario {usuario_id} eliminado permanentemente")
             return True
-        return False
+        except Exception as e:
+            self.db.rollback()
+            error_msg = f"Error al eliminar usuario permanentemente {usuario_id}: {str(e)}"
+            logging.error(error_msg)
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(error_msg)
+
+    def eliminar_usuario(self, usuario_id: UUID) -> bool:
+        """Eliminar un usuario (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_usuario(usuario_id)
 
     def cambiar_estado_usuario(
         self, usuario_id: UUID, activo: bool, id_usuario_edicion: UUID
     ) -> Optional[Usuario]:
-        """
-        Cambiar el estado activo/inactivo de un usuario.
-
-        Args:
-            usuario_id: UUID del usuario
-            activo: Nuevo estado
-            id_usuario_edicion: UUID del usuario que hace el cambio
-
-        Returns:
-            Usuario actualizado o None
-        """
+        """Cambiar el estado activo/inactivo de un usuario."""
         usuario = self.obtener_usuario(usuario_id)
         if usuario:
             usuario.activo = activo
@@ -280,16 +291,7 @@ class UsuarioCRUD:
     def autenticar_usuario(
         self, nombre_usuario: str, contraseña: str
     ) -> Optional[Usuario]:
-        """
-        Autenticar un usuario con nombre de usuario/email y contraseña.
-
-        Args:
-            nombre_usuario: Nombre de usuario o email
-            contraseña: Contraseña en texto plano
-
-        Returns:
-            Usuario autenticado o None
-        """
+        """Autenticar un usuario por nombre de usuario o email."""
         usuario = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
         if not usuario:
             usuario = self.obtener_usuario_por_email(nombre_usuario)
@@ -302,41 +304,15 @@ class UsuarioCRUD:
 
         return None
 
-    def obtener_admin_por_defecto(self) -> Optional[Usuario]:
-        """
-        Obtener el usuario administrador por defecto.
-
-        Returns:
-            Usuario admin por defecto o None
-        """
+    def obtener_usuarios_admin(self) -> List[Usuario]:
+        """Obtener todos los usuarios administradores."""
         return (
             self.db.query(Usuario)
-            .filter(
-                Usuario.nombre_usuario == "admin",
-                Usuario.email == "admin@system.com",
-                Usuario.es_admin,
-            )
-            .first()
+            .filter(Usuario.es_admin == True, Usuario.activo == True)
+            .all()
         )
 
-    def obtener_usuarios_admin(self) -> List[Usuario]:
-        """
-        Obtener todos los usuarios administradores.
-
-        Returns:
-            Lista de usuarios administradores
-        """
-        return self.db.query(Usuario).filter(Usuario.es_admin, Usuario.activo).all()
-
     def es_admin(self, usuario_id: UUID) -> bool:
-        """
-        Verificar si un usuario es administrador.
-
-        Args:
-            usuario_id: UUID del usuario
-
-        Returns:
-            True si es administrador, False en caso contrario
-        """
+        """Verificar si un usuario es administrador."""
         usuario = self.obtener_usuario(usuario_id)
         return usuario.es_admin if usuario else False

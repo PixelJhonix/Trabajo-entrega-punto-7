@@ -2,9 +2,13 @@
 Manejador de errores personalizado para la API
 """
 
+import logging
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 
 class APIErrorHandler:
@@ -45,6 +49,9 @@ class APIErrorHandler:
         message: str, field: str = None, value: str = None
     ) -> HTTPException:
         """Error de validación de datos"""
+        logger.warning(
+            f"Error de validación: {message} (campo: {field}, valor: {value})"
+        )
         details = {}
         if field:
             details["field"] = field
@@ -107,6 +114,7 @@ class APIErrorHandler:
     @staticmethod
     def server_error(operation: str, original_error: str) -> HTTPException:
         """Error interno del servidor"""
+        logger.error(f"Error al {operation}: {str(original_error)}", exc_info=True)
         return APIErrorHandler.create_error_response(
             error_type="SERVER_ERROR",
             message=f"Error interno al {operation}",

@@ -1,13 +1,9 @@
-"""
-API de Enfermeras - Endpoints para gestión de enfermeras
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.enfermera_crud import EnfermeraCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import EnfermeraCreate, EnfermeraResponse, EnfermeraUpdate, RespuestaAPI
 from sqlalchemy.orm import Session
 
@@ -16,12 +12,25 @@ router = APIRouter(prefix="/enfermeras", tags=["enfermeras"])
 
 @router.get("/", response_model=List[EnfermeraResponse])
 async def obtener_enfermeras(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir enfermeras inactivas"),
+    nombre: str = Query(None, description="Filtrar por nombre (búsqueda parcial)"),
+    activo: bool = Query(None, description="Filtrar por estado activo/inactivo"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todas las enfermeras con paginación."""
+    """Obtener todas las enfermeras con paginación, opción de incluir inactivas y filtros de búsqueda."""
     try:
         enfermera_crud = EnfermeraCRUD(db)
-        enfermeras = enfermera_crud.obtener_enfermeras(skip=skip, limit=limit)
+        enfermeras = enfermera_crud.obtener_enfermeras(
+            skip=skip, 
+            limit=limit, 
+            include_inactive=include_inactive,
+            nombre=nombre,
+            activo=activo
+        )
+        if not enfermeras:
+            return []
         return enfermeras
     except Exception as e:
         raise HTTPException(
@@ -128,17 +137,15 @@ async def crear_enfermera(
     try:
         enfermera_crud = EnfermeraCRUD(db)
         enfermera = enfermera_crud.crear_enfermera(
-            primer_nombre=enfermera_data.primer_nombre,
-            segundo_nombre=enfermera_data.segundo_nombre,
+            nombre=enfermera_data.nombre,
             apellido=enfermera_data.apellido,
-            fecha_nacimiento=enfermera_data.fecha_nacimiento,
-            especialidad=enfermera_data.especialidad,
+            email=enfermera_data.email,
+            telefono=enfermera_data.telefono or "",
             numero_licencia=enfermera_data.numero_licencia,
             turno=enfermera_data.turno,
-            telefono=enfermera_data.telefono,
-            direccion=enfermera_data.direccion,
-            id_usuario_creacion=enfermera_data.id_usuario_creacion,
-            email=enfermera_data.email,
+            id_usuario_creacion=enfermera_data.id_usuario_creacion
+            if enfermera_data.id_usuario_creacion
+            else None,
         )
         return enfermera
     except ValueError as e:
@@ -165,15 +172,25 @@ async def actualizar_enfermera(
             )
 
         campos_actualizacion = {
-            k: v for k, v in enfermera_data.dict().items() if v is not None
+            k: v
+            for k, v in enfermera_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None and v != ""
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not enfermera_data.id_usuario_edicion:
             return enfermera_existente
 
         enfermera_actualizada = enfermera_crud.actualizar_enfermera(
-            enfermera_id, enfermera_data.id_usuario_edicion, **campos_actualizacion
+            enfermera_id,
+            enfermera_data.id_usuario_edicion
+            if enfermera_data.id_usuario_edicion
+            else None,
+            **campos_actualizacion,
         )
+        if not enfermera_actualizada:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
+            )
         return enfermera_actualizada
     except HTTPException:
         raise
@@ -186,21 +203,79 @@ async def actualizar_enfermera(
         )
 
 
-@router.delete("/{enfermera_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def eliminar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una enfermera."""
+@router.patch(
+    "/{enfermera_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def inactivar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una enfermera (soft delete)."""
     try:
         enfermera_crud = EnfermeraCRUD(db)
-
         enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
         if not enfermera_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
             )
+        inactivada = enfermera_crud.inactivar_enfermera(enfermera_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Enfermera inactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar enfermera",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar enfermera: {str(e)}",
+        )
 
-        eliminada = enfermera_crud.eliminar_enfermera(enfermera_id)
+
+@router.patch(
+    "/{enfermera_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una enfermera inactiva."""
+    try:
+        enfermera_crud = EnfermeraCRUD(db)
+        enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
+        if not enfermera_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
+            )
+        reactivada = enfermera_crud.reactivar_enfermera(enfermera_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Enfermera reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar enfermera",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar enfermera: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{enfermera_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_enfermera_permanente(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una enfermera permanentemente de la base de datos."""
+    try:
+        enfermera_crud = EnfermeraCRUD(db)
+        enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
+        if not enfermera_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
+            )
+        eliminada = enfermera_crud.eliminar_enfermera_permanente(enfermera_id)
         if eliminada:
-            return RespuestaAPI(mensaje="Enfermera eliminada exitosamente", exito=True)
+            return RespuestaAPI(mensaje="Enfermera eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -208,8 +283,6 @@ async def eliminar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

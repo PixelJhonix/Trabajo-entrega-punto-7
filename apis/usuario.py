@@ -21,13 +21,21 @@ async def obtener_usuarios(
     skip: int = Query(0, ge=0),
     limit: int = Query(1000, ge=1, le=1000),
     include_inactive: bool = Query(False, description="Incluir usuarios inactivos"),
+    email: str = Query(None, description="Filtrar por email (búsqueda parcial)"),
+    nombre: str = Query(None, description="Filtrar por nombre (búsqueda parcial)"),
+    activo: bool = Query(None, description="Filtrar por estado activo/inactivo"),
     db: Session = Depends(get_db)
 ):
-    """Obtener todos los usuarios con paginación y opción de incluir inactivos."""
+    """Obtener todos los usuarios con paginación, opción de incluir inactivos y filtros de búsqueda."""
     try:
         usuario_crud = UsuarioCRUD(db)
         usuarios = usuario_crud.obtener_usuarios(
-            skip=skip, limit=limit, include_inactive=include_inactive
+            skip=skip, 
+            limit=limit, 
+            include_inactive=include_inactive,
+            email=email,
+            nombre=nombre,
+            activo=activo
         )
         if not usuarios:
             return []
@@ -36,26 +44,6 @@ async def obtener_usuarios(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener usuarios: {str(e)}",
-        )
-
-
-@router.get("/{usuario_id}", response_model=UsuarioResponse)
-async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
-    """Obtener un usuario por ID."""
-    try:
-        usuario_crud = UsuarioCRUD(db)
-        usuario = usuario_crud.obtener_usuario(usuario_id)
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
-            )
-        return usuario
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener usuario: {str(e)}",
         )
 
 
@@ -98,6 +86,20 @@ async def obtener_usuario_por_nombre_usuario(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener usuario: {str(e)}",
+        )
+
+
+@router.get("/admin/lista", response_model=List[UsuarioResponse])
+async def obtener_usuarios_admin(db: Session = Depends(get_db)):
+    """Obtener todos los usuarios administradores."""
+    try:
+        usuario_crud = UsuarioCRUD(db)
+        admins = usuario_crud.obtener_usuarios_admin()
+        return admins
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener administradores: {str(e)}",
         )
 
 
@@ -191,34 +193,148 @@ async def actualizar_usuario(
         raise APIErrorHandler.server_error("actualizar usuario", str(e))
 
 
-@router.delete(
-    "/{usuario_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{usuario_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar un usuario (soft delete)."""
+async def inactivar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar un usuario (soft delete)."""
     try:
         usuario_crud = UsuarioCRUD(db)
-
         usuario_existente = usuario_crud.obtener_usuario(usuario_id)
         if not usuario_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
             )
-
-        eliminado = usuario_crud.eliminar_usuario(usuario_id)
-        if eliminado:
-            return RespuestaAPI(mensaje="Usuario eliminado exitosamente", success=True)
+        inactivado = usuario_crud.inactivar_usuario(usuario_id)
+        if inactivado:
+            return RespuestaAPI(mensaje="Usuario inactivado exitosamente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error al eliminar usuario",
+                detail="Error al inactivar usuario",
             )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar usuario: {str(e)}",
+            detail=f"Error al inactivar usuario: {str(e)}",
+        )
+
+
+@router.patch(
+    "/{usuario_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar un usuario inactivo."""
+    try:
+        usuario_crud = UsuarioCRUD(db)
+        usuario_existente = usuario_crud.obtener_usuario(usuario_id)
+        if not usuario_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
+            )
+        reactivado = usuario_crud.reactivar_usuario(usuario_id)
+        if reactivado:
+            return RespuestaAPI(mensaje="Usuario reactivado exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar usuario",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar usuario: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{usuario_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_usuario_permanente(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar un usuario permanentemente de la base de datos."""
+    import traceback
+    import logging
+    try:
+        usuario_crud = UsuarioCRUD(db)
+        # Verificar que el usuario existe (sin filtrar por activo)
+        from entities.usuario import Usuario
+        usuario_existente = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+        if not usuario_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
+            )
+        
+        logging.info(f"Intentando eliminar usuario permanentemente: {usuario_id}")
+        eliminado = usuario_crud.eliminar_usuario_permanente(usuario_id)
+        
+        if eliminado:
+            logging.info(f"Usuario {usuario_id} eliminado exitosamente")
+            return RespuestaAPI(mensaje="Usuario eliminado permanentemente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al eliminar usuario: el método retornó False",
+            )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        # Errores de validación del CRUD
+        error_detail = f"Error al eliminar usuario: {str(e)}"
+        logging.error(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_detail,
+        )
+    except Exception as e:
+        # Cualquier otro error
+        error_detail = f"Error al eliminar usuario: {str(e)}"
+        traceback_str = traceback.format_exc()
+        logging.error(f"{error_detail}\n{traceback_str}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error_detail,
+        )
+
+
+@router.get("/{usuario_id}/es-admin", response_model=RespuestaAPI)
+async def verificar_es_admin(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Verificar si un usuario es administrador."""
+    try:
+        usuario_crud = UsuarioCRUD(db)
+        es_admin = usuario_crud.es_admin(usuario_id)
+        return RespuestaAPI(
+            mensaje=f"El usuario {'es' if es_admin else 'no es'} administrador",
+            success=True,
+            datos={"es_admin": es_admin},
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al verificar administrador: {str(e)}",
+        )
+
+
+@router.get("/{usuario_id}", response_model=UsuarioResponse)
+async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Obtener un usuario por ID."""
+    try:
+        usuario_crud = UsuarioCRUD(db)
+        usuario = usuario_crud.obtener_usuario(usuario_id)
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
+            )
+        return usuario
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener usuario: {str(e)}",
         )
 
 
@@ -239,36 +355,4 @@ async def desactivar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al desactivar usuario: {str(e)}",
-        )
-
-
-@router.get("/admin/lista", response_model=List[UsuarioResponse])
-async def obtener_usuarios_admin(db: Session = Depends(get_db)):
-    """Obtener todos los usuarios administradores."""
-    try:
-        usuario_crud = UsuarioCRUD(db)
-        admins = usuario_crud.obtener_usuarios_admin()
-        return admins
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener administradores: {str(e)}",
-        )
-
-
-@router.get("/{usuario_id}/es-admin", response_model=RespuestaAPI)
-async def verificar_es_admin(usuario_id: UUID, db: Session = Depends(get_db)):
-    """Verificar si un usuario es administrador."""
-    try:
-        usuario_crud = UsuarioCRUD(db)
-        es_admin = usuario_crud.es_admin(usuario_id)
-        return RespuestaAPI(
-            mensaje=f"El usuario {'es' if es_admin else 'no es'} administrador",
-            success=True,
-            datos={"es_admin": es_admin},
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al verificar administrador: {str(e)}",
         )

@@ -90,11 +90,48 @@ class FacturaDetalleCRUD:
             self.db.refresh(detalle)
         return detalle
 
-    def eliminar_detalle(self, detalle_id: UUID) -> bool:
-        """Eliminar un detalle de factura (soft delete)."""
+    def inactivar_detalle(self, detalle_id: UUID) -> bool:
+        """Inactivar un detalle de factura (soft delete)."""
         detalle = self.obtener_detalle(detalle_id)
-        if detalle:
-            detalle.activo = False
-            self.db.commit()
+        if not detalle:
+            return False
+        if not detalle.activo:
             return True
-        return False
+        detalle.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_detalle(self, detalle_id: UUID) -> bool:
+        """Reactivar un detalle de factura inactivo."""
+        detalle = self.obtener_detalle(detalle_id)
+        if not detalle:
+            return False
+        if detalle.activo:
+            return True
+        detalle.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_detalle_permanente(self, detalle_id: UUID) -> bool:
+        """Eliminar un detalle de factura permanentemente de la base de datos."""
+        import logging
+        try:
+            detalle = self.obtener_detalle(detalle_id)
+            if not detalle:
+                raise ValueError(f"Detalle de factura con ID {detalle_id} no encontrado")
+            
+            self.db.delete(detalle)
+            self.db.commit()
+            
+            logging.info(f"Detalle de factura {detalle_id} eliminado permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar detalle de factura permanentemente {detalle_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar detalle de factura: {str(e)}")
+
+    def eliminar_detalle(self, detalle_id: UUID) -> bool:
+        """Eliminar un detalle de factura (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_detalle(detalle_id)

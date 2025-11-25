@@ -4,6 +4,7 @@ from uuid import UUID
 from auth.security import PasswordManager
 from entities.usuario import Usuario
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 
 class UsuarioCRUD:
@@ -66,12 +67,29 @@ class UsuarioCRUD:
         return usuario
 
     def obtener_usuarios(
-        self, skip: int = 0, limit: int = 1000, include_inactive: bool = False
+        self, 
+        skip: int = 0, 
+        limit: int = 1000, 
+        include_inactive: bool = False,
+        email: Optional[str] = None,
+        nombre: Optional[str] = None,
+        activo: Optional[bool] = None
     ) -> List[Usuario]:
-        """Obtener todos los usuarios con opción de incluir inactivos."""
+        """Obtener todos los usuarios con opción de incluir inactivos y filtros de búsqueda."""
         query = self.db.query(Usuario)
+        
         if not include_inactive:
             query = query.filter(Usuario.activo == True)
+        
+        if activo is not None:
+            query = query.filter(Usuario.activo == activo)
+        
+        if email:
+            query = query.filter(Usuario.email.ilike(f"%{email}%"))
+        
+        if nombre:
+            query = query.filter(Usuario.nombre.ilike(f"%{nombre}%"))
+        
         return query.offset(skip).limit(limit).all()
 
     def obtener_usuario(self, usuario_id: UUID) -> Optional[Usuario]:
@@ -160,8 +178,8 @@ class UsuarioCRUD:
         self.db.refresh(usuario)
         return usuario
 
-    def eliminar_usuario(self, usuario_id: UUID) -> bool:
-        """Eliminar un usuario (soft delete)."""
+    def inactivar_usuario(self, usuario_id: UUID) -> bool:
+        """Inactivar un usuario (soft delete)."""
         try:
             usuario = self.obtener_usuario(usuario_id)
             if not usuario:
@@ -177,6 +195,86 @@ class UsuarioCRUD:
         except Exception as e:
             self.db.rollback()
             raise e
+
+    def reactivar_usuario(self, usuario_id: UUID) -> bool:
+        """Reactivar un usuario inactivo."""
+        try:
+            usuario = self.obtener_usuario(usuario_id)
+            if not usuario:
+                return False
+
+            if usuario.activo:
+                return True
+
+            usuario.activo = True
+            self.db.commit()
+            self.db.refresh(usuario)
+            return True
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def eliminar_usuario_permanente(self, usuario_id: UUID) -> bool:
+        """Eliminar un usuario permanentemente de la base de datos."""
+        import logging
+        try:
+            # Obtener usuario sin filtrar por activo para poder eliminar inactivos también
+            usuario = self.db.query(Usuario).filter(Usuario.id == usuario_id).first()
+            if not usuario:
+                raise ValueError(f"Usuario con ID {usuario_id} no encontrado")
+
+            # Verificar si hay referencias a este usuario en otras tablas
+            # Primero, actualizar referencias de id_usuario_creacion e id_usuario_edicion a NULL
+            # Actualizar referencias en otras tablas
+            tablas_con_referencias = [
+                'tbl_usuarios', 'tbl_medicos', 'tbl_pacientes', 'tbl_enfermeras',
+                'tbl_citas', 'tbl_hospitalizaciones', 'tbl_facturas', 
+                'tbl_historiales_medicos', 'tbl_historiales_entradas', 'tbl_facturas_detalles'
+            ]
+            
+            for tabla in tablas_con_referencias:
+                try:
+                    # Actualizar id_usuario_creacion
+                    result_creacion = self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_creacion = NULL WHERE id_usuario_creacion = :usuario_id"),
+                        {"usuario_id": str(usuario_id)}
+                    )
+                    logging.info(f"Actualizadas {result_creacion.rowcount} filas en {tabla} (id_usuario_creacion)")
+                    
+                    # Actualizar id_usuario_edicion
+                    result_edicion = self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_edicion = NULL WHERE id_usuario_edicion = :usuario_id"),
+                        {"usuario_id": str(usuario_id)}
+                    )
+                    logging.info(f"Actualizadas {result_edicion.rowcount} filas en {tabla} (id_usuario_edicion)")
+                except Exception as e:
+                    # Si la tabla no tiene estas columnas o hay otro error, loguear pero continuar
+                    logging.warning(f"Error al actualizar referencias en {tabla}: {str(e)}")
+                    continue
+
+            # Hacer commit de las actualizaciones antes de eliminar
+            self.db.commit()
+            
+            # Refrescar el objeto usuario para asegurarse de que está actualizado
+            self.db.refresh(usuario)
+            
+            # Eliminar el usuario de la base de datos
+            self.db.delete(usuario)
+            self.db.commit()
+            
+            logging.info(f"Usuario {usuario_id} eliminado permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            error_msg = f"Error al eliminar usuario permanentemente {usuario_id}: {str(e)}"
+            logging.error(error_msg)
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(error_msg)
+
+    def eliminar_usuario(self, usuario_id: UUID) -> bool:
+        """Eliminar un usuario (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_usuario(usuario_id)
 
     def cambiar_estado_usuario(
         self, usuario_id: UUID, activo: bool, id_usuario_edicion: UUID

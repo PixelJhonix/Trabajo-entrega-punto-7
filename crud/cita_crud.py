@@ -114,11 +114,48 @@ class CitaCRUD:
         """Completar una cita."""
         return self.actualizar_cita(cita_id, id_usuario_edicion, estado="completada")
 
-    def eliminar_cita(self, cita_id: UUID) -> bool:
-        """Eliminar una cita (soft delete)."""
+    def inactivar_cita(self, cita_id: UUID) -> bool:
+        """Inactivar una cita (soft delete)."""
         cita = self.obtener_cita(cita_id)
-        if cita:
-            cita.activo = False
-            self.db.commit()
+        if not cita:
+            return False
+        if not cita.activo:
             return True
-        return False
+        cita.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_cita(self, cita_id: UUID) -> bool:
+        """Reactivar una cita inactiva."""
+        cita = self.obtener_cita(cita_id)
+        if not cita:
+            return False
+        if cita.activo:
+            return True
+        cita.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_cita_permanente(self, cita_id: UUID) -> bool:
+        """Eliminar una cita permanentemente de la base de datos."""
+        import logging
+        try:
+            cita = self.obtener_cita(cita_id)
+            if not cita:
+                raise ValueError(f"Cita con ID {cita_id} no encontrada")
+            
+            self.db.delete(cita)
+            self.db.commit()
+            
+            logging.info(f"Cita {cita_id} eliminada permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar cita permanentemente {cita_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar cita: {str(e)}")
+
+    def eliminar_cita(self, cita_id: UUID) -> bool:
+        """Eliminar una cita (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_cita(cita_id)

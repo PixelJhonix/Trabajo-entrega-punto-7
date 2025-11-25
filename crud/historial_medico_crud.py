@@ -135,11 +135,49 @@ class HistorialMedicoCRUD:
             historial_id, id_usuario_edicion, estado="archivado"
         )
 
-    def eliminar_historial(self, historial_id: UUID) -> bool:
-        """Eliminar un historial médico (soft delete)."""
+    def inactivar_historial(self, historial_id: UUID) -> bool:
+        """Inactivar un historial médico (soft delete)."""
         historial = self.obtener_historial(historial_id)
-        if historial:
-            historial.activo = False
-            self.db.commit()
+        if not historial:
+            return False
+        if not historial.activo:
             return True
-        return False
+        historial.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_historial(self, historial_id: UUID) -> bool:
+        """Reactivar un historial médico inactivo."""
+        historial = self.obtener_historial(historial_id)
+        if not historial:
+            return False
+        if historial.activo:
+            return True
+        historial.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_historial_permanente(self, historial_id: UUID) -> bool:
+        """Eliminar un historial médico permanentemente de la base de datos."""
+        import logging
+        try:
+            historial = self.obtener_historial(historial_id)
+            if not historial:
+                raise ValueError(f"Historial médico con ID {historial_id} no encontrado")
+            
+            # Las entradas se eliminan automáticamente por cascade
+            self.db.delete(historial)
+            self.db.commit()
+            
+            logging.info(f"Historial médico {historial_id} eliminado permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar historial médico permanentemente {historial_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar historial médico: {str(e)}")
+
+    def eliminar_historial(self, historial_id: UUID) -> bool:
+        """Eliminar un historial médico (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_historial(historial_id)

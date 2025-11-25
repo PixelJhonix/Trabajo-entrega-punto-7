@@ -51,12 +51,27 @@ class EnfermeraCRUD:
         return enfermera
 
     def obtener_enfermeras(
-        self, skip: int = 0, limit: int = 1000, include_inactive: bool = False
+        self, 
+        skip: int = 0, 
+        limit: int = 1000, 
+        include_inactive: bool = False,
+        nombre: Optional[str] = None,
+        activo: Optional[bool] = None
     ) -> List[Enfermera]:
-        """Obtener todas las enfermeras con opción de incluir inactivas."""
+        """Obtener todas las enfermeras con opción de incluir inactivas y filtros de búsqueda."""
         query = self.db.query(Enfermera)
         if not include_inactive:
             query = query.filter(Enfermera.activo == True)
+        
+        if activo is not None:
+            query = query.filter(Enfermera.activo == activo)
+        
+        if nombre:
+            query = query.filter(
+                (Enfermera.nombre.ilike(f"%{nombre}%")) | 
+                (Enfermera.apellido.ilike(f"%{nombre}%"))
+            )
+        
         return query.offset(skip).limit(limit).all()
 
     def obtener_enfermera(self, enfermera_id: UUID) -> Optional[Enfermera]:
@@ -150,16 +165,80 @@ class EnfermeraCRUD:
         self.db.refresh(enfermera)
         return enfermera
 
-    def eliminar_enfermera(self, enfermera_id: UUID) -> bool:
-        """Eliminar una enfermera (soft delete)."""
+    def inactivar_enfermera(self, enfermera_id: UUID) -> bool:
+        """Inactivar una enfermera (soft delete)."""
         enfermera = self.obtener_enfermera(enfermera_id)
         if not enfermera:
             return False
-
         if not enfermera.activo:
-            return False
-
+            return True
         enfermera.activo = False
         self.db.commit()
         self.db.refresh(enfermera)
         return True
+
+    def reactivar_enfermera(self, enfermera_id: UUID) -> bool:
+        """Reactivar una enfermera inactiva."""
+        enfermera = self.obtener_enfermera(enfermera_id)
+        if not enfermera:
+            return False
+        if enfermera.activo:
+            return True
+        enfermera.activo = True
+        self.db.commit()
+        self.db.refresh(enfermera)
+        return True
+
+    def eliminar_enfermera_permanente(self, enfermera_id: UUID) -> bool:
+        """Eliminar una enfermera permanentemente de la base de datos."""
+        import logging
+        from sqlalchemy import text
+        try:
+            enfermera = self.obtener_enfermera(enfermera_id)
+            if not enfermera:
+                raise ValueError(f"Enfermera con ID {enfermera_id} no encontrada")
+
+            # Actualizar referencias de id_usuario_creacion e id_usuario_edicion
+            tablas_usuario = ['tbl_enfermeras', 'tbl_medicos', 'tbl_pacientes', 'tbl_citas', 
+                             'tbl_hospitalizaciones', 'tbl_facturas', 'tbl_historiales_medicos', 
+                             'tbl_historiales_entradas', 'tbl_facturas_detalles']
+            
+            for tabla in tablas_usuario:
+                try:
+                    self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_creacion = NULL WHERE id_usuario_creacion = :enfermera_id"),
+                        {"enfermera_id": str(enfermera_id)}
+                    )
+                    self.db.execute(
+                        text(f"UPDATE {tabla} SET id_usuario_edicion = NULL WHERE id_usuario_edicion = :enfermera_id"),
+                        {"enfermera_id": str(enfermera_id)}
+                    )
+                except Exception as e:
+                    logging.warning(f"Error al actualizar referencias de usuario en {tabla}: {str(e)}")
+                    continue
+
+            # Hospitalizaciones: actualizar enfermera_id a NULL (es nullable)
+            from entities.hospitalizacion import Hospitalizacion
+            hospitalizaciones = self.db.query(Hospitalizacion).filter(Hospitalizacion.enfermera_id == enfermera_id).all()
+            for hosp in hospitalizaciones:
+                hosp.enfermera_id = None
+
+            # Commit de las actualizaciones
+            self.db.commit()
+
+            # Eliminar la enfermera
+            self.db.delete(enfermera)
+            self.db.commit()
+            
+            logging.info(f"Enfermera {enfermera_id} eliminada permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar enfermera permanentemente {enfermera_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar enfermera: {str(e)}")
+
+    def eliminar_enfermera(self, enfermera_id: UUID) -> bool:
+        """Eliminar una enfermera (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_enfermera(enfermera_id)

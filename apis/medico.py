@@ -15,13 +15,21 @@ async def obtener_medicos(
     skip: int = Query(0, ge=0),
     limit: int = Query(1000, ge=1, le=1000),
     include_inactive: bool = Query(False, description="Incluir médicos inactivos"),
+    nombre: str = Query(None, description="Filtrar por nombre (búsqueda parcial)"),
+    especialidad: str = Query(None, description="Filtrar por especialidad (búsqueda parcial)"),
+    activo: bool = Query(None, description="Filtrar por estado activo/inactivo"),
     db: Session = Depends(get_db)
 ):
-    """Obtener todos los médicos con paginación y opción de incluir inactivos."""
+    """Obtener todos los médicos con paginación, opción de incluir inactivos y filtros de búsqueda."""
     try:
         medico_crud = MedicoCRUD(db)
         medicos = medico_crud.obtener_medicos(
-            skip=skip, limit=limit, include_inactive=include_inactive
+            skip=skip, 
+            limit=limit, 
+            include_inactive=include_inactive,
+            nombre=nombre,
+            especialidad=especialidad,
+            activo=activo
         )
         if not medicos:
             return []
@@ -204,23 +212,79 @@ async def actualizar_medico(
         )
 
 
-@router.delete(
-    "/{medico_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{medico_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_medico(medico_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar un médico."""
+async def inactivar_medico(medico_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar un médico (soft delete)."""
     try:
         medico_crud = MedicoCRUD(db)
-
         medico_existente = medico_crud.obtener_medico(medico_id)
         if not medico_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Médico no encontrado"
             )
+        inactivado = medico_crud.inactivar_medico(medico_id)
+        if inactivado:
+            return RespuestaAPI(mensaje="Médico inactivado exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar médico",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar médico: {str(e)}",
+        )
 
-        eliminado = medico_crud.eliminar_medico(medico_id)
+
+@router.patch(
+    "/{medico_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_medico(medico_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar un médico inactivo."""
+    try:
+        medico_crud = MedicoCRUD(db)
+        medico_existente = medico_crud.obtener_medico(medico_id)
+        if not medico_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Médico no encontrado"
+            )
+        reactivado = medico_crud.reactivar_medico(medico_id)
+        if reactivado:
+            return RespuestaAPI(mensaje="Médico reactivado exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar médico",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar médico: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{medico_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_medico_permanente(medico_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar un médico permanentemente de la base de datos."""
+    try:
+        medico_crud = MedicoCRUD(db)
+        medico_existente = medico_crud.obtener_medico(medico_id)
+        if not medico_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Médico no encontrado"
+            )
+        eliminado = medico_crud.eliminar_medico_permanente(medico_id)
         if eliminado:
-            return RespuestaAPI(mensaje="Médico eliminado exitosamente", success=True)
+            return RespuestaAPI(mensaje="Médico eliminado permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -228,8 +292,6 @@ async def eliminar_medico(medico_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

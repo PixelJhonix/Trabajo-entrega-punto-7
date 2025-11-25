@@ -277,23 +277,81 @@ async def marcar_facturas_vencidas(db: Session = Depends(get_db)):
         )
 
 
-@router.delete(
-    "/{factura_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{factura_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_factura(factura_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una factura (soft delete)."""
+async def inactivar_factura(factura_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una factura (soft delete)."""
     try:
         factura_crud = FacturaCRUD(db)
-
         factura_existente = factura_crud.obtener_factura(factura_id)
         if not factura_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
             )
+        inactivada = factura_crud.inactivar_factura(factura_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Factura inactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar factura",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar factura: {str(e)}",
+        )
 
-        eliminada = factura_crud.eliminar_factura(factura_id)
+
+@router.patch(
+    "/{factura_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_factura(factura_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una factura inactiva."""
+    try:
+        factura_crud = FacturaCRUD(db)
+        factura_existente = factura_crud.obtener_factura(factura_id)
+        if not factura_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
+            )
+        reactivada = factura_crud.reactivar_factura(factura_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Factura reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar factura",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar factura: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{factura_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_factura_permanente(factura_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una factura permanentemente de la base de datos."""
+    import traceback
+    import logging
+    try:
+        factura_crud = FacturaCRUD(db)
+        factura_existente = factura_crud.obtener_factura(factura_id)
+        if not factura_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
+            )
+        eliminada = factura_crud.eliminar_factura_permanente(factura_id)
         if eliminada:
-            return RespuestaAPI(mensaje="Factura eliminada exitosamente", success=True)
+            return RespuestaAPI(mensaje="Factura eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -301,8 +359,18 @@ async def eliminar_factura(factura_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
+    except ValueError as e:
+        error_detail = f"Error al eliminar factura: {str(e)}"
+        logging.error(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_detail,
+        )
     except Exception as e:
+        error_detail = f"Error al eliminar factura: {str(e)}"
+        traceback_str = traceback.format_exc()
+        logging.error(f"{error_detail}\n{traceback_str}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar factura: {str(e)}",
+            detail=error_detail,
         )

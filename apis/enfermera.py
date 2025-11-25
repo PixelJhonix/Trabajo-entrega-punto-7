@@ -15,13 +15,19 @@ async def obtener_enfermeras(
     skip: int = Query(0, ge=0),
     limit: int = Query(1000, ge=1, le=1000),
     include_inactive: bool = Query(False, description="Incluir enfermeras inactivas"),
+    nombre: str = Query(None, description="Filtrar por nombre (búsqueda parcial)"),
+    activo: bool = Query(None, description="Filtrar por estado activo/inactivo"),
     db: Session = Depends(get_db)
 ):
-    """Obtener todas las enfermeras con paginación y opción de incluir inactivas."""
+    """Obtener todas las enfermeras con paginación, opción de incluir inactivas y filtros de búsqueda."""
     try:
         enfermera_crud = EnfermeraCRUD(db)
         enfermeras = enfermera_crud.obtener_enfermeras(
-            skip=skip, limit=limit, include_inactive=include_inactive
+            skip=skip, 
+            limit=limit, 
+            include_inactive=include_inactive,
+            nombre=nombre,
+            activo=activo
         )
         if not enfermeras:
             return []
@@ -197,31 +203,79 @@ async def actualizar_enfermera(
         )
 
 
-@router.delete(
-    "/{enfermera_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{enfermera_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una enfermera (soft delete)."""
+async def inactivar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una enfermera (soft delete)."""
     try:
         enfermera_crud = EnfermeraCRUD(db)
-
         enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
         if not enfermera_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
             )
-
-        if not enfermera_existente.activo:
+        inactivada = enfermera_crud.inactivar_enfermera(enfermera_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Enfermera inactivada exitosamente", success=True)
+        else:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="La enfermera ya está eliminada",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar enfermera",
             )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar enfermera: {str(e)}",
+        )
 
-        eliminada = enfermera_crud.eliminar_enfermera(enfermera_id)
-        if eliminada:
-            return RespuestaAPI(
-                mensaje="Enfermera eliminada exitosamente", success=True
+
+@router.patch(
+    "/{enfermera_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una enfermera inactiva."""
+    try:
+        enfermera_crud = EnfermeraCRUD(db)
+        enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
+        if not enfermera_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
             )
+        reactivada = enfermera_crud.reactivar_enfermera(enfermera_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Enfermera reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar enfermera",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar enfermera: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{enfermera_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_enfermera_permanente(enfermera_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una enfermera permanentemente de la base de datos."""
+    try:
+        enfermera_crud = EnfermeraCRUD(db)
+        enfermera_existente = enfermera_crud.obtener_enfermera(enfermera_id)
+        if not enfermera_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enfermera no encontrada"
+            )
+        eliminada = enfermera_crud.eliminar_enfermera_permanente(enfermera_id)
+        if eliminada:
+            return RespuestaAPI(mensaje="Enfermera eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -229,8 +283,6 @@ async def eliminar_enfermera(enfermera_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

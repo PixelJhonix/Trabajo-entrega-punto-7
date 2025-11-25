@@ -274,30 +274,84 @@ async def cancelar_hospitalizacion(
         )
 
 
-@router.delete(
-    "/{hospitalizacion_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{hospitalizacion_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_hospitalizacion(
-    hospitalizacion_id: UUID, db: Session = Depends(get_db)
-):
-    """Eliminar una hospitalización (soft delete)."""
+async def inactivar_hospitalizacion(hospitalizacion_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una hospitalización (soft delete)."""
     try:
         hospitalizacion_crud = HospitalizacionCRUD(db)
-
-        hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(
-            hospitalizacion_id
-        )
+        hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(hospitalizacion_id)
         if not hospitalizacion_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Hospitalización no encontrada",
             )
-
-        eliminada = hospitalizacion_crud.eliminar_hospitalizacion(hospitalizacion_id)
-        if eliminada:
-            return RespuestaAPI(
-                mensaje="Hospitalización eliminada exitosamente", success=True
+        inactivada = hospitalizacion_crud.inactivar_hospitalizacion(hospitalizacion_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Hospitalización inactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar hospitalización",
             )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar hospitalización: {str(e)}",
+        )
+
+
+@router.patch(
+    "/{hospitalizacion_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_hospitalizacion(hospitalizacion_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una hospitalización inactiva."""
+    try:
+        hospitalizacion_crud = HospitalizacionCRUD(db)
+        hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(hospitalizacion_id)
+        if not hospitalizacion_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Hospitalización no encontrada",
+            )
+        reactivada = hospitalizacion_crud.reactivar_hospitalizacion(hospitalizacion_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Hospitalización reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar hospitalización",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar hospitalización: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{hospitalizacion_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_hospitalizacion_permanente(hospitalizacion_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una hospitalización permanentemente de la base de datos."""
+    import traceback
+    import logging
+    try:
+        hospitalizacion_crud = HospitalizacionCRUD(db)
+        hospitalizacion_existente = hospitalizacion_crud.obtener_hospitalizacion(hospitalizacion_id)
+        if not hospitalizacion_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Hospitalización no encontrada",
+            )
+        eliminada = hospitalizacion_crud.eliminar_hospitalizacion_permanente(hospitalizacion_id)
+        if eliminada:
+            return RespuestaAPI(mensaje="Hospitalización eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -305,8 +359,18 @@ async def eliminar_hospitalizacion(
             )
     except HTTPException:
         raise
+    except ValueError as e:
+        error_detail = f"Error al eliminar hospitalización: {str(e)}"
+        logging.error(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_detail,
+        )
     except Exception as e:
+        error_detail = f"Error al eliminar hospitalización: {str(e)}"
+        traceback_str = traceback.format_exc()
+        logging.error(f"{error_detail}\n{traceback_str}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar hospitalización: {str(e)}",
+            detail=error_detail,
         )

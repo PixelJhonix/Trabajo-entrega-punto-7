@@ -204,11 +204,48 @@ class HospitalizacionCRUD:
             hospitalizacion_id, id_usuario_edicion, estado="cancelada"
         )
 
-    def eliminar_hospitalizacion(self, hospitalizacion_id: UUID) -> bool:
-        """Eliminar una hospitalización (soft delete)."""
+    def inactivar_hospitalizacion(self, hospitalizacion_id: UUID) -> bool:
+        """Inactivar una hospitalización (soft delete)."""
         hospitalizacion = self.obtener_hospitalizacion(hospitalizacion_id)
-        if hospitalizacion:
-            hospitalizacion.activo = False
-            self.db.commit()
+        if not hospitalizacion:
+            return False
+        if not hospitalizacion.activo:
             return True
-        return False
+        hospitalizacion.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_hospitalizacion(self, hospitalizacion_id: UUID) -> bool:
+        """Reactivar una hospitalización inactiva."""
+        hospitalizacion = self.obtener_hospitalizacion(hospitalizacion_id)
+        if not hospitalizacion:
+            return False
+        if hospitalizacion.activo:
+            return True
+        hospitalizacion.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_hospitalizacion_permanente(self, hospitalizacion_id: UUID) -> bool:
+        """Eliminar una hospitalización permanentemente de la base de datos."""
+        import logging
+        try:
+            hospitalizacion = self.obtener_hospitalizacion(hospitalizacion_id)
+            if not hospitalizacion:
+                raise ValueError(f"Hospitalización con ID {hospitalizacion_id} no encontrada")
+            
+            self.db.delete(hospitalizacion)
+            self.db.commit()
+            
+            logging.info(f"Hospitalización {hospitalizacion_id} eliminada permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar hospitalización permanentemente {hospitalizacion_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar hospitalización: {str(e)}")
+
+    def eliminar_hospitalizacion(self, hospitalizacion_id: UUID) -> bool:
+        """Eliminar una hospitalización (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_hospitalizacion(hospitalizacion_id)

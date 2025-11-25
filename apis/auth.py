@@ -33,7 +33,7 @@ async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
                 "Credenciales incorrectas o usuario inactivo"
             )
 
-        expire = datetime.utcnow() + timedelta(hours=24)
+        expire = datetime.utcnow() + timedelta(minutes=30)
         token_data = {
             "sub": str(usuario.id),
             "email": usuario.email,

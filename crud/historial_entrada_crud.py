@@ -122,11 +122,48 @@ class HistorialEntradaCRUD:
             self.db.refresh(entrada)
         return entrada
 
-    def eliminar_entrada(self, entrada_id: UUID) -> bool:
-        """Eliminar una entrada del historial (soft delete)."""
+    def inactivar_entrada(self, entrada_id: UUID) -> bool:
+        """Inactivar una entrada del historial (soft delete)."""
         entrada = self.obtener_entrada(entrada_id)
-        if entrada:
-            entrada.activo = False
-            self.db.commit()
+        if not entrada:
+            return False
+        if not entrada.activo:
             return True
-        return False
+        entrada.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_entrada(self, entrada_id: UUID) -> bool:
+        """Reactivar una entrada del historial inactiva."""
+        entrada = self.obtener_entrada(entrada_id)
+        if not entrada:
+            return False
+        if entrada.activo:
+            return True
+        entrada.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_entrada_permanente(self, entrada_id: UUID) -> bool:
+        """Eliminar una entrada del historial permanentemente de la base de datos."""
+        import logging
+        try:
+            entrada = self.obtener_entrada(entrada_id)
+            if not entrada:
+                raise ValueError(f"Entrada de historial con ID {entrada_id} no encontrada")
+            
+            self.db.delete(entrada)
+            self.db.commit()
+            
+            logging.info(f"Entrada de historial {entrada_id} eliminada permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar entrada de historial permanentemente {entrada_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar entrada de historial: {str(e)}")
+
+    def eliminar_entrada(self, entrada_id: UUID) -> bool:
+        """Eliminar una entrada del historial (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_entrada(entrada_id)

@@ -218,23 +218,81 @@ async def completar_cita(
         )
 
 
-@router.delete(
-    "/{cita_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+@router.patch(
+    "/{cita_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
 )
-async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una cita (soft delete)."""
+async def inactivar_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una cita (soft delete)."""
     try:
         cita_crud = CitaCRUD(db)
-
         cita_existente = cita_crud.obtener_cita(cita_id)
         if not cita_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
             )
+        inactivada = cita_crud.inactivar_cita(cita_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Cita inactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar cita",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar cita: {str(e)}",
+        )
 
-        eliminada = cita_crud.eliminar_cita(cita_id)
+
+@router.patch(
+    "/{cita_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una cita inactiva."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        reactivada = cita_crud.reactivar_cita(cita_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Cita reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar cita",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar cita: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{cita_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_cita_permanente(cita_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una cita permanentemente de la base de datos."""
+    import traceback
+    import logging
+    try:
+        cita_crud = CitaCRUD(db)
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        eliminada = cita_crud.eliminar_cita_permanente(cita_id)
         if eliminada:
-            return RespuestaAPI(mensaje="Cita eliminada exitosamente", success=True)
+            return RespuestaAPI(mensaje="Cita eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -242,8 +300,18 @@ async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
+    except ValueError as e:
+        error_detail = f"Error al eliminar cita: {str(e)}"
+        logging.error(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_detail,
+        )
     except Exception as e:
+        error_detail = f"Error al eliminar cita: {str(e)}"
+        traceback_str = traceback.format_exc()
+        logging.error(f"{error_detail}\n{traceback_str}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar cita: {str(e)}",
+            detail=error_detail,
         )

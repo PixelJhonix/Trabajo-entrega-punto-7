@@ -152,11 +152,55 @@ class FacturaCRUD:
         """Marcar factura como vencida."""
         return self.actualizar_factura(factura_id, id_usuario_edicion, estado="vencida")
 
-    def eliminar_factura(self, factura_id: UUID) -> bool:
-        """Eliminar una factura (soft delete)."""
+    def inactivar_factura(self, factura_id: UUID) -> bool:
+        """Inactivar una factura (soft delete)."""
         factura = self.obtener_factura(factura_id)
-        if factura:
-            factura.activo = False
-            self.db.commit()
+        if not factura:
+            return False
+        if not factura.activo:
             return True
-        return False
+        factura.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_factura(self, factura_id: UUID) -> bool:
+        """Reactivar una factura inactiva."""
+        factura = self.obtener_factura(factura_id)
+        if not factura:
+            return False
+        if factura.activo:
+            return True
+        factura.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_factura_permanente(self, factura_id: UUID) -> bool:
+        """Eliminar una factura permanentemente de la base de datos."""
+        import logging
+        try:
+            factura = self.obtener_factura(factura_id)
+            if not factura:
+                raise ValueError(f"Factura con ID {factura_id} no encontrada")
+            
+            # Los detalles de factura se eliminan automáticamente por cascade
+            # pero los eliminamos explícitamente para asegurarnos
+            from entities.factura_detalle import FacturaDetalle
+            detalles = self.db.query(FacturaDetalle).filter(FacturaDetalle.factura_id == factura_id).all()
+            for detalle in detalles:
+                self.db.delete(detalle)
+            
+            self.db.delete(factura)
+            self.db.commit()
+            
+            logging.info(f"Factura {factura_id} eliminada permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar factura permanentemente {factura_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar factura: {str(e)}")
+
+    def eliminar_factura(self, factura_id: UUID) -> bool:
+        """Eliminar una factura (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_factura(factura_id)

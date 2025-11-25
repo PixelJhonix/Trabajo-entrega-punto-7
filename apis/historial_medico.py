@@ -1,13 +1,9 @@
-"""
-API de Historiales Médicos - Endpoints para gestión de historiales médicos
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.historial_medico_crud import HistorialMedicoCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import (
     HistorialMedicoCreate,
     HistorialMedicoResponse,
@@ -21,12 +17,19 @@ router = APIRouter(prefix="/historiales-medicos", tags=["historiales-medicos"])
 
 @router.get("/", response_model=List[HistorialMedicoResponse])
 async def obtener_historiales(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir historiales inactivos"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todos los historiales médicos con paginación."""
+    """Obtener todos los historiales médicos con paginación y opción de incluir inactivos."""
     try:
         historial_crud = HistorialMedicoCRUD(db)
-        historiales = historial_crud.obtener_historiales(skip=skip, limit=limit)
+        historiales = historial_crud.obtener_historiales(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not historiales:
+            return []
         return historiales
     except Exception as e:
         raise HTTPException(
@@ -140,10 +143,14 @@ async def crear_historial(
     try:
         historial_crud = HistorialMedicoCRUD(db)
         historial = historial_crud.crear_historial(
-            paciente_id=historial_data.paciente_id,
             numero_historial=historial_data.numero_historial,
-            fecha_apertura=historial_data.fecha_apertura,
-            id_usuario_creacion=historial_data.id_usuario_creacion,
+            paciente_id=historial_data.paciente_id,
+            id_usuario_creacion=(
+                historial_data.id_usuario_creacion
+                if historial_data.id_usuario_creacion
+                else None
+            ),
+            notas_generales=historial_data.notas_generales,
         )
         return historial
     except ValueError as e:
@@ -173,14 +180,22 @@ async def actualizar_historial(
             )
 
         campos_actualizacion = {
-            k: v for k, v in historial_data.dict().items() if v is not None
+            k: v
+            for k, v in historial_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not historial_data.id_usuario_edicion:
             return historial_existente
 
         historial_actualizado = historial_crud.actualizar_historial(
-            historial_id, historial_data.id_usuario_edicion, **campos_actualizacion
+            historial_id,
+            (
+                historial_data.id_usuario_edicion
+                if historial_data.id_usuario_edicion
+                else None
+            ),
+            **campos_actualizacion,
         )
         return historial_actualizado
     except HTTPException:
@@ -240,9 +255,11 @@ async def archivar_historial(
         )
 
 
-@router.delete("/{historial_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{historial_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_historial(historial_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar un historial médico."""
+    """Eliminar un historial médico (soft delete)."""
     try:
         historial_crud = HistorialMedicoCRUD(db)
 
@@ -256,7 +273,7 @@ async def eliminar_historial(historial_id: UUID, db: Session = Depends(get_db)):
         eliminado = historial_crud.eliminar_historial(historial_id)
         if eliminado:
             return RespuestaAPI(
-                mensaje="Historial médico eliminado exitosamente", exito=True
+                mensaje="Historial médico eliminado exitosamente", success=True
             )
         else:
             raise HTTPException(

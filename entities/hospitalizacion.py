@@ -1,7 +1,3 @@
-"""
-Entidad Hospitalizacion - Sistema de gestión hospitalaria
-"""
-
 import uuid
 
 from database.config import Base
@@ -12,7 +8,12 @@ from sqlalchemy.sql import func
 
 
 class Hospitalizacion(Base):
-    """Modelo de Hospitalizacion para el sistema hospitalario"""
+    """
+    Entidad que representa una hospitalización.
+    
+    Atributos:
+        estado: Estado de la hospitalización. Valores posibles: activa, completada, cancelada
+    """
 
     __tablename__ = "tbl_hospitalizaciones"
 
@@ -21,11 +22,11 @@ class Hospitalizacion(Base):
     fecha_salida = Column(DateTime, nullable=True)
     motivo = Column(String(255), nullable=False)
     numero_habitacion = Column(String(10), nullable=False)
-    estado = Column(String(20), default="activa")  # activa, completada, cancelada
+    estado = Column(String(20), default="activa")
     notas = Column(String(500), nullable=True)
     activo = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

@@ -1,18 +1,14 @@
-"""
-Entidad Medico - Sistema de gestión hospitalaria
-"""
-
 import uuid
 
 from database.config import Base
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Boolean, Column, Date, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 
 class Medico(Base):
-    """Modelo de Medico para el sistema hospitalario"""
+    """Entidad que representa un médico."""
 
     __tablename__ = "tbl_medicos"
 
@@ -23,9 +19,12 @@ class Medico(Base):
     telefono = Column(String(20), nullable=True)
     especialidad = Column(String(100), nullable=False)
     numero_licencia = Column(String(50), unique=True, index=True, nullable=False)
+    fecha_nacimiento = Column(Date, nullable=False)
+    consultorio = Column(String(50), nullable=True)
+    direccion = Column(String(255), nullable=True)
     activo = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_actualizacion = Column(DateTime(timezone=True), onupdate=func.now())
     id_usuario_creacion = Column(UUID(as_uuid=True), nullable=True)
     id_usuario_edicion = Column(UUID(as_uuid=True), nullable=True)
 

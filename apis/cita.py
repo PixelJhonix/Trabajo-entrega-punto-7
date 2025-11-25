@@ -1,13 +1,9 @@
-"""
-API de Citas - Endpoints para gestión de citas médicas
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.cita_crud import CitaCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import CitaCreate, CitaResponse, CitaUpdate, RespuestaAPI
 from sqlalchemy.orm import Session
 
@@ -15,11 +11,20 @@ router = APIRouter(prefix="/citas", tags=["citas"])
 
 
 @router.get("/", response_model=List[CitaResponse])
-async def obtener_citas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Obtener todas las citas con paginación."""
+async def obtener_citas(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir citas inactivas"),
+    db: Session = Depends(get_db)
+):
+    """Obtener todas las citas con paginación y opción de incluir inactivas."""
     try:
         cita_crud = CitaCRUD(db)
-        citas = cita_crud.obtener_citas(skip=skip, limit=limit)
+        citas = cita_crud.obtener_citas(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not citas:
+            return []
         return citas
     except Exception as e:
         raise HTTPException(
@@ -112,11 +117,12 @@ async def crear_cita(cita_data: CitaCreate, db: Session = Depends(get_db)):
         cita = cita_crud.crear_cita(
             paciente_id=cita_data.paciente_id,
             medico_id=cita_data.medico_id,
-            fecha=cita_data.fecha,
-            hora=cita_data.hora,
+            fecha_cita=cita_data.fecha_cita,
             motivo=cita_data.motivo,
-            id_usuario_creacion=cita_data.id_usuario_creacion,
-            observaciones=cita_data.observaciones,
+            id_usuario_creacion=(
+                cita_data.id_usuario_creacion if cita_data.id_usuario_creacion else None
+            ),
+            notas=cita_data.notas,
         )
         return cita
     except ValueError as e:
@@ -143,14 +149,18 @@ async def actualizar_cita(
             )
 
         campos_actualizacion = {
-            k: v for k, v in cita_data.dict().items() if v is not None
+            k: v
+            for k, v in cita_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not cita_data.id_usuario_edicion:
             return cita_existente
 
         cita_actualizada = cita_crud.actualizar_cita(
-            cita_id, cita_data.id_usuario_edicion, **campos_actualizacion
+            cita_id,
+            cita_data.id_usuario_edicion if cita_data.id_usuario_edicion else None,
+            **campos_actualizacion,
         )
         return cita_actualizada
     except HTTPException:
@@ -208,21 +218,81 @@ async def completar_cita(
         )
 
 
-@router.delete("/{cita_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar una cita."""
+@router.patch(
+    "/{cita_id}/inactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def inactivar_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Inactivar una cita (soft delete)."""
     try:
         cita_crud = CitaCRUD(db)
-
         cita_existente = cita_crud.obtener_cita(cita_id)
         if not cita_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
             )
+        inactivada = cita_crud.inactivar_cita(cita_id)
+        if inactivada:
+            return RespuestaAPI(mensaje="Cita inactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al inactivar cita",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inactivar cita: {str(e)}",
+        )
 
-        eliminada = cita_crud.eliminar_cita(cita_id)
+
+@router.patch(
+    "/{cita_id}/reactivar", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def reactivar_cita(cita_id: UUID, db: Session = Depends(get_db)):
+    """Reactivar una cita inactiva."""
+    try:
+        cita_crud = CitaCRUD(db)
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        reactivada = cita_crud.reactivar_cita(cita_id)
+        if reactivada:
+            return RespuestaAPI(mensaje="Cita reactivada exitosamente", success=True)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al reactivar cita",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al reactivar cita: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{cita_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
+async def eliminar_cita_permanente(cita_id: UUID, db: Session = Depends(get_db)):
+    """Eliminar una cita permanentemente de la base de datos."""
+    import traceback
+    import logging
+    try:
+        cita_crud = CitaCRUD(db)
+        cita_existente = cita_crud.obtener_cita(cita_id)
+        if not cita_existente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada"
+            )
+        eliminada = cita_crud.eliminar_cita_permanente(cita_id)
         if eliminada:
-            return RespuestaAPI(mensaje="Cita eliminada exitosamente", exito=True)
+            return RespuestaAPI(mensaje="Cita eliminada permanentemente", success=True)
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -230,8 +300,18 @@ async def eliminar_cita(cita_id: UUID, db: Session = Depends(get_db)):
             )
     except HTTPException:
         raise
+    except ValueError as e:
+        error_detail = f"Error al eliminar cita: {str(e)}"
+        logging.error(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_detail,
+        )
     except Exception as e:
+        error_detail = f"Error al eliminar cita: {str(e)}"
+        traceback_str = traceback.format_exc()
+        logging.error(f"{error_detail}\n{traceback_str}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar cita: {str(e)}",
+            detail=error_detail,
         )

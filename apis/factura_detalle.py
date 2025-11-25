@@ -1,13 +1,9 @@
-"""
-API de Factura Detalles - Endpoints para gestión de detalles de factura
-"""
-
 from typing import List
 from uuid import UUID
 
 from crud.factura_detalle_crud import FacturaDetalleCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from schemas import (
     FacturaDetalleCreate,
     FacturaDetalleResponse,
@@ -21,12 +17,19 @@ router = APIRouter(prefix="/factura-detalles", tags=["factura-detalles"])
 
 @router.get("/", response_model=List[FacturaDetalleResponse])
 async def obtener_detalles(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=1000),
+    include_inactive: bool = Query(False, description="Incluir detalles inactivos"),
+    db: Session = Depends(get_db)
 ):
-    """Obtener todos los detalles de factura con paginación."""
+    """Obtener todos los detalles de factura con paginación y opción de incluir inactivos."""
     try:
         detalle_crud = FacturaDetalleCRUD(db)
-        detalles = detalle_crud.obtener_detalles(skip=skip, limit=limit)
+        detalles = detalle_crud.obtener_detalles(
+            skip=skip, limit=limit, include_inactive=include_inactive
+        )
+        if not detalles:
+            return []
         return detalles
     except Exception as e:
         raise HTTPException(
@@ -81,13 +84,15 @@ async def crear_detalle(
         detalle_crud = FacturaDetalleCRUD(db)
         detalle = detalle_crud.crear_detalle(
             factura_id=detalle_data.factura_id,
-            cita_id=detalle_data.cita_id,
-            hospitalizacion_id=detalle_data.hospitalizacion_id,
             descripcion=detalle_data.descripcion,
             cantidad=detalle_data.cantidad,
             precio_unitario=detalle_data.precio_unitario,
             subtotal=detalle_data.subtotal,
-            id_usuario_creacion=detalle_data.id_usuario_creacion,
+            id_usuario_creacion=(
+                detalle_data.id_usuario_creacion
+                if detalle_data.id_usuario_creacion
+                else None
+            ),
         )
         return detalle
     except ValueError as e:
@@ -115,14 +120,22 @@ async def actualizar_detalle(
             )
 
         campos_actualizacion = {
-            k: v for k, v in detalle_data.dict().items() if v is not None
+            k: v
+            for k, v in detalle_data.dict(exclude={"id_usuario_edicion"}).items()
+            if v is not None
         }
 
-        if not campos_actualizacion:
+        if not campos_actualizacion and not detalle_data.id_usuario_edicion:
             return detalle_existente
 
         detalle_actualizado = detalle_crud.actualizar_detalle(
-            detalle_id, detalle_data.id_usuario_edicion, **campos_actualizacion
+            detalle_id,
+            (
+                detalle_data.id_usuario_edicion
+                if detalle_data.id_usuario_edicion
+                else None
+            ),
+            **campos_actualizacion,
         )
         return detalle_actualizado
     except HTTPException:
@@ -136,9 +149,11 @@ async def actualizar_detalle(
         )
 
 
-@router.delete("/{detalle_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{detalle_id}", response_model=RespuestaAPI, status_code=status.HTTP_200_OK
+)
 async def eliminar_detalle(detalle_id: UUID, db: Session = Depends(get_db)):
-    """Eliminar un detalle de factura."""
+    """Eliminar un detalle de factura (soft delete)."""
     try:
         detalle_crud = FacturaDetalleCRUD(db)
 
@@ -152,7 +167,7 @@ async def eliminar_detalle(detalle_id: UUID, db: Session = Depends(get_db)):
         eliminado = detalle_crud.eliminar_detalle(detalle_id)
         if eliminado:
             return RespuestaAPI(
-                mensaje="Detalle de factura eliminado exitosamente", exito=True
+                mensaje="Detalle de factura eliminado exitosamente", success=True
             )
         else:
             raise HTTPException(

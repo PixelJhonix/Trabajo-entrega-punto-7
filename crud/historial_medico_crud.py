@@ -1,7 +1,3 @@
-"""
-Operaciones CRUD para HistorialMedico
-"""
-
 from typing import List, Optional
 from uuid import UUID
 
@@ -10,8 +6,6 @@ from sqlalchemy.orm import Session
 
 
 class HistorialMedicoCRUD:
-    """CRUD para gestión de historiales médicos."""
-
     def __init__(self, db: Session):
         self.db = db
 
@@ -19,14 +13,31 @@ class HistorialMedicoCRUD:
         self,
         numero_historial: str,
         paciente_id: UUID,
-        id_usuario_creacion: UUID,
+        id_usuario_creacion: Optional[UUID] = None,
         notas_generales: str = None,
     ) -> HistorialMedico:
         """Crear un nuevo historial médico."""
+        from entities.paciente import Paciente
+
+        paciente = self.db.query(Paciente).filter(Paciente.id == paciente_id).first()
+        if not paciente:
+            raise ValueError("El paciente especificado no existe")
+
+        if not numero_historial or len(numero_historial.strip()) == 0:
+            raise ValueError("El número de historial es obligatorio")
+
+        historial_existente = self.obtener_historial_por_numero(numero_historial)
+        if historial_existente:
+            raise ValueError("El número de historial ya está registrado")
+
+        historial_paciente = self.obtener_historial_por_paciente(paciente_id)
+        if historial_paciente and historial_paciente.activo:
+            raise ValueError("El paciente ya tiene un historial médico activo")
+
         historial = HistorialMedico(
-            numero_historial=numero_historial,
+            numero_historial=numero_historial.strip(),
             paciente_id=paciente_id,
-            notas_generales=notas_generales,
+            notas_generales=notas_generales.strip() if notas_generales else None,
             id_usuario_creacion=id_usuario_creacion,
         )
         self.db.add(historial)
@@ -35,16 +46,13 @@ class HistorialMedicoCRUD:
         return historial
 
     def obtener_historiales(
-        self, skip: int = 0, limit: int = 100
+        self, skip: int = 0, limit: int = 1000, include_inactive: bool = False
     ) -> List[HistorialMedico]:
-        """Obtener todos los historiales médicos."""
-        return (
-            self.db.query(HistorialMedico)
-            .filter(HistorialMedico.activo)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        """Obtener todos los historiales médicos con opción de incluir inactivos."""
+        query = self.db.query(HistorialMedico)
+        if not include_inactive:
+            query = query.filter(HistorialMedico.activo == True)
+        return query.offset(skip).limit(limit).all()
 
     def obtener_historial(self, historial_id: UUID) -> Optional[HistorialMedico]:
         """Obtener un historial médico por ID."""
@@ -72,7 +80,7 @@ class HistorialMedicoCRUD:
             self.db.query(HistorialMedico)
             .filter(
                 HistorialMedico.paciente_id == paciente_id,
-                HistorialMedico.activo,
+                HistorialMedico.activo == True,
             )
             .first()
         )
@@ -81,7 +89,7 @@ class HistorialMedicoCRUD:
         """Obtener historiales médicos por estado."""
         return (
             self.db.query(HistorialMedico)
-            .filter(HistorialMedico.estado == estado, HistorialMedico.activo)
+            .filter(HistorialMedico.estado == estado, HistorialMedico.activo == True)
             .all()
         )
 
@@ -91,13 +99,13 @@ class HistorialMedicoCRUD:
             self.db.query(HistorialMedico)
             .filter(
                 HistorialMedico.numero_historial.ilike(f"%{numero}%"),
-                HistorialMedico.activo,
+                HistorialMedico.activo == True,
             )
             .all()
         )
 
     def actualizar_historial(
-        self, historial_id: UUID, id_usuario_edicion: UUID, **kwargs
+        self, historial_id: UUID, id_usuario_edicion: Optional[UUID] = None, **kwargs
     ) -> Optional[HistorialMedico]:
         """Actualizar un historial médico."""
         historial = self.obtener_historial(historial_id)
@@ -105,7 +113,8 @@ class HistorialMedicoCRUD:
             for key, value in kwargs.items():
                 if hasattr(historial, key):
                     setattr(historial, key, value)
-            historial.id_usuario_edicion = id_usuario_edicion
+            if id_usuario_edicion:
+                historial.id_usuario_edicion = id_usuario_edicion
             self.db.commit()
             self.db.refresh(historial)
         return historial
@@ -126,11 +135,49 @@ class HistorialMedicoCRUD:
             historial_id, id_usuario_edicion, estado="archivado"
         )
 
-    def eliminar_historial(self, historial_id: UUID) -> bool:
-        """Eliminar un historial médico (soft delete)."""
+    def inactivar_historial(self, historial_id: UUID) -> bool:
+        """Inactivar un historial médico (soft delete)."""
         historial = self.obtener_historial(historial_id)
-        if historial:
-            historial.activo = False
-            self.db.commit()
+        if not historial:
+            return False
+        if not historial.activo:
             return True
-        return False
+        historial.activo = False
+        self.db.commit()
+        return True
+
+    def reactivar_historial(self, historial_id: UUID) -> bool:
+        """Reactivar un historial médico inactivo."""
+        historial = self.obtener_historial(historial_id)
+        if not historial:
+            return False
+        if historial.activo:
+            return True
+        historial.activo = True
+        self.db.commit()
+        return True
+
+    def eliminar_historial_permanente(self, historial_id: UUID) -> bool:
+        """Eliminar un historial médico permanentemente de la base de datos."""
+        import logging
+        try:
+            historial = self.obtener_historial(historial_id)
+            if not historial:
+                raise ValueError(f"Historial médico con ID {historial_id} no encontrado")
+            
+            # Las entradas se eliminan automáticamente por cascade
+            self.db.delete(historial)
+            self.db.commit()
+            
+            logging.info(f"Historial médico {historial_id} eliminado permanentemente")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            logging.error(f"Error al eliminar historial médico permanentemente {historial_id}: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise ValueError(f"Error al eliminar historial médico: {str(e)}")
+
+    def eliminar_historial(self, historial_id: UUID) -> bool:
+        """Eliminar un historial médico (soft delete) - mantiene compatibilidad."""
+        return self.inactivar_historial(historial_id)
